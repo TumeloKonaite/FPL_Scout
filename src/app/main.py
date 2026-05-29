@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.app.api.routes.chat import router as chat_router
 from src.app.api.routes.health import router as health_router
+from src.app.api.routes.reports import router as reports_router
 from src.app.core.dependencies import get_app_settings
 
 
@@ -24,6 +25,7 @@ def create_app() -> FastAPI:
         return {"message": "FPL Technocrat API"}
 
     app.include_router(health_router)
+    app.include_router(reports_router)
     app.include_router(chat_router)
     return app
 

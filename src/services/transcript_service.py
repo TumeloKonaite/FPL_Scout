@@ -10,10 +10,11 @@ from src.adapters.transcript_api import (
     WebshareProxySettings,
     fetch_transcript,
 )
+from src.app.core.config import settings
 from src.utils.retry import RetryConfig, RetryError, retry_call
 from src.utils.text_cleaning import clean_transcript
 
-DEFAULT_TRANSCRIPT_CACHE_DIR = Path("data/transcripts")
+DEFAULT_TRANSCRIPT_CACHE_DIR = Path(settings.DATA_DIR) / "transcripts"
 
 
 def _build_transcript_cache_path(video_id: str, cache_dir: str | Path) -> Path:

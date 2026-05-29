@@ -6,10 +6,11 @@ from pathlib import Path
 from typing import Any
 
 from src.adapters.storage import load_json
+from src.app.core.config import settings
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 
 
-DEFAULT_RUNS_DIR = Path("runs")
+DEFAULT_RUNS_DIR = Path(settings.REPORTS_DIR)
 
 
 @dataclass(frozen=True)

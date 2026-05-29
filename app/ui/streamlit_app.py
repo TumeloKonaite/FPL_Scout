@@ -395,10 +395,10 @@ def main() -> None:
 
     st.sidebar.header("Report Input")
     st.sidebar.code(
-        args.input_path or "Latest run from runs/",
+        args.input_path or f"Latest run from {args.runs_dir}/",
         language="text",
     )
-    st.sidebar.caption("Pass `--input runs/gw32/final_report.json` or a run directory.")
+    st.sidebar.caption(f"Pass `--input {args.runs_dir}/gw32/final_report.json` or a run directory.")
 
     try:
         bundle = load_report_bundle(input_path=args.input_path, runs_dir=args.runs_dir)

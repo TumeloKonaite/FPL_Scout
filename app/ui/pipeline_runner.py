@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from src.adapters.transcript_api import load_webshare_proxy_settings
+from src.app.core.config import get_settings
 from src.services.pipeline_service import PipelineRunResult, run_pipeline_sync
 
 
@@ -17,7 +18,7 @@ class StreamlitPipelineOptions:
     expert_name: str | None = None
     expert_count: int | None = None
     synthesis_enabled: bool = True
-    base_runs_dir: Path = Path("runs")
+    base_runs_dir: Path = field(default_factory=lambda: Path(get_settings().REPORTS_DIR))
     output_dir: Path | None = None
 
 
@@ -28,9 +29,9 @@ def _timestamp_slug() -> str:
 def build_streamlit_output_dir(
     *,
     gameweek: int,
-    base_runs_dir: str | Path = "runs",
+    base_runs_dir: str | Path | None = None,
 ) -> Path:
-    base_dir = Path(base_runs_dir)
+    base_dir = Path(base_runs_dir or get_settings().REPORTS_DIR)
     return base_dir / f"gw{gameweek}-streamlit-{_timestamp_slug()}"
 
 

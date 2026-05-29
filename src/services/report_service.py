@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from src.adapters.storage import build_manifest, create_run_folder, load_json, save_json, save_text
+from src.app.core.config import get_settings
 from src.services.report_formatter_service import format_gameweek_markdown_report
 
 
@@ -27,8 +28,8 @@ def _created_at_for_run_path(run_path: Path) -> str:
 
 
 class ReportService:
-    def __init__(self, base_dir: str | Path = "runs") -> None:
-        self.base_dir = Path(base_dir)
+    def __init__(self, base_dir: str | Path | None = None) -> None:
+        self.base_dir = Path(base_dir or get_settings().REPORTS_DIR)
 
     def _resolve_run_path(self, run_dir: str | Path | None = None) -> Path:
         if run_dir is None:
@@ -130,7 +131,7 @@ def persist_run(
     videos_selected: int | None = None,
     jobs_created: int | None = None,
     transcript_failures: list[Any] | None = None,
-    base_dir: str | Path = "runs",
+    base_dir: str | Path | None = None,
     run_dir: str | Path | None = None,
 ) -> Path:
     return ReportService(base_dir=base_dir).persist_run(

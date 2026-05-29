@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.app.api.routes.chat import router as chat_router
 from src.app.api.routes.health import router as health_router
+from src.app.core.config import settings
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="FPL Technocrat API")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.get("/")
     async def root() -> dict[str, str]:

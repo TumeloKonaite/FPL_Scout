@@ -10,6 +10,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from src.app.core.config import get_settings
+
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
@@ -51,8 +53,8 @@ def to_serializable(data: Any) -> Any:
     return str(data)
 
 
-def create_run_folder(base_dir: str | Path = "runs") -> Path:
-    base_path = Path(base_dir)
+def create_run_folder(base_dir: str | Path | None = None) -> Path:
+    base_path = Path(base_dir or get_settings().REPORTS_DIR)
     base_path.mkdir(parents=True, exist_ok=True)
 
     for _ in range(10):

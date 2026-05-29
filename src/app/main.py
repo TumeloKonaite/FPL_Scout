@@ -5,10 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.app.api.routes.chat import router as chat_router
 from src.app.api.routes.health import router as health_router
-from src.app.core.config import settings
+from src.app.core.dependencies import get_app_settings
 
 
 def create_app() -> FastAPI:
+    settings = get_app_settings()
     app = FastAPI(title="FPL Technocrat API")
     app.add_middleware(
         CORSMiddleware,

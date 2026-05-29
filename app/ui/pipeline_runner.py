@@ -3,12 +3,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
 from src.adapters.transcript_api import load_webshare_proxy_settings
 from src.app.core.config import get_settings
-from src.services.pipeline_service import PipelineRunResult, run_pipeline_sync
+from src.app.domain.pipeline import (
+    get_pipeline_status as get_domain_pipeline_status,
+    run_pipeline,
+)
 
 
 @dataclass(frozen=True)
@@ -35,7 +39,7 @@ def build_streamlit_output_dir(
     return base_dir / f"gw{gameweek}-streamlit-{_timestamp_slug()}"
 
 
-def run_pipeline_from_streamlit(options: StreamlitPipelineOptions) -> PipelineRunResult:
+def run_pipeline_from_streamlit(options: StreamlitPipelineOptions) -> dict[str, Any]:
     load_dotenv()
     proxy_settings = load_webshare_proxy_settings()
     output_dir = options.output_dir or build_streamlit_output_dir(
@@ -43,7 +47,7 @@ def run_pipeline_from_streamlit(options: StreamlitPipelineOptions) -> PipelineRu
         base_runs_dir=options.base_runs_dir,
     )
 
-    return run_pipeline_sync(
+    return run_pipeline(
         gameweek=options.gameweek,
         output_dir=output_dir,
         per_expert_limit=options.per_expert_limit,
@@ -52,3 +56,7 @@ def run_pipeline_from_streamlit(options: StreamlitPipelineOptions) -> PipelineRu
         synthesis_enabled=options.synthesis_enabled,
         proxy_settings=proxy_settings,
     )
+
+
+def get_pipeline_status_from_streamlit() -> dict[str, Any]:
+    return get_domain_pipeline_status()

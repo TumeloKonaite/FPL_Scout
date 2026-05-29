@@ -8,7 +8,11 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from app.ui.pipeline_runner import StreamlitPipelineOptions, run_pipeline_from_streamlit
+from app.ui.pipeline_runner import (
+    StreamlitPipelineOptions,
+    get_pipeline_status_from_streamlit,
+    run_pipeline_from_streamlit,
+)
 from app.ui.report_loader import (
     ReportBundle,
     load_report_bundle,
@@ -340,6 +344,9 @@ def render_conclusion(conclusion: str) -> None:
 
 def render_pipeline_controls(default_gameweek: int | None, runs_dir: str) -> ReportBundle | None:
     st.sidebar.header("Run Pipeline")
+    pipeline_status = get_pipeline_status_from_streamlit()
+    st.sidebar.caption(f"Pipeline status: {pipeline_status['status']}")
+
     with st.sidebar.form("pipeline-run-form"):
         gameweek = st.number_input(
             "Gameweek",
@@ -382,14 +389,22 @@ def render_pipeline_controls(default_gameweek: int | None, runs_dir: str) -> Rep
     )
 
     with st.spinner(f"Running pipeline for GW{options.gameweek}. This can take a little while..."):
-        result = run_pipeline_from_streamlit(options)
+        response = run_pipeline_from_streamlit(options)
 
-    st.sidebar.success(f"Generated run: {result.run_path}")
+    status = get_pipeline_status_from_streamlit()
+    if response["status"] != "completed" or response["result"] is None:
+        st.sidebar.error(f"Pipeline failed: {response['error'] or status['last_error']}")
+        return None
+
+    result = response["result"]
+    run_path = result["run_path"]
+
+    st.sidebar.success(f"Generated run: {run_path}")
     st.sidebar.caption(
-        f"Processed {len(result.expert_outputs)}/{len(result.input_jobs)} jobs from "
-        f"{len(result.discovered_videos)} discovered videos."
+        f"Processed {result['expert_output_count']}/{result['input_job_count']} jobs from "
+        f"{result['discovered_video_count']} discovered videos."
     )
-    return load_report_bundle(input_path=result.run_path, runs_dir=runs_dir)
+    return load_report_bundle(input_path=run_path, runs_dir=runs_dir)
 
 
 def main() -> None:

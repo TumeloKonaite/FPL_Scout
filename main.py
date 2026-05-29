@@ -1,7 +1,11 @@
-from __future__ import annotations
+from src.app.main import app
 
-from app.main import main
+
+def main() -> None:
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

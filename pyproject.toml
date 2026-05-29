@@ -38,3 +38,6 @@ include = ["app*", "src*"]
 
 [tool.ruff]
 extend-exclude = ["notebooks"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

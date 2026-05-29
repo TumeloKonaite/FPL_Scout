@@ -1,30 +1,7 @@
 export type ReportSummary = {
   run_id: string;
   created_at?: string | null;
-  gameweek?: number;
   title?: string | null;
-};
-
-export type SuggestedTeam = {
-  formation?: string;
-  players: unknown[];
-};
-
-export type CaptaincyRecommendation = {
-  captain: unknown;
-  vice_captain?: unknown;
-  reasoning?: string;
-};
-
-export type TransferRecommendation = {
-  player_in?: unknown;
-  player_out?: unknown;
-  reasoning?: string;
-};
-
-export type ExpertConsensus = {
-  summary?: string;
-  sources?: unknown[];
 };
 
 export type FinalRecommendation = {
@@ -33,15 +10,34 @@ export type FinalRecommendation = {
   confidence?: number | null;
 };
 
+export type FinalDisagreement = {
+  topic: string;
+  summary: string;
+  sides?: string[];
+};
+
+export type FinalExpertTeamReveal = {
+  expert_name: string;
+  summary: string;
+  captain?: string | null;
+  vice_captain?: string | null;
+  transfers_in?: string[];
+  transfers_out?: string[];
+  confidence?: number | null;
+};
+
 export type Report = {
-  run_id?: string;
-  created_at?: string | null;
   gameweek?: number;
-  title?: string | null;
-  suggested_team?: SuggestedTeam;
-  captaincy?: CaptaincyRecommendation | FinalRecommendation[];
-  transfers?: TransferRecommendation[] | FinalRecommendation[];
-  expert_consensus?: ExpertConsensus;
+  overview: string;
+  transfers?: FinalRecommendation[];
+  captaincy?: FinalRecommendation[];
+  chip_strategy?: FinalRecommendation[];
+  fixture_notes?: string[];
+  disagreements?: FinalDisagreement[];
+  conditional_advice?: string[];
+  wait_for_news?: string[];
+  expert_team_reveals?: FinalExpertTeamReveal[];
+  conclusion: string;
   [key: string]: unknown;
 };
 

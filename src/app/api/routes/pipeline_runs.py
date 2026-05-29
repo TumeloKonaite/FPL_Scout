@@ -16,6 +16,7 @@ def create_pipeline_run(request: PipelineRunRequest) -> PipelineRunResponse:
         run_id=result["run_id"],
         status=result["status"],
         result=result.get("result"),
+        error=result.get("error"),
     )
 
 
@@ -30,4 +31,5 @@ def get_pipeline_run(run_id: str) -> PipelineRunResponse:
         run_id=result["run_id"],
         status=result["status"],
         result=result.get("result"),
+        error=result.get("error"),
     )

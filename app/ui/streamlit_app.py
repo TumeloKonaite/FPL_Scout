@@ -14,7 +14,10 @@ from app.ui.report_loader import (
     load_report_bundle,
     parse_streamlit_args,
 )
-from app.ui.team_of_week import SuggestedTeamOfWeek, build_suggested_team_of_week
+from src.app.domain.reports.team_of_week import (
+    SuggestedTeamOfWeek,
+    build_suggested_team_of_week,
+)
 from src.schemas.final_report import (
     FinalDisagreement,
     FinalExpertTeamReveal,

@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from app.ui.team_of_week import build_suggested_team_of_week
+from src.app.domain.reports.team_of_week import (
+    PlayerCandidate,
+    TeamConstraints,
+    build_suggested_team_of_week,
+    rank_players,
+)
 from src.schemas.aggregate_report import ExpertTeamRevealItem
 
 
@@ -86,9 +91,63 @@ def test_build_suggested_team_of_week_merges_player_aliases() -> None:
     assert team.vice_captain == "Erling Haaland"
 
 
-def test_build_suggested_team_of_week_returns_none_when_no_starters_exist() -> None:
-    team = build_suggested_team_of_week(
-        [_reveal("A", [], ["Bench"], captain="Cap", vice="Vice")]
+def test_rank_players_returns_vote_order_with_metadata() -> None:
+    ranked = rank_players(
+        [
+            _reveal("A", ["Saka", "Palmer"], []),
+            _reveal("B", ["Bukayo Saka"], []),
+        ],
+        player_pool=[PlayerCandidate("Bukayo Saka", position="MID", price=9.8)],
     )
 
-    assert team is None
+    assert ranked[0].name == "Bukayo Saka"
+    assert ranked[0].votes == 2
+    assert ranked[0].position == "MID"
+    assert ranked[0].price == 9.8
+
+
+def test_build_suggested_team_of_week_applies_budget_constraint() -> None:
+    team = build_suggested_team_of_week(
+        [
+            _reveal("A", ["Premium", "Value", "Cheap"], []),
+            _reveal("B", ["Premium", "Value", "Cheap"], []),
+        ],
+        player_pool=[
+            PlayerCandidate("Premium", position="MID", price=10.0),
+            PlayerCandidate("Value", position="MID", price=6.0),
+            PlayerCandidate("Cheap", position="FWD", price=4.5),
+        ],
+        constraints=TeamConstraints(budget=10.5, max_players=3),
+    )
+
+    assert team is not None
+    assert team.starting_xi == ["Cheap", "Value"]
+    assert team.total_price == 10.5
+
+
+def test_build_suggested_team_of_week_applies_position_constraint() -> None:
+    team = build_suggested_team_of_week(
+        [
+            _reveal("A", ["Mid A", "Mid B", "Def A", "Def B"], []),
+            _reveal("B", ["Mid A", "Mid B", "Def A", "Def B"], []),
+        ],
+        player_pool=[
+            PlayerCandidate("Mid A", position="MID", price=7.0),
+            PlayerCandidate("Mid B", position="MID", price=7.0),
+            PlayerCandidate("Def A", position="DEF", price=5.0),
+            PlayerCandidate("Def B", position="DEF", price=5.0),
+        ],
+        constraints=TeamConstraints(max_players=4, max_positions={"MID": 1}),
+    )
+
+    assert team is not None
+    assert team.position_counts["MID"] == 1
+    assert "Mid A" in team.starting_xi
+    assert "Mid B" not in team.starting_xi
+
+
+def test_build_suggested_team_of_week_handles_empty_or_missing_data() -> None:
+    assert build_suggested_team_of_week([]) is None
+    assert build_suggested_team_of_week(
+        [_reveal("A", [], ["Bench"], captain="Cap", vice="Vice")]
+    ) is None

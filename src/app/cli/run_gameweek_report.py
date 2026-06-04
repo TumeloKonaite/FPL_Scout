@@ -13,7 +13,7 @@ from src.services.pipeline_service import PipelineServiceError, run_pipeline_syn
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python -m app.main",
+        prog="python -m src.app.cli.run_gameweek_report",
         description="Run the automated FPL gameweek report pipeline from YouTube expert sources.",
     )
     parser.add_argument("--gameweek", type=int, required=True, help="Gameweek number to run.")
@@ -92,3 +92,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
 
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

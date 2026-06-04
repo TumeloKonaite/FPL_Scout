@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from app.cli.run_gameweek_report import build_parser, main
+from src.app.cli.run_gameweek_report import build_parser, main
 from src.adapters.transcript_api import WebshareProxySettings
 from src.schemas.aggregate_report import DisagreementReport
 from src.schemas.expert_analysis import ExpertVideoAnalysis
@@ -120,13 +120,13 @@ def test_cli_loads_dotenv_before_reading_proxy_settings(tmp_path) -> None:
         return WebshareProxySettings(enabled=False)
 
     with patch(
-        "app.cli.run_gameweek_report.load_dotenv",
+        "src.app.cli.run_gameweek_report.load_dotenv",
         side_effect=_fake_load_dotenv,
     ), patch(
-        "app.cli.run_gameweek_report.load_webshare_proxy_settings",
+        "src.app.cli.run_gameweek_report.load_webshare_proxy_settings",
         side_effect=_fake_load_proxy_settings,
     ), patch(
-        "app.cli.run_gameweek_report.run_pipeline_sync",
+        "src.app.cli.run_gameweek_report.run_pipeline_sync",
         return_value=result,
     ):
         main(
@@ -170,9 +170,9 @@ def test_cli_smoke_test_reports_success_and_passes_expected_arguments(capsys, tm
     )
 
     with patch(
-        "app.cli.run_gameweek_report.load_webshare_proxy_settings",
+        "src.app.cli.run_gameweek_report.load_webshare_proxy_settings",
         return_value=proxy_settings,
-    ), patch("app.cli.run_gameweek_report.run_pipeline_sync", return_value=result) as mocked_run:
+    ), patch("src.app.cli.run_gameweek_report.run_pipeline_sync", return_value=result) as mocked_run:
         exit_code = main(
             [
                 "--gameweek",
@@ -280,7 +280,7 @@ def test_cli_end_to_end_mocked_pipeline_run_persists_outputs(tmp_path) -> None:
 
 def test_cli_returns_readable_failure_message(capsys, tmp_path) -> None:
     with patch(
-        "app.cli.run_gameweek_report.run_pipeline_sync",
+        "src.app.cli.run_gameweek_report.run_pipeline_sync",
         side_effect=PipelineServiceError(
             "Pipeline could not create any usable video analysis jobs from YouTube sources."
         ),

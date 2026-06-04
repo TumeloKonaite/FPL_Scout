@@ -17,9 +17,7 @@ dependencies = [
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
     "openai-agents>=0.13.4",
-    "pandas>=3.0.2",
     "pydantic>=2.12.5",
-    "streamlit>=1.45.1",
     "uvicorn>=0.42.0",
     "youtube-transcript-api>=1.2.4",
     "yt-dlp>=2026.3.17",
@@ -34,7 +32,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*", "src*"]
+include = ["src*"]
 
 [tool.ruff]
 extend-exclude = ["notebooks"]

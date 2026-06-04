@@ -32,6 +32,7 @@ def test_create_pipeline_run_returns_run_id_and_status(monkeypatch) -> None:
         "run_id": "run-1",
         "status": "completed",
         "result": {"gameweek": 32},
+        "error": None,
     }
     assert calls == [{"gameweek": 32}]
 
@@ -54,7 +55,7 @@ def test_get_pipeline_run_returns_saved_run(monkeypatch) -> None:
     response = client.get("/api/pipeline-runs/run-1")
 
     assert response.status_code == 200
-    assert response.json() == saved_runs["run-1"]
+    assert response.json() == {**saved_runs["run-1"], "error": None}
 
 
 def test_get_pipeline_run_returns_404_for_unknown_run_id(monkeypatch) -> None:
@@ -94,3 +95,26 @@ def test_create_pipeline_run_delegates_to_domain_service(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.json()["run_id"] == "domain-generated-id"
     assert called is True
+
+
+def test_create_pipeline_run_returns_failure_error(monkeypatch) -> None:
+    def fake_run_pipeline(*, input_data: dict[str, Any] | None) -> dict[str, Any]:
+        return {
+            "run_id": "failed-run",
+            "status": "failed",
+            "result": None,
+            "error": "Pipeline run requires gameweek and output_dir",
+        }
+
+    monkeypatch.setattr(pipeline_runs, "run_pipeline", fake_run_pipeline)
+    client = TestClient(create_app())
+
+    response = client.post("/api/pipeline-runs", json={"input_data": {}})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "run_id": "failed-run",
+        "status": "failed",
+        "result": None,
+        "error": "Pipeline run requires gameweek and output_dir",
+    }

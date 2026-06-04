@@ -1,21 +1,11 @@
 services:
-  ui:
+  api:
     build:
       context: .
     image: fpl-agent:latest
     env_file:
       - .env
     ports:
-      - "8501:8501"
+      - "8000:8000"
     volumes:
       - ./data:/app/data
-    command:
-      [
-        "uv",
-        "run",
-        "streamlit",
-        "run",
-        "app/ui/streamlit_app.py",
-        "--server.address=0.0.0.0",
-        "--server.port=8501",
-      ]

@@ -1,13 +1,12 @@
 # ⚽ FPL Technocrat
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![OpenAI Agents](https://img.shields.io/badge/OpenAI-Agents-412991?logo=openai&logoColor=white)](https://openai.github.io/openai-agents-python/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![uv](https://img.shields.io/badge/uv-managed-DE5FE9)](https://docs.astral.sh/uv/)
 
-AI-powered Fantasy Premier League workflow that converts expert YouTube videos into structured gameweek intelligence, reviewable artifacts, and a dashboard-ready report.
+AI-powered Fantasy Premier League workflow that converts expert YouTube videos into structured gameweek intelligence, reviewable artifacts, and a Next.js dashboard-ready report.
 
 ## Dashboard Preview
 ![FPL Technocrat dashboard preview](data/FPL_Example.png)
@@ -17,7 +16,7 @@ AI-powered Fantasy Premier League workflow that converts expert YouTube videos i
 - 🧠 Run LLM-based transcript analysis into typed, structured outputs
 - 📊 Detect consensus, disagreement, captaincy, transfers, and team-reveal patterns
 - 📝 Generate markdown and JSON gameweek reports under `data/reports/`
-- 📈 Explore results in a Streamlit dashboard and launch runs from the UI
+- 📈 Explore results in the Next.js dashboard and launch runs from the UI
 - 🐳 Run locally with `uv` or in Docker
 
 ## 🧠 Why This Matters
@@ -40,7 +39,7 @@ It is an end-to-end gameweek reporting pipeline that:
 - runs expert-analysis agents over each transcript
 - aggregates the results into consensus and disagreement views
 - writes a complete run folder with JSON artifacts and `report.md`
-- loads the final report into a Streamlit UI for inspection
+- serves generated reports through FastAPI for inspection in the Next.js frontend
 
 ## Architecture At A Glance
 ```text
@@ -60,7 +59,7 @@ Aggregate consensus + disagreements
     ↓
 Persist artifacts under data/reports/
     ↓
-Review in Streamlit dashboard
+Review in Next.js dashboard
 ```
 
 ## Outputs
@@ -90,15 +89,23 @@ These directories are created automatically when the API starts. Their generated
 ```bash
 cp .env.example .env
 make install
+make install-frontend
 make test
-make run-ui
+make run-api
 ```
 
-Open the Streamlit app at `http://localhost:8501`.
+In another terminal, start the frontend:
+
+```bash
+make run-frontend
+```
+
+Open the Next.js app at `http://localhost:3000`. Next.js is the app's only frontend; the FastAPI backend serves report and pipeline APIs.
 
 ## Prerequisites
 - Python `3.12`
 - [`uv`](https://docs.astral.sh/uv/)
+- Node.js and npm for the Next.js frontend
 - Docker Desktop or Docker Engine if you want the container workflow
 
 ## Environment Variables
@@ -136,12 +143,18 @@ Run lint checks:
 make lint
 ```
 
+Install frontend dependencies:
+
+```bash
+make install-frontend
+```
+
 ## Main Execution Paths
 ### CLI Pipeline
 Source of truth command:
 
 ```bash
-uv run python -m app.main --gameweek 32 --output-dir data/reports/gw32-example --per-expert-limit 2 --no-synthesis
+uv run python -m src.app.cli.run_gameweek_report --gameweek 32 --output-dir data/reports/gw32-example --per-expert-limit 2 --no-synthesis
 ```
 
 Equivalent Make target:
@@ -163,27 +176,44 @@ What the CLI does:
 - writes run artifacts to the output directory
 - prints a human-readable report location when complete
 
-### Streamlit Dashboard
+### Backend API
 Source of truth command:
 
 ```bash
-uv run streamlit run app/ui/streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+uv run uvicorn src.app.main:app --host 0.0.0.0 --port 8000
 ```
 
 Equivalent Make target:
 
 ```bash
-make run-ui
+make run-api
 ```
 
-To load a specific run folder or artifact:
+The API exposes:
+- `GET /api/reports`: list generated reports in `data/reports/`
+- `GET /api/reports/latest`: load the newest report
+- `GET /api/reports/{run_id}`: load a specific historical report
+- `POST /api/pipeline-runs`: trigger a pipeline run from JSON input
+
+### Next.js Frontend
+Install dependencies once:
 
 ```bash
-uv run streamlit run app/ui/streamlit_app.py --server.address 0.0.0.0 --server.port 8501 -- --input data/reports/gw32
-make run-ui INPUT=data/reports/gw32
+npm --prefix frontend install
 ```
 
-The UI can also launch a fresh pipeline run from the sidebar and reload the resulting report into the same session.
+Run the frontend:
+
+```bash
+npm --prefix frontend run dev
+make run-frontend
+```
+
+Open `http://localhost:3000`. The frontend defaults to `http://localhost:8000` for the FastAPI backend. To use another API URL, set `NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local`.
+
+The frontend can load the latest report, select historical reports, render all final report sections, trigger pipeline runs, and display loading, empty, and API error states.
+
+Trigger a pipeline run from the UI by opening `/pipeline-runner`, entering the gameweek and run limits, and choosing **Run Pipeline**. The same flow is available through `POST /api/pipeline-runs` when you want to trigger it programmatically.
 
 ### Test Suite
 Source of truth command:
@@ -198,6 +228,14 @@ Equivalent Make target:
 make test
 ```
 
+Frontend verification:
+
+```bash
+npm --prefix frontend run test
+npm --prefix frontend run lint
+npm --prefix frontend run build
+```
+
 ## Docker Workflow
 Build the image:
 
@@ -205,16 +243,16 @@ Build the image:
 make docker-build
 ```
 
-Run the Streamlit UI in Docker:
+Run the backend API in Docker:
 
 ```bash
 make docker-run
 ```
 
-Then open `http://localhost:8501`.
+Then open `http://localhost:8000/docs` for the API docs. Run the Next.js frontend locally with `make run-frontend`.
 
 Notes:
-- `docker-compose.yml` is included because it makes local UI startup, `.env` loading, and a persistent `data/` directory much easier for contributors.
+- `docker-compose.yml` is included because it makes local API startup, `.env` loading, and a persistent `data/` directory much easier for contributors.
 - The container mounts `./data` into `/app/data`, so generated artifacts stay on your host machine.
 - If you prefer plain Docker for the CLI, you can override the container command:
 
@@ -222,7 +260,7 @@ Notes:
 docker run --rm -it --env-file .env \
   -v "$(pwd)/data:/app/data" \
   fpl-agent:latest \
-  uv run python -m app.main --gameweek 32 --output-dir data/reports/gw32-docker --per-expert-limit 2 --no-synthesis
+  uv run python -m src.app.cli.run_gameweek_report --gameweek 32 --output-dir data/reports/gw32-docker --per-expert-limit 2 --no-synthesis
 ```
 
 Stop the Compose service with:
@@ -235,7 +273,7 @@ make docker-down
 1. Update `.env` if provider credentials or proxy settings changed.
 2. Run the weekly pipeline with `make run-cli GAMEWEEK=<n> OUTPUT_DIR=data/reports/gw<n>`.
 3. Review `data/reports/gw<n>/report.md` and the corresponding JSON artifacts.
-4. Open the dashboard with `make run-ui INPUT=data/reports/gw<n>` for visual review.
+4. Start the API with `make run-api` and the frontend with `make run-frontend` for visual review.
 5. Re-run with different filters if you want to limit experts or compare outputs.
 
 ## Troubleshooting
@@ -246,9 +284,9 @@ make docker-down
 - Successful transcripts are cached under `data/transcripts/`.
 
 ## Key Code Paths
-- CLI entry: [app/cli/run_gameweek_report.py](/home/l/projects/fpl_agent/app/cli/run_gameweek_report.py)
-- Streamlit app: [app/ui/streamlit_app.py](/home/l/projects/fpl_agent/app/ui/streamlit_app.py)
-- Streamlit-triggered pipeline runs: [app/ui/pipeline_runner.py](/home/l/projects/fpl_agent/app/ui/pipeline_runner.py)
+- CLI entry: [src/app/cli/run_gameweek_report.py](/home/l/projects/fpl_agent/src/app/cli/run_gameweek_report.py)
+- FastAPI app: [src/app/main.py](/home/l/projects/fpl_agent/src/app/main.py)
+- Next.js frontend: [frontend/app/dashboard/page.tsx](/home/l/projects/fpl_agent/frontend/app/dashboard/page.tsx)
 - Pipeline orchestration: [src/services/pipeline_service.py](/home/l/projects/fpl_agent/src/services/pipeline_service.py)
 - Expert transcript analysis: [src/services/expert_analysis_service.py](/home/l/projects/fpl_agent/src/services/expert_analysis_service.py)
 - YouTube ingestion: [src/services/transcript_ingestion_service.py](/home/l/projects/fpl_agent/src/services/transcript_ingestion_service.py)

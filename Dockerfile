@@ -13,6 +13,6 @@ COPY . .
 
 RUN uv sync --frozen --no-dev && mkdir -p data/reports data/raw data/processed data/transcripts
 
-EXPOSE 8501
+EXPOSE 8000
 
-CMD ["uv", "run", "streamlit", "run", "app/ui/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+CMD ["uv", "run", "uvicorn", "src.app.main:app", "--host=0.0.0.0", "--port=8000"]

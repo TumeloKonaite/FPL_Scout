@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![uv](https://img.shields.io/badge/uv-managed-DE5FE9)](https://docs.astral.sh/uv/)
 
-AI-powered Fantasy Premier League workflow that converts expert YouTube videos into structured gameweek intelligence, reviewable artifacts, and a dashboard-ready report.
+AI-powered Fantasy Premier League workflow that converts expert YouTube videos into structured gameweek intelligence, reviewable artifacts, and a Next.js dashboard-ready report.
 
 ## Dashboard Preview
 ![FPL Technocrat dashboard preview](data/FPL_Example.png)
@@ -16,7 +16,7 @@ AI-powered Fantasy Premier League workflow that converts expert YouTube videos i
 - 🧠 Run LLM-based transcript analysis into typed, structured outputs
 - 📊 Detect consensus, disagreement, captaincy, transfers, and team-reveal patterns
 - 📝 Generate markdown and JSON gameweek reports under `data/reports/`
-- 📈 Explore results in a Next.js dashboard and launch runs from the UI
+- 📈 Explore results in the Next.js dashboard and launch runs from the UI
 - 🐳 Run locally with `uv` or in Docker
 
 ## 🧠 Why This Matters
@@ -100,7 +100,7 @@ In another terminal, start the frontend:
 make run-frontend
 ```
 
-Open the Next.js app at `http://localhost:3000`.
+Open the Next.js app at `http://localhost:3000`. Next.js is the app's only frontend; the FastAPI backend serves report and pipeline APIs.
 
 ## Prerequisites
 - Python `3.12`
@@ -213,6 +213,8 @@ Open `http://localhost:3000`. The frontend defaults to `http://localhost:8000` f
 
 The frontend can load the latest report, select historical reports, render all final report sections, trigger pipeline runs, and display loading, empty, and API error states.
 
+Trigger a pipeline run from the UI by opening `/pipeline-runner`, entering the gameweek and run limits, and choosing **Run Pipeline**. The same flow is available through `POST /api/pipeline-runs` when you want to trigger it programmatically.
+
 ### Test Suite
 Source of truth command:
 
@@ -224,6 +226,14 @@ Equivalent Make target:
 
 ```bash
 make test
+```
+
+Frontend verification:
+
+```bash
+npm --prefix frontend run test
+npm --prefix frontend run lint
+npm --prefix frontend run build
 ```
 
 ## Docker Workflow

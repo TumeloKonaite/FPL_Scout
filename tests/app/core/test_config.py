@@ -3,7 +3,14 @@ from __future__ import annotations
 from src.app.core.config import Settings, bootstrap_data_directories, get_settings
 
 
-def test_settings_loads_values_from_env_file(tmp_path) -> None:
+def test_settings_loads_values_from_env_file(tmp_path, monkeypatch) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_MODEL", raising=False)
+    monkeypatch.delenv("DATA_DIR", raising=False)
+    monkeypatch.delenv("REPORTS_DIR", raising=False)
+    monkeypatch.delenv("CORS_ORIGINS", raising=False)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+
     env_file = tmp_path / ".env"
     env_file.write_text(
         "\n".join(

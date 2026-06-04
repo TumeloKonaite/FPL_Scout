@@ -1,6 +1,6 @@
 # FPL Technocrat Frontend
 
-Next.js frontend for the FPL Technocrat report dashboard and pipeline runner.
+Next.js is the only frontend for the FPL Technocrat report dashboard and pipeline runner.
 
 ## Pages
 
@@ -47,6 +47,12 @@ make run-api
 Generated report artifacts are loaded from the backend's configured `data/reports/` directory.
 
 ## Verification
+
+Run the frontend parity tests:
+
+```bash
+npm run test
+```
 
 Build the app:
 

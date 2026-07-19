@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-from functools import lru_cache
 from typing import Sequence
 
 from agents import Runner
 
+from src.agents.model_factory import close_openai_model
 from src.agents.expert_video_agent import build_expert_video_agent
 from src.schemas.expert_analysis import ExpertVideoAnalysis
 from src.schemas.video_job import VideoAnalysisJob
@@ -14,9 +14,8 @@ from src.schemas.video_job import VideoAnalysisJob
 MIN_TRANSCRIPT_CHAR_LENGTH = 40
 
 
-@lru_cache(maxsize=1)
 def get_analysis_agent():
-    """Build the analysis agent lazily to avoid import-time client setup."""
+    """Build an analysis agent with a client scoped to the current event loop."""
     return build_expert_video_agent()
 
 
@@ -73,7 +72,11 @@ async def analyze_video_job(job: VideoAnalysisJob) -> ExpertVideoAnalysis:
         return _build_minimal_analysis(job)
 
     prompt = _build_analysis_prompt(job)
-    result = await Runner.run(get_analysis_agent(), prompt)
+    agent = get_analysis_agent()
+    try:
+        result = await Runner.run(agent, prompt)
+    finally:
+        await close_openai_model(agent.model)
 
     if not isinstance(result.final_output, ExpertVideoAnalysis):
         raise TypeError("Agent did not return ExpertVideoAnalysis")

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from agents import Agent, Runner
 
-from src.agents.model_factory import build_openai_model
+from src.agents.model_factory import build_openai_model, close_openai_model
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 
 
@@ -46,10 +46,13 @@ async def run_final_synthesis(report: AggregatedFPLReport) -> FinalGameweekRepor
     agent = build_final_synthesis_agent()
     input_text = format_aggregated_report_input(report)
 
-    result = await Runner.run(
-        agent,
-        input=f"Aggregated FPL report:\n\n{input_text}",
-    )
+    try:
+        result = await Runner.run(
+            agent,
+            input=f"Aggregated FPL report:\n\n{input_text}",
+        )
+    finally:
+        await close_openai_model(agent.model)
 
     if not isinstance(result.final_output, FinalGameweekReport):
         raise TypeError("Agent did not return FinalGameweekReport")

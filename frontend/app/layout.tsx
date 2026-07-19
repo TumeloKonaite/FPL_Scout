@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "FPL Technocrat",
+  title: { default: "FPL Technocrat", template: "%s · FPL Technocrat" },
   description: "Fantasy Premier League reporting and decision support"
 };
 

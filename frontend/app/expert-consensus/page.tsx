@@ -1,25 +1,26 @@
+"use client";
+
 import { PageShell } from "@/components/PageShell";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ReportViewer";
+import { useLatestReport } from "@/components/useLatestReport";
 
 export default function ExpertConsensusPage() {
+  const { data, error, loading } = useLatestReport();
+  const report = data?.report;
   return (
     <PageShell
       title="Expert Consensus"
-      description="Review agreement, disagreement, and emerging themes across tracked FPL experts."
+      eyebrow="Expert room"
+      description="See where the expert panel aligns, where it splits, and what requires late news."
     >
-      <section className="placeholder-grid" aria-label="Expert consensus placeholders">
-        <div className="placeholder-card">
-          <h2>Consensus Themes</h2>
-          <p>Surface repeated recommendations and shared strategic direction.</p>
-        </div>
-        <div className="placeholder-card">
-          <h2>Disagreements</h2>
-          <p>Highlight where experts split on picks, captaincy, transfers, or chip timing.</p>
-        </div>
-        <div className="placeholder-card">
-          <h2>Source Coverage</h2>
-          <p>Track which creator videos contributed to the latest analysis.</p>
-        </div>
-      </section>
+      {loading ? <LoadingState label="Loading expert consensus..." /> : null}
+      {error ? <ErrorState label={error} /> : null}
+      {!loading && !error && !report ? <EmptyState label="No expert consensus report is available." /> : null}
+      {report ? <section className="insight-grid" aria-label="Expert consensus">
+        <article className="insight-card featured"><span className="rank-badge">✓</span><h2>Consensus themes</h2><p>{report.overview}</p></article>
+        <article className="insight-card"><span className="rank-badge">≠</span><h2>Disagreements</h2>{report.disagreements?.length ? report.disagreements.map((item, index) => <p key={`${item.topic}-${index}`}><strong>{item.topic}:</strong> {item.summary}</p>) : <p>No major disagreements were identified.</p>}</article>
+        <article className="insight-card"><span className="rank-badge">!</span><h2>Wait for news</h2>{report.wait_for_news?.length ? report.wait_for_news.map((item, index) => <p key={`${item}-${index}`}>{item}</p>) : <p>No late-news flags are open.</p>}</article>
+      </section> : null}
     </PageShell>
   );
 }

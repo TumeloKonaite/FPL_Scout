@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     RAW_DATA_DIR: str = Field(default="data/raw")
     PROCESSED_DATA_DIR: str = Field(default="data/processed")
     TRANSCRIPTS_DIR: str = Field(default="data/transcripts")
+    RUNS_DIR: str = Field(default="data/runs")
+
+    PIPELINE_API_TOKEN: str = Field(default="")
 
     CORS_ORIGINS: List[str] = Field(
         default=[
@@ -40,9 +43,12 @@ class Settings(BaseSettings):
             "RAW_DATA_DIR": f"{data_dir}/raw",
             "PROCESSED_DATA_DIR": f"{data_dir}/processed",
             "TRANSCRIPTS_DIR": f"{data_dir}/transcripts",
+            "RUNS_DIR": f"{data_dir}/runs",
         }
         for field_name, value in derived.items():
-            if field_name not in self.model_fields_set:
+            configured = getattr(self, field_name)
+            default = type(self).model_fields[field_name].default
+            if field_name not in self.model_fields_set or configured == default:
                 setattr(self, field_name, value)
         return self
 
@@ -53,6 +59,7 @@ class Settings(BaseSettings):
             self.RAW_DATA_DIR,
             self.PROCESSED_DATA_DIR,
             self.TRANSCRIPTS_DIR,
+            self.RUNS_DIR,
         )
 
 

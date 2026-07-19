@@ -54,9 +54,11 @@ test("pipeline runner triggers backend runs and surfaces failures", () => {
   const runner = source("app/pipeline-runner/page.tsx");
 
   assert.match(runner, /runPipeline\(inputData\)/);
+  assert.match(runner, /pollPipelineRun\(accepted, \{ onUpdate: setPipelineRun \}\)/);
   assert.match(runner, /setError\(result\.error \|\| "Pipeline run failed\."\)/);
   assert.match(runner, /ErrorState label=\{error\}/);
-  assert.match(runner, /LoadingState label="Pipeline is running\. This can take a while\.\.\."/);
+  assert.match(runner, /pipelineRun\?\.status \?\? "pending"/);
+  assert.match(runner, /"Retry Pipeline"/);
   assert.match(runner, /No pipeline run has been started in this browser session\./);
 });
 
@@ -67,4 +69,24 @@ test("API errors prefer backend detail messages", () => {
   assert.match(apiError, /"detail" in detail/);
   assert.match(apiError, /return detail\.detail/);
   assert.match(apiError, /return `\$\{error\.status\} \$\{error\.statusText\}`/);
+});
+
+test("backend proxy injects mutation authentication server-side", () => {
+  const nextConfig = source("next.config.ts");
+  const route = source("app/backend/[...path]/route.ts");
+
+  assert.match(nextConfig, /output:\s*"standalone"/);
+  assert.match(route, /process\.env\.API_PROXY_TARGET/);
+  assert.match(route, /process\.env\.PIPELINE_API_TOKEN/);
+  assert.match(route, /headers\.set\("authorization", `Bearer/);
+  assert.doesNotMatch(source("src/lib/api.ts"), /PIPELINE_API_TOKEN/);
+});
+
+test("polling stops on terminal states and has retry and timeout limits", () => {
+  const api = source("src/lib/api.ts");
+
+  assert.match(api, /current\.status === "pending" \|\| current\.status === "running"/);
+  assert.match(api, /maxConsecutiveErrors \?\? 3/);
+  assert.match(api, /Date\.now\(\) >= deadline/);
+  assert.match(api, /current = await getPipelineRun\(current\.run_id\)/);
 });

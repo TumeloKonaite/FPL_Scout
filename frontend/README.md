@@ -30,13 +30,21 @@ Open `http://localhost:3000`.
 
 ## Backend Configuration
 
-The API helper in `lib/api.ts` defaults to `http://localhost:8000`.
+The frontend proxies `/backend/*` to `http://127.0.0.1:8000` by default. This keeps
+browser requests same-origin and works when the UI is opened through a WSL or LAN IP.
 
-To point the frontend at another FastAPI URL, create `frontend/.env.local`:
+To point the server-side proxy at another FastAPI URL, create `frontend/.env.local`:
 
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+API_PROXY_TARGET=http://127.0.0.1:8000
 ```
+
+For a Vercel deployment backed by Modal, set `API_PROXY_TARGET` to the public Modal
+API URL and set `PIPELINE_API_TOKEN` to the same value stored in the Modal secret.
+Both are server-only variables and must not use a `NEXT_PUBLIC_*` prefix.
+
+`NEXT_PUBLIC_API_BASE_URL` remains available when a direct browser-to-API connection
+is required, but that API must then allow the frontend origin through CORS.
 
 Start the FastAPI backend from the repository root:
 

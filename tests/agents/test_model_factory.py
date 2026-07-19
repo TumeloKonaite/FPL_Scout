@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.agents.model_factory import (
+    OPENAI_API_BASE_URL,
     build_openai_compatible_model,
     build_openai_model,
+    close_openai_model,
 )
 from src.app.core.config import Settings
 
@@ -33,7 +35,7 @@ def test_build_openai_compatible_model_uses_default_configuration() -> None:
         result = build_openai_compatible_model()
 
     assert result is fake_model
-    mock_client_class.assert_called_once_with(api_key="unused", base_url=None)
+    mock_client_class.assert_called_once_with(api_key="unused", base_url=OPENAI_API_BASE_URL)
     mock_model_class.assert_called_once_with(
         model=DEFAULT_MODEL,
         openai_client=client,
@@ -93,7 +95,9 @@ def test_build_openai_compatible_model_prefers_explicit_model_name() -> None:
         result = build_openai_compatible_model("explicit-model")
 
     assert result is fake_model
-    mock_client_class.assert_called_once_with(api_key="provider-key", base_url=None)
+    mock_client_class.assert_called_once_with(
+        api_key="provider-key", base_url=OPENAI_API_BASE_URL
+    )
     mock_model_class.assert_called_once_with(
         model="explicit-model",
         openai_client=client,
@@ -123,8 +127,21 @@ def test_build_openai_model_uses_configured_openai_model_without_provider_base_u
         result = build_openai_model()
 
     assert result is fake_model
-    mock_client_class.assert_called_once_with(api_key="openai-key")
+    mock_client_class.assert_called_once_with(
+        api_key="openai-key", base_url=OPENAI_API_BASE_URL
+    )
     mock_model_class.assert_called_once_with(
         model="glm-4.7:cloud",
         openai_client=client,
     )
+
+
+def test_close_openai_model_closes_owned_client() -> None:
+    import asyncio
+
+    model = MagicMock()
+    model._client.close = AsyncMock()
+
+    asyncio.run(close_openai_model(model))
+
+    model._client.close.assert_awaited_once_with()

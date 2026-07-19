@@ -2,17 +2,24 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from threading import Thread
 from typing import Any
 from uuid import uuid4
 
-from src.adapters.transcript_api import WebshareProxySettings
+from src.adapters.transcript_api import WebshareProxySettings, load_webshare_proxy_settings
 from src.app.core.config import get_settings
+from src.app.infrastructure.storage.pipeline_run_store import PipelineRunStore
+from src.app.infrastructure.storage.runtime_volume import (
+    commit_runtime_volume,
+    reload_runtime_volume,
+)
 from src.services.pipeline_service import (
     PipelineRunResult,
     run_pipeline_sync as execute_pipeline_sync,
 )
 
 PipelineExecutor = Callable[..., PipelineRunResult]
+PipelineDispatcher = Callable[[str, dict[str, Any]], None]
 _UNSET = object()
 
 
@@ -150,6 +157,9 @@ def run_pipeline(
     synthesis_enabled: bool = True,
     proxy_settings: WebshareProxySettings | None = None,
 ) -> dict[str, Any]:
+    if input_data is not _UNSET and proxy_settings is None:
+        proxy_settings = load_webshare_proxy_settings()
+
     return _default_pipeline_service.run_pipeline(
         gameweek=gameweek,
         output_dir=output_dir,
@@ -163,11 +173,103 @@ def run_pipeline(
 
 
 def get_pipeline_status(run_id: str | None = None) -> dict[str, Any] | None:
+    if run_id is not None:
+        reload_runtime_volume()
+        return PipelineRunStore().get(run_id)
     return _default_pipeline_service.get_pipeline_status(run_id)
+
+
+def _validate_api_input(input_data: dict[str, Any] | None) -> dict[str, Any]:
+    payload = dict(input_data or {})
+    gameweek = payload.get("gameweek")
+    if isinstance(gameweek, bool) or not isinstance(gameweek, int) or not 1 <= gameweek <= 38:
+        raise ValueError("gameweek must be an integer between 1 and 38")
+    for field_name in ("per_expert_limit", "expert_count"):
+        value = payload.get(field_name)
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, int) or value < 1
+        ):
+            raise ValueError(f"{field_name} must be a positive integer")
+    return payload
+
+
+def execute_pipeline_run(
+    run_id: str,
+    input_data: dict[str, Any],
+    *,
+    executor: PipelineExecutor = execute_pipeline_sync,
+    store: PipelineRunStore | None = None,
+) -> dict[str, Any]:
+    """Execute one previously-created run; intended for a background worker."""
+    run_store = store or PipelineRunStore()
+    payload = _validate_api_input(input_data)
+    reload_runtime_volume()
+    run_store.update(run_id, "running")
+    commit_runtime_volume()
+
+    try:
+        settings = get_settings()
+        gameweek = int(payload["gameweek"])
+        output_dir = Path(settings.REPORTS_DIR) / f"gw{gameweek}-api-{run_id}"
+        result = executor(
+            gameweek=gameweek,
+            output_dir=output_dir,
+            per_expert_limit=payload.get("per_expert_limit", 2),
+            expert_name=payload.get("expert_name"),
+            expert_count=payload.get("expert_count"),
+            synthesis_enabled=payload.get("synthesis_enabled", True),
+            proxy_settings=load_webshare_proxy_settings(),
+        )
+        record = run_store.update(
+            run_id,
+            "completed",
+            result=_pipeline_result_to_dict(result),
+        )
+    except Exception as exc:
+        record = run_store.update(run_id, "failed", error=str(exc))
+    commit_runtime_volume()
+    return record
+
+
+def _local_dispatch(run_id: str, input_data: dict[str, Any]) -> None:
+    Thread(
+        target=execute_pipeline_run,
+        args=(run_id, input_data),
+        daemon=True,
+        name=f"pipeline-{run_id}",
+    ).start()
+
+
+_pipeline_dispatcher: PipelineDispatcher = _local_dispatch
+
+
+def configure_pipeline_dispatcher(dispatcher: PipelineDispatcher | None = None) -> None:
+    """Use a remote dispatcher on Modal while retaining local background threads."""
+    global _pipeline_dispatcher
+    _pipeline_dispatcher = dispatcher or _local_dispatch
+
+
+def create_pipeline_run(input_data: dict[str, Any] | None) -> dict[str, Any]:
+    payload = _validate_api_input(input_data)
+    run_id = str(uuid4())
+    store = PipelineRunStore()
+    record = store.create(run_id, payload)
+    commit_runtime_volume()
+    try:
+        _pipeline_dispatcher(run_id, payload)
+    except Exception as exc:
+        store.update(run_id, "failed", error=f"Could not dispatch pipeline worker: {exc}")
+        commit_runtime_volume()
+        raise
+    # Always acknowledge the accepted state, even if a fast worker has started.
+    return record
 
 
 __all__ = [
     "PipelineService",
+    "configure_pipeline_dispatcher",
+    "create_pipeline_run",
+    "execute_pipeline_run",
     "get_pipeline_status",
     "run_pipeline",
 ]

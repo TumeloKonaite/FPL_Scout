@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 import { ErrorState, LoadingState } from "@/components/ReportViewer";
 import { getErrorMessage } from "@/components/apiError";
-import { runPipeline } from "@/src/lib/api";
+import { pollPipelineRun, runPipeline } from "@/src/lib/api";
 import type { PipelineRun } from "@/src/types/report";
 
 export default function PipelineRunnerPage() {
@@ -38,7 +38,9 @@ export default function PipelineRunnerPage() {
     }
 
     try {
-      const result = await runPipeline(inputData);
+      const accepted = await runPipeline(inputData);
+      setPipelineRun(accepted);
+      const result = await pollPipelineRun(accepted, { onUpdate: setPipelineRun });
       setPipelineRun(result);
       if (result.status === "failed") {
         setError(result.error || "Pipeline run failed.");
@@ -53,6 +55,7 @@ export default function PipelineRunnerPage() {
   return (
     <PageShell
       title="Pipeline Runner"
+      eyebrow="Analysis engine"
       description="Launch the FPL reporting pipeline from the browser and review the run result."
     >
       <section className="runner-layout" aria-label="Pipeline runner">
@@ -105,13 +108,17 @@ export default function PipelineRunnerPage() {
             <span>Enable final synthesis</span>
           </label>
           <button className="primary-button" disabled={isRunning} type="submit">
-            {isRunning ? "Running..." : "Run Pipeline"}
+            {isRunning ? "Analysis in progress..." : error ? "Retry Pipeline" : "Run Pipeline"}
           </button>
         </form>
 
         <div className="result-panel">
           <h2>Execution Status</h2>
-          {isRunning ? <LoadingState label="Pipeline is running. This can take a while..." /> : null}
+          {isRunning ? (
+            <LoadingState
+              label={`Pipeline is ${pipelineRun?.status ?? "pending"}. You can keep this page open while the worker runs...`}
+            />
+          ) : null}
           {error ? <ErrorState label={error} /> : null}
           {!isRunning && !error && !pipelineRun ? (
             <p className="empty-copy">No pipeline run has been started in this browser session.</p>

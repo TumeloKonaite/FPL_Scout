@@ -12,7 +12,7 @@ EXPERT_NAME ?=
 EXPERT_COUNT ?=
 SYNTHESIS ?= 0
 
-.PHONY: help install install-frontend test lint run-api run-frontend run-cli docker-build docker-run docker-down
+.PHONY: help install install-frontend test lint run-api run-frontend run-cli modal-serve modal-deploy docker-build docker-run docker-down
 
 help:
 	@printf "Available targets:\n"
@@ -22,6 +22,8 @@ help:
 	@printf "  make run-api       Start the FastAPI backend\n"
 	@printf "  make run-frontend  Start the Next.js frontend\n"
 	@printf "  make run-cli       Run the weekly pipeline CLI\n"
+	@printf "  make modal-serve   Start an ephemeral Modal development deployment\n"
+	@printf "  make modal-deploy  Deploy the API and background worker to Modal\n"
 	@printf "  make docker-build  Build the backend Docker image\n"
 	@printf "  make docker-run    Start the Docker Compose API service\n"
 	@printf "  make docker-down   Stop the Docker Compose service\n"
@@ -54,6 +56,12 @@ run-cli:
 	if [[ -n "$(EXPERT_COUNT)" ]]; then args+=(--expert-count "$(EXPERT_COUNT)"); fi; \
 	if [[ "$(SYNTHESIS)" != "1" && "$(SYNTHESIS)" != "true" && "$(SYNTHESIS)" != "TRUE" && "$(SYNTHESIS)" != "yes" && "$(SYNTHESIS)" != "YES" ]]; then args+=(--no-synthesis); fi; \
 	$(UV) run python -m src.app.cli.run_gameweek_report "$${args[@]}"
+
+modal-serve:
+	$(UV) run modal serve modal_app.py
+
+modal-deploy:
+	$(UV) run modal deploy modal_app.py
 
 docker-build:
 	docker build -t $(IMAGE) .

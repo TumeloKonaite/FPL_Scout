@@ -1,25 +1,25 @@
+"use client";
+
 import { PageShell } from "@/components/PageShell";
+import { EmptyState, ErrorState, LoadingState } from "@/components/ReportViewer";
+import { useLatestReport } from "@/components/useLatestReport";
 
 export default function TransfersPage() {
+  const { data, error, loading } = useLatestReport();
+  const moves = data?.report.transfers ?? [];
   return (
     <PageShell
       title="Transfers"
-      description="Evaluate transfer targets, sells, holds, and longer-term squad structure."
+      eyebrow="Transfer radar"
+      description="Prioritise this week’s moves with consensus strength and expert reasoning."
     >
-      <section className="placeholder-grid" aria-label="Transfer placeholders">
-        <div className="placeholder-card">
-          <h2>Buy List</h2>
-          <p>Collect recommended transfer targets with timing, price, and fixture context.</p>
-        </div>
-        <div className="placeholder-card">
-          <h2>Sell List</h2>
-          <p>Flag players with reduced appeal, poor fixtures, or expert concern.</p>
-        </div>
-        <div className="placeholder-card">
-          <h2>Move Planner</h2>
-          <p>Model one-week and multi-week transfer routes when squad data is available.</p>
-        </div>
-      </section>
+      {loading ? <LoadingState label="Loading transfer recommendations..." /> : null}
+      {error ? <ErrorState label={error} /> : null}
+      {!loading && !error && !moves.length ? <EmptyState label="No transfer recommendations are available." /> : null}
+      {moves.length ? <section className="insight-grid" aria-label="Transfer recommendations">{moves.map((move, index) => {
+        const confidence = Math.round((move.confidence ?? 0) * 100);
+        return <article className={`insight-card ${index === 0 ? "featured" : ""}`} key={`${move.title}-${index}`}><span className="rank-badge">{index + 1}</span><h2>{move.title}</h2><p>{move.rationale}</p>{move.confidence != null ? <><div className="confidence-bar"><i style={{ width: `${confidence}%` }} /></div><p>{confidence}% confidence</p></> : null}</article>;
+      })}</section> : null}
     </PageShell>
   );
 }

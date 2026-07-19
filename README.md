@@ -18,6 +18,7 @@ AI-powered Fantasy Premier League workflow that converts expert YouTube videos i
 - 📝 Generate markdown and JSON gameweek reports under `data/reports/`
 - 📈 Explore results in the Next.js dashboard and launch runs from the UI
 - 🐳 Run locally with `uv` or in Docker
+- ☁️ Deploy the API, detached worker, and persistent storage on Modal
 
 ## 🧠 Why This Matters
 FPL content is high-volume and repetitive. Useful signals are buried across multiple creators, long videos, and slightly different phrasing.
@@ -194,6 +195,9 @@ The API exposes:
 - `GET /api/reports/latest`: load the newest report
 - `GET /api/reports/{run_id}`: load a specific historical report
 - `POST /api/pipeline-runs`: trigger a pipeline run from JSON input
+- `GET /api/pipeline-runs/{run_id}`: poll durable pending/running/completed/failed state
+
+Pipeline POSTs return `202 Accepted`; work continues in a background thread locally and a detached worker on Modal. Set `PIPELINE_API_TOKEN` to require a bearer token for starts.
 
 ### Next.js Frontend
 Install dependencies once:
@@ -268,6 +272,10 @@ Stop the Compose service with:
 ```bash
 make docker-down
 ```
+
+## Modal deployment
+
+The production backend deployment uses FastAPI, a detached worker, and a persistent Modal Volume. The Next.js frontend is intentionally deployed separately (for example, on Vercel). See [docs/modal-deployment.md](docs/modal-deployment.md) for secret setup, deployment, frontend handoff, smoke testing, logs, recovery, cost controls, custom domains, and teardown.
 
 ## Weekly Workflow
 1. Update `.env` if provider credentials or proxy settings changed.

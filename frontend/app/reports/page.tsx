@@ -89,6 +89,7 @@ export default function ReportsPage() {
   return (
     <PageShell
       title="Reports"
+      eyebrow="Report archive"
       description="Browse generated gameweek reports, choose older runs, and inspect every report section."
     >
       {isLoadingList ? <LoadingState label="Loading report history..." /> : null}

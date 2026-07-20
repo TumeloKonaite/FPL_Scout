@@ -49,6 +49,15 @@ def build_explicit_position_catalog(
     catalog: dict[str, str] = {}
     conflicts: set[str] = set()
     for reveal in reveals:
+        for raw_name, raw_position in reveal.player_positions.items():
+            name = normalize_team_player(raw_name)
+            position = raw_position.upper()
+            if not name:
+                continue
+            if name in catalog and catalog[name] != position:
+                conflicts.add(name)
+            else:
+                catalog[name] = position
         for raw_name in reveal.current_team:
             match = POSITION_SUFFIX.search(raw_name)
             if match is None:

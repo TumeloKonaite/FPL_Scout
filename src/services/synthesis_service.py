@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from src.app.domain.reports.suggested_team import build_suggested_team_from_reveals
 from src.agents.final_synthesis_agent import run_final_synthesis
 from src.schemas.final_report import (
     AggregatedFPLReport,
@@ -125,7 +126,7 @@ def build_fallback_final_report(report: AggregatedFPLReport) -> FinalGameweekRep
     else:
         conclusion_parts.append("Stay flexible and avoid forcing marginal moves.")
 
-    return FinalGameweekReport(
+    final_report = FinalGameweekReport(
         gameweek=report.gameweek,
         overview=overview,
         transfers=transfers,
@@ -137,6 +138,22 @@ def build_fallback_final_report(report: AggregatedFPLReport) -> FinalGameweekRep
         wait_for_news=report.wait_for_news,
         expert_team_reveals=expert_team_reveals,
         conclusion=" ".join(conclusion_parts),
+    )
+    return _attach_suggested_team(final_report, report)
+
+
+def _attach_suggested_team(
+    final_report: FinalGameweekReport,
+    aggregate_report: AggregatedFPLReport,
+) -> FinalGameweekReport:
+    if final_report.suggested_team is not None:
+        return final_report
+    return final_report.model_copy(
+        update={
+            "suggested_team": build_suggested_team_from_reveals(
+                aggregate_report.expert_team_reveals
+            )
+        }
     )
 
 
@@ -169,6 +186,6 @@ async def synthesize_final_report(report: AggregatedFPLReport) -> FinalGameweekR
         return _build_empty_final_report(report)
 
     try:
-        return await run_final_synthesis(report)
+        return _attach_suggested_team(await run_final_synthesis(report), report)
     except Exception:
         return build_fallback_final_report(report)

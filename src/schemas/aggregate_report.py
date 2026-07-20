@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -61,6 +63,9 @@ class ExpertTeamRevealItem(BaseModel):
     current_team: list[str] = Field(default_factory=list)
     starting_xi: list[str] = Field(default_factory=list)
     bench: list[str] = Field(default_factory=list)
+    player_positions: dict[str, Literal["GK", "DEF", "MID", "FWD"]] = Field(
+        default_factory=dict
+    )
     captain: str | None = None
     vice_captain: str | None = None
     transfers_in: list[str] = Field(default_factory=list)

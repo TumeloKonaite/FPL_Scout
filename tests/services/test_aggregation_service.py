@@ -18,6 +18,7 @@ def _build_analysis(
     current_team: list[str] | None = None,
     starting_xi: list[str] | None = None,
     bench: list[str] | None = None,
+    player_positions: dict[str, str] | None = None,
     captain: str | None = None,
     vice_captain: str | None = None,
     transfers_in: list[str] | None = None,
@@ -39,6 +40,7 @@ def _build_analysis(
         current_team=current_team or [],
         starting_xi=starting_xi or [],
         bench=bench or [],
+        player_positions=player_positions or {},
         captain=captain,
         vice_captain=vice_captain,
         transfers_in=transfers_in or [],
@@ -189,6 +191,11 @@ def test_aggregated_report_includes_explicit_expert_team_reveals() -> None:
             current_team=["Saka", "Salah", "Bruno Fernandes"],
             starting_xi=["Saka", "Salah", "Bruno Fernandes"],
             bench=["Fabianski"],
+            player_positions={
+                "Saka": "MID",
+                "Salah": "MID",
+                "Fabianski": "GK",
+            },
             captain="Salah",
             vice_captain="Saka",
             transfers_in=["Bruno Fernandes"],
@@ -205,5 +212,10 @@ def test_aggregated_report_includes_explicit_expert_team_reveals() -> None:
     assert reveal.expert_name == "Expert A"
     assert reveal.captain == "Mohamed Salah"
     assert reveal.vice_captain == "Bukayo Saka"
+    assert reveal.player_positions == {
+        "Bukayo Saka": "MID",
+        "Mohamed Salah": "MID",
+        "Fabianski": "GK",
+    }
     assert reveal.transfers_in == ["Bruno Fernandes"]
     assert reveal.transfers_out == ["Ollie Watkins"]

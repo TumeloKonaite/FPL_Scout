@@ -80,6 +80,7 @@ test("backend proxy injects mutation authentication server-side", () => {
   assert.match(route, /process\.env\.PIPELINE_API_TOKEN/);
   assert.match(route, /headers\.set\("authorization", `Bearer/);
   assert.doesNotMatch(source("src/lib/api.ts"), /PIPELINE_API_TOKEN/);
+  assert.doesNotMatch(source("src/lib/api.ts"), /NEXT_PUBLIC_/);
 });
 
 test("polling stops on terminal states and has retry and timeout limits", () => {

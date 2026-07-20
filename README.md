@@ -200,6 +200,8 @@ The API exposes:
 Pipeline POSTs return `202 Accepted`; work continues in a background thread locally and a detached worker on Modal. Set `PIPELINE_API_TOKEN` to require a bearer token for starts.
 
 ### Next.js Frontend
+Production: [https://fpl-scout-kappa.vercel.app](https://fpl-scout-kappa.vercel.app)
+
 Install dependencies once:
 
 ```bash
@@ -213,7 +215,7 @@ npm --prefix frontend run dev
 make run-frontend
 ```
 
-Open `http://localhost:3000`. The frontend defaults to `http://localhost:8000` for the FastAPI backend. To use another API URL, set `NEXT_PUBLIC_API_BASE_URL` in `frontend/.env.local`.
+Open `http://localhost:3000`. The frontend's same-origin `/backend/*` route proxies to `http://localhost:8000` by default. To use another API URL, set the server-only `API_PROXY_TARGET` in `frontend/.env.local`. Pipeline starts use the server-only `PIPELINE_API_TOKEN`; neither setting belongs in a `NEXT_PUBLIC_*` variable.
 
 The frontend can load the latest report, select historical reports, render all final report sections, trigger pipeline runs, and display loading, empty, and API error states.
 

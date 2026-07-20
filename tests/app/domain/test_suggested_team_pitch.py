@@ -62,6 +62,20 @@ def test_reuses_only_explicit_positions_from_another_saved_run() -> None:
     assert team.formation == "3-4-3"
 
 
+def test_builds_pitch_team_from_structured_player_positions() -> None:
+    reveal = _reveal(annotated=False)
+    positions = ["GK", *(["DEF"] * 3), *(["MID"] * 4), *(["FWD"] * 3)]
+    reveal.player_positions = dict(
+        zip(reveal.starting_xi, positions, strict=True)
+    )
+
+    team = build_suggested_team_from_reveals([reveal])
+
+    assert team is not None
+    assert team.formation == "3-4-3"
+    assert [player.position for player in team.startingXi] == positions
+
+
 def test_discards_conflicting_position_metadata() -> None:
     first = _reveal()
     second = _reveal()

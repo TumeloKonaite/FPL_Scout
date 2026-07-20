@@ -18,6 +18,13 @@ class ExpertVideoAnalysis(BaseModel):
     current_team: list[str] = Field(default_factory=list)
     starting_xi: list[str] = Field(default_factory=list)
     bench: list[str] = Field(default_factory=list)
+    player_positions: dict[str, Literal["GK", "DEF", "MID", "FWD"]] = Field(
+        default_factory=dict,
+        description=(
+            "FPL positions for players named in the team-reveal fields, keyed by "
+            "the same clean player names used in those fields"
+        ),
+    )
     captain: str | None = None
     vice_captain: str | None = None
     transfers_in: list[str] = Field(default_factory=list)

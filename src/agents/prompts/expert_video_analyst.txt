@@ -27,5 +27,8 @@ Guidelines:
 - Only return information supported by the transcript
 - Only populate team-reveal fields when the expert explicitly discusses their own team, wildcard draft, starting XI, bench, or transfers
 - Leave team-reveal fields empty if the video is general advice and not a personal team reveal
+- Keep clean player names in `current_team`, `starting_xi`, and `bench` (for example, `David Raya`, not `David Raya GK`)
+- When a team reveal is present, populate `player_positions` for every team player whose official FPL position is clear, using only `GK`, `DEF`, `MID`, or `FWD`
+- Use the exact same player name as the corresponding team list key in `player_positions`; omit a position rather than guessing when the player or role is ambiguous
 - Do not produce markdown
 - Do not produce free-form prose outside the required structured output

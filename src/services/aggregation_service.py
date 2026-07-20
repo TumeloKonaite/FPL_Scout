@@ -67,6 +67,18 @@ def _canonicalize_player_like_list(items: list[str]) -> list[str]:
     return output
 
 
+def _canonicalize_player_positions(
+    positions: dict[str, str],
+) -> dict[str, str]:
+    canonical: dict[str, str] = {}
+    for name, position in positions.items():
+        normalized = normalize_player_name(name)
+        display = canonical_player_display(normalized) if normalized else ""
+        if display:
+            canonical[display] = position.upper()
+    return canonical
+
+
 def aggregate_expert_team_reveals(
     analyses: list[ExpertVideoAnalysis],
 ) -> list[ExpertTeamRevealItem]:
@@ -76,6 +88,7 @@ def aggregate_expert_team_reveals(
         current_team = _canonicalize_player_like_list(analysis.current_team)
         starting_xi = _canonicalize_player_like_list(analysis.starting_xi)
         bench = _canonicalize_player_like_list(analysis.bench)
+        player_positions = _canonicalize_player_positions(analysis.player_positions)
         transfers_in = _canonicalize_player_like_list(analysis.transfers_in)
         transfers_out = _canonicalize_player_like_list(analysis.transfers_out)
         captain = canonical_player_display(analysis.captain) if analysis.captain else None
@@ -106,6 +119,7 @@ def aggregate_expert_team_reveals(
                 current_team=current_team,
                 starting_xi=starting_xi,
                 bench=bench,
+                player_positions=player_positions,
                 captain=captain,
                 vice_captain=vice_captain,
                 transfers_in=transfers_in,

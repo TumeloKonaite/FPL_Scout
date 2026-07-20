@@ -232,6 +232,29 @@ def test_build_fallback_final_report_is_schema_valid() -> None:
     assert validated.wait_for_news == ["Bukayo Saka"]
 
 
+def test_fallback_report_embeds_suggested_team_from_structured_positions() -> None:
+    report = _build_aggregated_report()
+    positions = ["GK", *(["DEF"] * 3), *(["MID"] * 4), *(["FWD"] * 3)]
+    names = [f"Player {index}" for index in range(1, 12)]
+    report.expert_team_reveals = [
+        ExpertTeamRevealItem(
+            expert_name="Expert XI",
+            video_title="Complete reveal",
+            current_team=names,
+            starting_xi=names,
+            player_positions=dict(zip(names, positions, strict=True)),
+            captain="Player 9",
+            confidence=1.0,
+        )
+    ]
+
+    final_report = build_fallback_final_report(report)
+
+    assert final_report.suggested_team is not None
+    assert final_report.suggested_team.formation == "3-4-3"
+    assert len(final_report.suggested_team.startingXi) == 11
+
+
 def test_synthesize_final_report_falls_back_when_agent_fails() -> None:
     report = _build_aggregated_report()
 

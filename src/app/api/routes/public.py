@@ -5,8 +5,9 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from src.adapters.fpl import FplApiClient, FplApiError
 from src.app.api.schemas.public import CurrentGameweekResponse, LatestRecommendationsResponse
-from src.app.core.dependencies import get_report_service
+from src.app.core.dependencies import get_current_gameweek_service, get_report_service
 from src.app.domain.reports.service import (
     EmptyReportDirectoryError,
     InvalidReportFileError,
@@ -70,16 +71,29 @@ def get_latest_recommendations(
 @router.get("/gameweek/current", response_model=CurrentGameweekResponse)
 def get_current_gameweek(
     service: ReportService = Depends(get_report_service),
+    fpl: FplApiClient = Depends(get_current_gameweek_service),
 ) -> CurrentGameweekResponse:
+    try:
+        current = fpl.get_upcoming_gameweek()
+    except FplApiError as exc:
+        raise HTTPException(status_code=503, detail=UNAVAILABLE_DETAIL) from exc
+    if current is None:
+        return CurrentGameweekResponse(recommendations_available=False)
+
     try:
         report = _load_latest(service)
     except HTTPException as exc:
         if exc.status_code == 404:
-            return CurrentGameweekResponse(recommendations_available=False)
+            return CurrentGameweekResponse(
+                gameweek=current.gameweek,
+                deadline=current.deadline,
+                recommendations_available=False,
+            )
         raise
+    report_is_current = report.final_report.gameweek == current.gameweek
     return CurrentGameweekResponse(
-        gameweek=report.final_report.gameweek,
-        deadline=str(report.final_report.deadline) if report.final_report.deadline else None,
+        gameweek=current.gameweek,
+        deadline=current.deadline,
         last_updated_at=_last_updated(report),
-        recommendations_available=True,
+        recommendations_available=report_is_current,
     )

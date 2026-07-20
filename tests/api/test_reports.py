@@ -5,10 +5,12 @@ from dataclasses import dataclass
 from fastapi.testclient import TestClient
 
 from src.app.core.dependencies import get_report_service
+from src.app.core.dependencies import get_current_gameweek_service
 from src.app.core.auth import AdminPrincipal, require_admin
 from src.app.domain.reports.service import EmptyReportDirectoryError, ReportNotFoundError
 from src.app.main import create_app
 from src.schemas.final_report import FinalGameweekReport, SuggestedPlayer, SuggestedTeam
+from src.adapters.fpl import CurrentGameweek
 
 
 @dataclass(frozen=True)
@@ -42,6 +44,16 @@ class StubReportService:
             raise ReportNotFoundError(run_id) from exc
 
 
+class StubFplApiClient:
+    def __init__(self, gameweek: int | None = 32) -> None:
+        self.gameweek = gameweek
+
+    def get_upcoming_gameweek(self) -> CurrentGameweek | None:
+        if self.gameweek is None:
+            return None
+        return CurrentGameweek(self.gameweek, "2026-08-15T10:00:00Z")
+
+
 def _final_report(gameweek: int = 32) -> FinalGameweekReport:
     return FinalGameweekReport(
         gameweek=gameweek,
@@ -61,8 +73,29 @@ def _final_report(gameweek: int = 32) -> FinalGameweekReport:
 def _client(service: StubReportService) -> TestClient:
     app = create_app()
     app.dependency_overrides[get_report_service] = lambda: service
+    app.dependency_overrides[get_current_gameweek_service] = lambda: StubFplApiClient()
     app.dependency_overrides[require_admin] = lambda: AdminPrincipal()
     return TestClient(app)
+
+
+def test_current_gameweek_does_not_mark_a_stale_report_available() -> None:
+    client = _client(StubReportService({"gw38": StubReportBundle("gw38", _final_report(38))}))
+
+    response = client.get("/api/gameweek/current")
+
+    assert response.status_code == 200
+    assert response.json()["gameweek"] == 32
+    assert response.json()["recommendations_available"] is False
+
+
+def test_current_gameweek_marks_a_matching_report_available() -> None:
+    client = _client(StubReportService({"gw32": StubReportBundle("gw32", _final_report(32))}))
+
+    response = client.get("/api/gameweek/current")
+
+    assert response.status_code == 200
+    assert response.json()["deadline"] == "2026-08-15T10:00:00Z"
+    assert response.json()["recommendations_available"] is True
 
 
 def test_list_reports_returns_200_and_a_list() -> None:

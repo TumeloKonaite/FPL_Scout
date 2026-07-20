@@ -1,0 +1,19 @@
+ frontend/README.md                             |  13 [32m+++++++++++++[m
+ frontend/app/globals.css                       |  29 [32m+++++++++++++++++++++++++++++[m
+ frontend/app/suggested-team/page.tsx           |  10 [32m+++++++++[m[31m-[m
+ frontend/components/SuggestedTeamPitch.tsx     |  44 [32m+++++++++++++++++++++++++++++++++++++++++++[m
+ frontend/components/SuggestedTeamTable.tsx     |  21 [32m+++++++++++++++++++++[m
+ frontend/components/suggestedTeam.ts           | 103 [32m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ frontend/package-lock.json                     |  13 [32m++++++++++++[m[31m-[m
+ frontend/package.json                          |   3 [32m++[m[31m-[m
+ frontend/src/types/report.ts                   |   7 [32m+++++++[m
+ frontend/test/suggested-team.test.mjs          |  66 [32m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ src/app/api/routes/reports.py                  |  13 [32m++++++++++++[m[31m-[m
+ src/app/domain/reports/service.py              |  34 [32m+++++++++++++++++++++++++++++++++[m
+ src/app/domain/reports/suggested_team.py       | 116 [32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ src/app/infrastructure/storage/report_store.py |  21 [32m++++++++++++++++++++[m[31m-[m
+ src/schemas/final_report.py                    |  25 [32m+++++++++++++++++++++++++[m
+ tests/api/test_reports.py                      |  40 [32m++++++++++++++++++++++++++++++++++++++[m[31m-[m
+ tests/app/domain/test_suggested_team_pitch.py  |  72 [32m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ tests/infrastructure/test_report_store.py      |  23 [32m+++++++++++++++++++++++[m
+ 18 files changed, 647 insertions(+), 6 deletions(-)

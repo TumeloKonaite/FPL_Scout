@@ -39,6 +39,7 @@ class ReportRecord:
     final_report_path: Path
     aggregate_report_path: Path | None
     updated_at: float
+    gameweek: int | None = None
 
 
 class ReportStore:
@@ -64,7 +65,15 @@ class ReportStore:
             raise EmptyReportDirectoryError(
                 f"No run folders containing {FINAL_REPORT_FILENAME} were found in {self.base_dir}"
             )
-        return sorted(records, key=lambda record: (record.updated_at, record.run_id))
+        return sorted(
+            records,
+            key=lambda record: (
+                record.gameweek is not None,
+                record.gameweek if record.gameweek is not None else -1,
+                record.updated_at,
+                record.run_id,
+            ),
+        )
 
     def get_latest_report(self) -> ReportRecord:
         return self.list_reports()[-1]
@@ -104,4 +113,14 @@ class ReportStore:
             final_report_path=final_report_path,
             aggregate_report_path=aggregate_report_path if aggregate_report_path.exists() else None,
             updated_at=final_report_path.stat().st_mtime,
+            gameweek=self._read_gameweek(final_report_path),
         )
+
+    def _read_gameweek(self, final_report_path: Path) -> int | None:
+        try:
+            gameweek = self.read_json(final_report_path).get("gameweek")
+        except InvalidReportFileError:
+            return None
+        if isinstance(gameweek, bool) or not isinstance(gameweek, int):
+            return None
+        return gameweek if gameweek > 0 else None

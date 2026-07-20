@@ -13,6 +13,10 @@ from src.app.infrastructure.storage.report_store import (
     ReportRecord,
     ReportStore,
 )
+from src.app.domain.reports.suggested_team import (
+    build_explicit_position_catalog,
+    build_suggested_team_from_reveals,
+)
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 
 
@@ -51,6 +55,15 @@ class ReportService:
     def _load_record(self, record: ReportRecord) -> ReportBundle:
         final_report = self._load_final_report(record)
         aggregate_report = self._load_aggregate_report(record)
+        if final_report.suggested_team is None and aggregate_report is not None:
+            final_report = final_report.model_copy(
+                update={
+                    "suggested_team": build_suggested_team_from_reveals(
+                        aggregate_report.expert_team_reveals,
+                        self._build_position_catalog(),
+                    )
+                }
+            )
         return ReportBundle(
             run_id=record.run_id,
             run_dir=record.run_dir,
@@ -59,6 +72,27 @@ class ReportService:
             final_report=final_report,
             aggregate_report=aggregate_report,
         )
+
+    def _build_position_catalog(self) -> dict[str, str]:
+        catalog: dict[str, str] = {}
+        conflicts: set[str] = set()
+        for record in self.store.list_reports():
+            try:
+                aggregate = self._load_aggregate_report(record)
+            except InvalidReportFileError:
+                continue
+            if aggregate is None:
+                continue
+            for name, position in build_explicit_position_catalog(
+                aggregate.expert_team_reveals
+            ).items():
+                if name in catalog and catalog[name] != position:
+                    conflicts.add(name)
+                else:
+                    catalog[name] = position
+        for name in conflicts:
+            catalog.pop(name, None)
+        return catalog
 
     def _load_final_report(self, record: ReportRecord) -> FinalGameweekReport:
         try:

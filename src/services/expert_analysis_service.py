@@ -61,6 +61,8 @@ def _build_minimal_analysis(job: VideoAnalysisJob) -> ExpertVideoAnalysis:
         transfers_in=[],
         transfers_out=[],
         team_reveal_confidence=None,
+        published_at=job.published_at,
+        source_url=job.video_url,
     )
 
 
@@ -81,7 +83,11 @@ async def analyze_video_job(job: VideoAnalysisJob) -> ExpertVideoAnalysis:
     if not isinstance(result.final_output, ExpertVideoAnalysis):
         raise TypeError("Agent did not return ExpertVideoAnalysis")
 
-    return result.final_output
+    # Source metadata is supplied by ingestion and must not depend on the model
+    # copying it out of the transcript prompt.
+    return result.final_output.model_copy(
+        update={"published_at": job.published_at, "source_url": job.video_url}
+    )
 
 
 async def analyze_video_jobs(

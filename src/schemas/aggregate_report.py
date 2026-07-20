@@ -4,12 +4,34 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from src.services.consensus import ConsensusLevel
+
+
+class RecommendationSource(BaseModel):
+    name: str
+    title: str | None = None
+    url: str | None = None
+    publishedAt: str | None = None
+    position: Literal["support", "oppose", "alternative", "mention"] = "support"
+
+
+class CompetingRecommendation(BaseModel):
+    recommendation: str
+    support_count: int = Field(ge=0)
+    sources: list[str] = Field(default_factory=list)
+
 
 class ConsensusItem(BaseModel):
     item: str
     mention_count: int = Field(ge=0)
     average_confidence: float = Field(ge=0, le=1)
     supporting_experts: list[str]
+    relevant_expert_count: int = Field(default=0, ge=0)
+    opposition_count: int = Field(default=0, ge=0)
+    support_ratio: float | None = Field(default=None, ge=0, le=1)
+    consensus: ConsensusLevel = "split"
+    sources: list[RecommendationSource] = Field(default_factory=list)
+    alternatives: list[CompetingRecommendation] = Field(default_factory=list)
 
 
 class TransferConsensusItem(BaseModel):
@@ -18,6 +40,12 @@ class TransferConsensusItem(BaseModel):
     mention_count: int = Field(ge=0)
     average_confidence: float = Field(ge=0, le=1)
     supporting_experts: list[str]
+    relevant_expert_count: int = Field(default=0, ge=0)
+    opposition_count: int = Field(default=0, ge=0)
+    support_ratio: float | None = Field(default=None, ge=0, le=1)
+    consensus: ConsensusLevel = "split"
+    sources: list[RecommendationSource] = Field(default_factory=list)
+    alternatives: list[CompetingRecommendation] = Field(default_factory=list)
 
 
 class FixtureInsightConsensusItem(BaseModel):

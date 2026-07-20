@@ -3,6 +3,7 @@
 import { PageShell } from "@/components/PageShell";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ReportViewer";
 import { useLatestReport } from "@/components/useLatestReport";
+import { RecommendationEvidence } from "@/components/RecommendationEvidence";
 
 export default function TransfersPage() {
   const { data, error, loading } = useLatestReport();
@@ -17,8 +18,7 @@ export default function TransfersPage() {
       {error ? <ErrorState label={error} /> : null}
       {!loading && !error && !moves.length ? <EmptyState label="No transfer recommendations are available." /> : null}
       {moves.length ? <section className="insight-grid" aria-label="Transfer recommendations">{moves.map((move, index) => {
-        const confidence = Math.round((move.confidence ?? 0) * 100);
-        return <article className={`insight-card ${index === 0 ? "featured" : ""}`} key={`${move.title}-${index}`}><span className="rank-badge">{index + 1}</span><h2>{move.title}</h2><p>{move.rationale}</p>{move.confidence != null ? <><div className="confidence-bar"><i style={{ width: `${confidence}%` }} /></div><p>{confidence}% confidence</p></> : null}</article>;
+        return <article className={`insight-card ${index === 0 ? "featured" : ""}`} key={`${move.title}-${index}`}><span className="rank-badge">{index + 1}</span><h2>{move.title}</h2><p>{move.rationale}</p><RecommendationEvidence recommendation={move} /></article>;
       })}</section> : null}
     </PageShell>
   );

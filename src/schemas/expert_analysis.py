@@ -30,3 +30,5 @@ class ExpertVideoAnalysis(BaseModel):
     transfers_in: list[str] = Field(default_factory=list)
     transfers_out: list[str] = Field(default_factory=list)
     team_reveal_confidence: Literal["low", "medium", "high"] | None = None
+    published_at: str | None = None
+    source_url: str | None = None

@@ -33,13 +33,6 @@ _PLAYER_PATTERNS: tuple[tuple[str, str], ...] = (
 )
 
 
-def _format_confidence_stars(confidence: float | None) -> str:
-    if confidence is None:
-        return ""
-    star_count = max(1, round(confidence * 4))
-    return " " + ("*" * star_count)
-
-
 def _extract_canonical_player(text: str) -> str | None:
     normalized = normalize_lookup_key(text)
     for player_key, display_name in _PLAYER_PATTERNS:
@@ -197,8 +190,17 @@ def rank_chip_strategy_insights(
 
 def _render_ranked_lines(items: list[RankedInsight]) -> list[str]:
     return [
-        f"{index}. {item.title}{_format_confidence_stars(item.average_confidence)}"
+        f"{index}. {item.title} (supported by {item.mention_count} expert"
+        f"{'s' if item.mention_count != 1 else ''})"
         for index, item in enumerate(items, start=1)
+    ]
+
+
+def _render_ranked_bullets(items: list[RankedInsight]) -> list[str]:
+    return [
+        f"- {item.title} (supported by {item.mention_count} expert"
+        f"{'s' if item.mention_count != 1 else ''})"
+        for item in items
     ]
 
 
@@ -219,11 +221,11 @@ def format_gameweek_markdown_report(
 
     transfers = rank_transfer_insights(aggregate_report, final_report)
     if transfers:
-        lines.extend(["", "### Transfers", *_render_bullet_lines([item.title for item in transfers])])
+        lines.extend(["", "### Transfers", *_render_ranked_bullets(transfers)])
 
     chip_strategy = rank_chip_strategy_insights(aggregate_report, final_report)
     if chip_strategy:
-        lines.extend(["", "### Chip Strategy", *_render_bullet_lines([item.title for item in chip_strategy])])
+        lines.extend(["", "### Chip Strategy", *_render_ranked_bullets(chip_strategy)])
 
     risks = list(final_report.wait_for_news) + list(final_report.conditional_advice)
     if risks:

@@ -19,6 +19,42 @@ export type FinalRecommendation = {
   playerOut?: string | null;
   position?: string | null;
   price?: number | null;
+  consensus?: RecommendationConsensus | null;
+  freshness?: RecommendationFreshness | null;
+  sources?: RecommendationSource[];
+  alternatives?: CompetingRecommendation[];
+};
+
+export type ConsensusLevel = "strong" | "moderate" | "split";
+
+export type RecommendationConsensus = {
+  label: ConsensusLevel;
+  supportCount: number;
+  relevantExpertCount?: number | null;
+  oppositionCount: number;
+  mentionCount: number;
+  supportRatio?: number | null;
+};
+
+export type RecommendationFreshness = {
+  generatedAt: string;
+  newestSourceAt?: string | null;
+  oldestSourceAt?: string | null;
+  sourceWindowHours?: number | null;
+};
+
+export type RecommendationSource = {
+  name: string;
+  title?: string | null;
+  url?: string | null;
+  publishedAt?: string | null;
+  position: "support" | "oppose" | "alternative" | "mention";
+};
+
+export type CompetingRecommendation = {
+  recommendation: string;
+  support_count: number;
+  sources?: string[];
 };
 
 export type KeyRisk = {

@@ -1,18 +1,11 @@
 "use client";
 
 import type { FullReportResponse, Report } from "@/src/types/report";
+import { RecommendationEvidence } from "@/components/RecommendationEvidence";
 
 type ReportViewerProps = {
   report: FullReportResponse;
 };
-
-function confidenceLabel(confidence?: number | null): string | null {
-  if (confidence === undefined || confidence === null) {
-    return null;
-  }
-
-  return `${Math.round(confidence * 100)}% confidence`;
-}
 
 function EmptySection({ message }: { message: string }) {
   return <p className="empty-copy">{message}</p>;
@@ -35,11 +28,9 @@ function RecommendationList({
         <article className="report-item" key={`${item.title}-${index}`}>
           <div className="item-heading">
             <h3>{item.title}</h3>
-            {confidenceLabel(item.confidence) ? (
-              <span>{confidenceLabel(item.confidence)}</span>
-            ) : null}
           </div>
           <p>{item.rationale}</p>
+          <RecommendationEvidence recommendation={item} />
         </article>
       ))}
     </div>
@@ -141,9 +132,6 @@ function renderReportSections(report: Report) {
               <article className="report-item" key={`${item.expert_name}-${index}`}>
                 <div className="item-heading">
                   <h3>{item.expert_name}</h3>
-                  {confidenceLabel(item.confidence) ? (
-                    <span>{confidenceLabel(item.confidence)}</span>
-                  ) : null}
                 </div>
                 <p>{item.summary}</p>
                 <dl className="detail-grid">

@@ -7,7 +7,8 @@ import { EmptyState, ErrorState } from "@/components/ReportViewer";
 import { Icon } from "@/components/Icons";
 import { validateStartingXi } from "@/components/suggestedTeam";
 import { ApiError, getLatestReport } from "@/src/lib/api";
-import type { FinalRecommendation, FullReportResponse, KeyRisk } from "@/src/types/report";
+import type { FullReportResponse, KeyRisk } from "@/src/types/report";
+import { RecommendationEvidence } from "@/components/RecommendationEvidence";
 
 type ActionItem = { text: string; href: string };
 
@@ -29,15 +30,6 @@ function formatDateTime(value?: string | null): string | null {
     minute: "2-digit",
     timeZoneName: "short"
   }).format(date);
-}
-
-function confidenceLabel(recommendation?: FinalRecommendation): string | null {
-  if (!recommendation) return null;
-  if (recommendation.consensusCount != null && recommendation.expertCount != null) {
-    return `Recommended by ${recommendation.consensusCount} of ${recommendation.expertCount} experts`;
-  }
-  if (recommendation.confidence == null) return null;
-  return `${Math.round(recommendation.confidence * 100)}% confidence`;
 }
 
 function DeadlineCountdown({ deadline }: { deadline?: string | null }) {
@@ -182,7 +174,7 @@ export default function DashboardPage() {
               {topCaptain ? <>
                 <h2>{topCaptain.playerName || topCaptain.title}</h2>
                 {topCaptain.club || topCaptain.opponent ? <p className="player-fixture">{[topCaptain.club, topCaptain.opponent ? `${topCaptain.opponent}${topCaptain.venue ? ` (${topCaptain.venue === "home" ? "H" : "A"})` : ""}` : null].filter(Boolean).join(" vs ")}</p> : null}
-                {confidenceLabel(topCaptain) ? <span className="summary-stat">{confidenceLabel(topCaptain)}</span> : null}
+                <RecommendationEvidence recommendation={topCaptain} compact />
                 <p>{topCaptain.rationale}</p>
                 {topCaptain.viceCaptain ? <p className="secondary-detail">Vice-captain: {topCaptain.viceCaptain}</p> : null}
               </> : <p>No clear captain consensus was identified for this gameweek.</p>}
@@ -196,7 +188,7 @@ export default function DashboardPage() {
                 <h2>{topTransfer.playerIn ? `Buy: ${topTransfer.playerIn}` : topTransfer.title}</h2>
                 {topTransfer.playerOut ? <p className="player-fixture">Sell: {topTransfer.playerOut}</p> : null}
                 {topTransfer.position || topTransfer.price != null ? <p className="secondary-detail">{[topTransfer.position, topTransfer.price != null ? `£${topTransfer.price.toFixed(1)}m` : null].filter(Boolean).join(" · ")}</p> : null}
-                {confidenceLabel(topTransfer) ? <span className="summary-stat">{confidenceLabel(topTransfer)}</span> : null}
+                <RecommendationEvidence recommendation={topTransfer} compact />
                 <p>{topTransfer.rationale}</p>
               </> : <p>No clear transfer consensus was identified for this gameweek.</p>}
               <SummaryLink href="/transfers">View transfer recommendations</SummaryLink>

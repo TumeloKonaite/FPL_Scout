@@ -17,6 +17,8 @@ from src.schemas.aggregate_report import (
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 from src.agents.final_synthesis_agent import format_aggregated_report_input
 from src.schemas.final_report import FinalDisagreement, FinalRecommendation
+from src.schemas.expert_analysis import ExpertVideoAnalysis
+from src.services.aggregation_service import build_aggregated_fpl_report
 from src.services.synthesis_service import build_fallback_final_report, synthesize_final_report
 
 
@@ -268,3 +270,32 @@ def test_synthesize_final_report_falls_back_when_agent_fails() -> None:
     assert "Use the strongest consensus signals" in result.conclusion
     assert result.transfers
     mocked_run.assert_awaited_once()
+
+
+def test_fallback_recommendations_publish_evidence_not_confidence() -> None:
+    analysis = ExpertVideoAnalysis(
+        expert_name="FPL Focal",
+        video_title="GW31 captaincy",
+        gameweek=31,
+        summary="Salah captain",
+        key_takeaways=[],
+        recommended_players=[],
+        avoid_players=[],
+        captaincy_picks=["Salah"],
+        reasoning=[],
+        confidence="high",
+        published_at="2026-07-20T12:00:00Z",
+        source_url="https://example.com/captaincy",
+    )
+    aggregate = build_aggregated_fpl_report([analysis])
+
+    recommendation = build_fallback_final_report(aggregate).captaincy[0]
+
+    assert recommendation.confidence is None
+    assert recommendation.consensus is not None
+    assert recommendation.consensus.label == "strong"
+    assert recommendation.consensus.supportCount == 1
+    assert recommendation.consensus.relevantExpertCount == 1
+    assert recommendation.sources[0].name == "FPL Focal"
+    assert recommendation.freshness is not None
+    assert recommendation.freshness.newestSourceAt == "2026-07-20T12:00:00+00:00"

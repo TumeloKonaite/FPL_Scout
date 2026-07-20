@@ -58,6 +58,22 @@ test("report viewer renders every final report section", () => {
   }
 });
 
+test("recommendations show evidence without generic confidence percentages", () => {
+  const evidence = source("components/RecommendationEvidence.tsx");
+  const captaincy = source("app/captaincy/page.tsx");
+  const transfers = source("app/transfers/page.tsx");
+  const viewer = source("components/ReportViewer.tsx");
+
+  assert.match(evidence, /Strong consensus/);
+  assert.match(evidence, /Supported by/);
+  assert.match(evidence, /View full source attribution/);
+  assert.match(evidence, /Last updated:/);
+  for (const page of [captaincy, transfers, viewer]) {
+    assert.doesNotMatch(page, /% (?:expert )?confidence/);
+    assert.doesNotMatch(page, /confidence-bar/);
+  }
+});
+
 test("legacy public pipeline route redirects to protected admin", () => {
   const runner = source("app/pipeline-runner/page.tsx");
 

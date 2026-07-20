@@ -8,6 +8,24 @@ export type FinalRecommendation = {
   title: string;
   rationale: string;
   confidence?: number | null;
+  playerName?: string | null;
+  club?: string | null;
+  opponent?: string | null;
+  venue?: "home" | "away" | null;
+  consensusCount?: number | null;
+  expertCount?: number | null;
+  viceCaptain?: string | null;
+  playerIn?: string | null;
+  playerOut?: string | null;
+  position?: string | null;
+  price?: number | null;
+};
+
+export type KeyRisk = {
+  subject: string;
+  riskType?: string | null;
+  explanation: string;
+  recommendedAction?: string | null;
 };
 
 export type FinalDisagreement = {
@@ -34,6 +52,8 @@ export type SuggestedTeam = {
 
 export type Report = {
   gameweek?: number;
+  deadline?: string | null;
+  lastUpdated?: string | null;
   overview: string;
   transfers?: FinalRecommendation[];
   captaincy?: FinalRecommendation[];
@@ -42,6 +62,7 @@ export type Report = {
   disagreements?: FinalDisagreement[];
   conditional_advice?: string[];
   wait_for_news?: string[];
+  key_risk?: KeyRisk | null;
   expert_team_reveals?: FinalExpertTeamReveal[];
   suggested_team?: SuggestedTeam | null;
   conclusion: string;

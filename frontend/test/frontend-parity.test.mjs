@@ -10,14 +10,23 @@ function source(path) {
   return readFileSync(join(root, path), "utf8");
 }
 
-test("dashboard loads the latest report and handles loading, empty, and error states", () => {
+test("dashboard presents a read-only gameweek summary with resilient states", () => {
   const dashboard = source("app/dashboard/page.tsx");
 
   assert.match(dashboard, /getLatestReport\(\)/);
   assert.match(dashboard, /getReports\(\)/);
-  assert.match(dashboard, /LoadingState label="Loading the latest report\.\.\."/);
-  assert.match(dashboard, /EmptyState label="No generated reports were found in data\/reports\."/);
+  assert.match(dashboard, /<DashboardSkeleton \/>/);
+  assert.match(dashboard, /No gameweek summary is available yet\./);
   assert.match(dashboard, /ErrorState label=\{error\}/);
+  assert.match(dashboard, /title=\{`This Gameweek\$\{gameweekLabel\}`\}/);
+  assert.match(dashboard, /Gameweek \$\{report\.gameweek\} deadline/);
+  assert.match(dashboard, /Last updated time unavailable/);
+  assert.match(dashboard, />Top Captain</);
+  assert.match(dashboard, />Top Transfer</);
+  assert.match(dashboard, />Key Risk</);
+  assert.match(dashboard, />Your Gameweek Action Plan</);
+  assert.match(dashboard, />Consensus XI/);
+  assert.doesNotMatch(dashboard, /Generate report/);
 });
 
 test("reports page supports historical report selection", () => {

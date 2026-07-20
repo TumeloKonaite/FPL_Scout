@@ -87,7 +87,7 @@ function renderReportSections(report: Report) {
         <p>{report.overview}</p>
       </section>
 
-      <section className="report-section">
+      <section className="report-section" id="transfers">
         <h2>Transfers</h2>
         <RecommendationList
           emptyMessage="No transfer recommendations were generated for this report."
@@ -95,7 +95,7 @@ function renderReportSections(report: Report) {
         />
       </section>
 
-      <section className="report-section">
+      <section className="report-section" id="captaincy">
         <h2>Captaincy</h2>
         <RecommendationList
           emptyMessage="No captaincy recommendations were generated for this report."
@@ -136,7 +136,7 @@ function renderReportSections(report: Report) {
         )}
       </section>
 
-      <section className="report-section">
+      <section className="report-section" id="risks">
         <h2>Conditional Advice</h2>
         <TextList
           emptyMessage="No conditional advice was generated for this report."

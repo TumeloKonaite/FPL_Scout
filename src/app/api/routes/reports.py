@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.app.api.schemas.reports import ReportResponse, ReportSummary
 from src.app.core.dependencies import get_report_service
+from src.app.core.auth import require_admin
 from src.app.domain.reports.service import (
     EmptyReportDirectoryError,
     InvalidReportFileError,
@@ -18,7 +19,11 @@ from src.app.domain.reports.service import (
 from src.app.domain.reports.suggested_team import build_suggested_team_from_reveals
 from src.app.infrastructure.storage.runtime_volume import reload_runtime_volume
 
-router = APIRouter(prefix="/api/reports", tags=["Reports"])
+router = APIRouter(
+    prefix="/api/reports",
+    tags=["Reports"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 @router.get("", response_model=list[ReportSummary])

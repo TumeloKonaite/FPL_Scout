@@ -5,9 +5,8 @@ import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { EmptyState, ErrorState } from "@/components/ReportViewer";
 import { Icon } from "@/components/Icons";
-import { getErrorMessage } from "@/components/apiError";
 import { validateStartingXi } from "@/components/suggestedTeam";
-import { ApiError, getLatestReport, getReports } from "@/src/lib/api";
+import { ApiError, getLatestReport } from "@/src/lib/api";
 import type { FinalRecommendation, FullReportResponse, KeyRisk } from "@/src/types/report";
 
 type ActionItem = { text: string; href: string };
@@ -91,22 +90,21 @@ export default function DashboardPage() {
     async function loadDashboard() {
       setIsLoading(true);
       setError(null);
-      const [latestResult, reportsResult] = await Promise.allSettled([getLatestReport(), getReports()]);
+      const latestResult = await getLatestReport().then(
+        (value) => ({ status: "fulfilled" as const, value }),
+        (reason) => ({ status: "rejected" as const, reason })
+      );
       if (!isMounted) return;
 
       if (latestResult.status === "rejected") {
         if (latestResult.reason instanceof ApiError && latestResult.reason.status === 404) {
           setLatestReport(null);
         } else {
-          setError(getErrorMessage(latestResult.reason));
+          setError("The latest gameweek analysis is temporarily unavailable.");
         }
       } else {
         setLatestReport(latestResult.value);
-        const reportTimestamp = latestResult.value.report.lastUpdated;
-        const summaryTimestamp = reportsResult.status === "fulfilled"
-          ? reportsResult.value.find((item) => item.run_id === latestResult.value.run_id)?.created_at
-          : null;
-        setLastUpdated(reportTimestamp ?? summaryTimestamp ?? null);
+        setLastUpdated(latestResult.value.report.lastUpdated ?? latestResult.value.last_updated_at ?? null);
       }
       setIsLoading(false);
     }

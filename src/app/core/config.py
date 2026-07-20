@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     RUNS_DIR: str = Field(default="data/runs")
 
     PIPELINE_API_TOKEN: str = Field(default="")
+    ADMIN_API_TOKEN: str = Field(default="")
 
     CORS_ORIGINS: List[str] = Field(
         default=[

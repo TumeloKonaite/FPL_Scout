@@ -1,6 +1,6 @@
 # FPL Technocrat Frontend
 
-Next.js is the only frontend for the FPL Technocrat report dashboard and pipeline runner.
+Next.js provides a public recommendations experience and a protected operations area.
 
 ## Suggested-team API contract
 
@@ -18,12 +18,12 @@ the detail table remains available for diagnosis and legacy reports remain suppo
 ## Pages
 
 - Dashboard: loads the latest generated report
-- Reports: lists historical reports and renders the selected run
+- Reports: renders the latest published report without internal run metadata
 - Suggested Team
 - Captaincy
 - Transfers
 - Expert Consensus
-- Pipeline Runner: triggers a backend pipeline run and shows the result or error
+- Admin (`/admin`): authenticated pipeline execution, report generation, and internal status
 
 ## Setup
 
@@ -53,8 +53,8 @@ API_PROXY_TARGET=http://127.0.0.1:8000
 ```
 
 For a Vercel deployment backed by Modal, set `API_PROXY_TARGET` to the public Modal
-API URL and set `PIPELINE_API_TOKEN` to the same value stored in the Modal secret.
-Both are server-only variables and must not use a `NEXT_PUBLIC_*` prefix.
+API URL. Administrators enter the backend's `ADMIN_API_TOKEN` on `/admin/login`; it is
+stored in an HttpOnly, same-site session cookie and forwarded only to `/api/admin/*`.
 
 Browser requests always use the same-origin `/backend/*` proxy; no backend URL or
 pipeline credential is included in the client bundle.

@@ -70,17 +70,33 @@ export type Report = {
 };
 
 export type FullReportResponse = {
+  gameweek?: number | null;
+  last_updated_at?: string | null;
+  available: boolean;
+  report: Report;
+};
+
+export type AdminReportResponse = {
   run_id: string;
   report: Report;
 };
 
-export type PipelineRunStatus = "pending" | "running" | "completed" | "failed";
+export type PipelineRunStatus = "pending" | "queued" | "running" | "completed" | "failed";
 
 export type PipelineRun = {
   run_id: string;
   status: PipelineRunStatus;
   created_at?: string;
+  started_at?: string;
+  updated_at?: string;
   completed_at?: string;
+  duration_seconds?: number;
+  current_stage?: string | null;
   error?: string;
   result?: unknown;
+};
+
+export type PipelineStatus = {
+  status: "idle" | PipelineRunStatus;
+  latest_run?: PipelineRun | null;
 };

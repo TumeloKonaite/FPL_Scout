@@ -10,8 +10,7 @@ const navItems = [
   { href: "/suggested-team", label: "Suggested Team", icon: "team" },
   { href: "/captaincy", label: "Captaincy", icon: "captain" },
   { href: "/transfers", label: "Transfers", icon: "transfers" },
-  { href: "/expert-consensus", label: "Expert Consensus", icon: "experts" },
-  { href: "/pipeline-runner", label: "Pipeline Runner", icon: "pipeline" }
+  { href: "/expert-consensus", label: "Expert Consensus", icon: "experts" }
 ] satisfies { href: string; label: string; icon: IconName }[];
 
 export function Sidebar() {

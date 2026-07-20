@@ -116,7 +116,39 @@ def _team_from_reveal(
     formation = f'{counts["DEF"]}-{counts["MID"]}-{counts["FWD"]}'
     if formation not in SUPPORTED_FORMATIONS:
         return None
-    return SuggestedTeam(formation=formation, startingXi=players, players=players)
+    bench: list[SuggestedPlayer] = []
+    for bench_order, bench_name in enumerate(reveal.bench[:4], start=1):
+        normalized_name = normalize_team_player(bench_name)
+        position = metadata.get(normalized_name)
+        if position is None:
+            continue
+        player_id = zlib.crc32(normalized_name.encode("utf-8"))
+        if player_id <= 0 or player_id in used_ids:
+            continue
+        used_ids.add(player_id)
+        bench.append(
+            SuggestedPlayer(
+                playerId=player_id,
+                name=bench_name.strip(),
+                position=position,
+                captain=(normalized_name == normalize_team_player(reveal.captain)),
+                viceCaptain=(normalized_name == normalize_team_player(reveal.vice_captain)),
+                isStarter=False,
+                benchOrder=bench_order,
+            )
+        )
+
+    all_players = [*players, *bench]
+    captain = next((player for player in all_players if player.captain), None)
+    vice_captain = next((player for player in all_players if player.viceCaptain), None)
+    return SuggestedTeam(
+        formation=formation,
+        startingXi=players,
+        bench=bench,
+        players=all_players,
+        captainPlayerId=captain.playerId if captain else None,
+        viceCaptainPlayerId=vice_captain.playerId if vice_captain else None,
+    )
 
 
 __all__ = [

@@ -1,4 +1,4 @@
-import type { AdminReportResponse, FullReportResponse, PipelineRun, PipelineStatus, ReportSummary } from "../types/report";
+import type { AdminReportResponse, CurrentGameweekResponse, FullReportResponse, PipelineRun, PipelineStatus, ReportSummary } from "../types/report";
 
 const DEFAULT_API_BASE_URL = "/backend";
 
@@ -91,6 +91,10 @@ export function getLatestReport(): Promise<FullReportResponse> {
   return apiRequest<FullReportResponse>("/api/recommendations/latest");
 }
 
+export function getCurrentGameweek(): Promise<CurrentGameweekResponse> {
+  return apiRequest<CurrentGameweekResponse>("/api/gameweek/current");
+}
+
 export function getReport(runId: string): Promise<AdminReportResponse> {
   return apiRequest<AdminReportResponse>(`/api/admin/reports/${encodeURIComponent(runId)}`);
 }
@@ -163,6 +167,7 @@ export const api = {
     apiRequest<T>(path, { ...options, body, method: "POST" }),
   getReports,
   getLatestReport,
+  getCurrentGameweek,
   getReport,
   runPipeline,
   generateReport,

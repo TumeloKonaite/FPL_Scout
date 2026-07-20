@@ -94,7 +94,8 @@ class FinalExpertTeamReveal(BaseModel):
 class SuggestedPlayer(BaseModel):
     playerId: int = Field(gt=0)
     name: str = Field(min_length=1)
-    number: int = Field(ge=1, le=99)
+    number: int | None = Field(default=None, ge=1, le=99)
+    shirtNumber: int | None = Field(default=None, ge=1, le=99)
     position: Literal["GK", "DEF", "MID", "FWD"]
     club: str | None = None
     price: float | None = None
@@ -102,15 +103,22 @@ class SuggestedPlayer(BaseModel):
     ownership: float | None = None
     expectedMinutes: int | None = Field(default=None, ge=0, le=120)
     fixtureDifficulty: int | None = Field(default=None, ge=1, le=5)
+    fixture: str | None = None
+    expertSupportCount: int | None = Field(default=None, ge=0)
+    consensus: str | None = None
     captain: bool = False
     viceCaptain: bool = False
     isStarter: bool = True
+    benchOrder: int | None = Field(default=None, ge=1, le=4)
 
 
 class SuggestedTeam(BaseModel):
     formation: str | None = None
     startingXi: list[SuggestedPlayer]
+    bench: list[SuggestedPlayer] = Field(default_factory=list)
     players: list[SuggestedPlayer] | None = None
+    captainPlayerId: int | None = Field(default=None, gt=0)
+    viceCaptainPlayerId: int | None = Field(default=None, gt=0)
 
 
 class FinalGameweekReport(BaseModel):

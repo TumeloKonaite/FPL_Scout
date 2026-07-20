@@ -1,5 +1,3 @@
-import type { Team } from "react-soccer-lineup";
-
 export const SUPPORTED_FORMATIONS = new Set(["3-4-3", "3-5-2", "4-3-3", "4-4-2", "4-5-1", "5-2-3", "5-3-2", "5-4-1"]);
 
 export type PlayerPosition = "GK" | "DEF" | "MID" | "FWD";
@@ -7,17 +5,33 @@ export type PlayerPosition = "GK" | "DEF" | "MID" | "FWD";
 export type SuggestedPlayer = {
   playerId: number;
   name: string;
-  number: number;
+  number?: number | null;
+  shirtNumber?: number | null;
   position: PlayerPosition;
   club?: string | null;
+  team?: string | null;
+  fixture?: string | null;
   price?: number | null;
   predictedPoints?: number | null;
   ownership?: number | null;
   expectedMinutes?: number | null;
   fixtureDifficulty?: number | null;
+  expertSupportCount?: number | null;
+  consensus?: string | null;
   captain?: boolean;
   viceCaptain?: boolean;
   isStarter?: boolean;
+  benchOrder?: number | null;
+};
+
+export type SuggestedTeamInput = {
+  formation?: string | null;
+  startingXi?: SuggestedPlayer[];
+  starters?: SuggestedPlayer[];
+  bench?: SuggestedPlayer[];
+  players?: SuggestedPlayer[];
+  captainPlayerId?: number | null;
+  viceCaptainPlayerId?: number | null;
 };
 
 export type GroupedPlayers = {
@@ -27,9 +41,17 @@ export type GroupedPlayers = {
   forwards: SuggestedPlayer[];
 };
 
-export type LineupValidationResult =
-  | { valid: true; formation: string; groupedPlayers: GroupedPlayers }
-  | { valid: false; reason: string };
+export type NormalizedSuggestedTeam = {
+  starters: SuggestedPlayer[];
+  bench: SuggestedPlayer[];
+  allPlayers: SuggestedPlayer[];
+  groupedPlayers: GroupedPlayers;
+  formation: string | null;
+  captain: SuggestedPlayer | null;
+  viceCaptain: SuggestedPlayer | null;
+  warnings: string[];
+  completeStartingXi: boolean;
+};
 
 const POSITIONS = new Set<PlayerPosition>(["GK", "DEF", "MID", "FWD"]);
 
@@ -44,60 +66,90 @@ export function groupPlayersByPosition(players: SuggestedPlayer[]): GroupedPlaye
 
 export function deriveFormation(players: SuggestedPlayer[]): string | null {
   const grouped = groupPlayersByPosition(players);
-  if (grouped.goalkeeper.length !== 1) return null;
-  return `${grouped.defenders.length}-${grouped.midfielders.length}-${grouped.forwards.length}`;
+  if (grouped.goalkeeper.length !== 1 || players.length !== 11) return null;
+  const formation = `${grouped.defenders.length}-${grouped.midfielders.length}-${grouped.forwards.length}`;
+  return SUPPORTED_FORMATIONS.has(formation) ? formation : null;
 }
 
-export function validateStartingXi(players: SuggestedPlayer[], suppliedFormation?: string): LineupValidationResult {
-  if (!Array.isArray(players)) return { valid: false, reason: "missing-lineup" };
-  if (players.length !== 11) return { valid: false, reason: "player-count" };
+function usablePlayer(player: SuggestedPlayer): boolean {
+  return Number.isInteger(player.playerId) && player.playerId > 0 && typeof player.name === "string" && Boolean(player.name.trim()) && POSITIONS.has(player.position);
+}
 
+function uniquePlayers(players: SuggestedPlayer[], warnings: string[]): SuggestedPlayer[] {
   const ids = new Set<number>();
-  for (const player of players) {
-    if (!POSITIONS.has(player.position)) return { valid: false, reason: "unsupported-position" };
-    if (!Number.isInteger(player.playerId) || player.playerId <= 0) return { valid: false, reason: "invalid-player-id" };
-    if (ids.has(player.playerId)) return { valid: false, reason: "duplicate-player-id" };
+  return players.filter((player) => {
+    if (!usablePlayer(player)) {
+      warnings.push("Some players with missing required details could not be displayed.");
+      return false;
+    }
+    if (ids.has(player.playerId)) {
+      warnings.push("Duplicate players were removed from the suggested team.");
+      return false;
+    }
     ids.add(player.playerId);
-    if (typeof player.name !== "string" || !player.name.trim()) return { valid: false, reason: "missing-player-name" };
-    if (!Number.isInteger(player.number) || player.number < 1 || player.number > 99) return { valid: false, reason: "invalid-player-number" };
-  }
-
-  const groupedPlayers = groupPlayersByPosition(players);
-  const formation = deriveFormation(players);
-  if (
-    groupedPlayers.goalkeeper.length !== 1 ||
-    groupedPlayers.defenders.length < 3 || groupedPlayers.defenders.length > 5 ||
-    groupedPlayers.midfielders.length < 2 || groupedPlayers.midfielders.length > 5 ||
-    groupedPlayers.forwards.length < 1 || groupedPlayers.forwards.length > 3 ||
-    formation === null || !SUPPORTED_FORMATIONS.has(formation)
-  ) return { valid: false, reason: "unsupported-formation" };
-  if (suppliedFormation !== undefined && suppliedFormation !== formation) return { valid: false, reason: "formation-mismatch" };
-  return { valid: true, formation, groupedPlayers };
+    return true;
+  });
 }
 
-const toPitchPlayer = (player: SuggestedPlayer) => ({ name: player.name, number: player.number });
+export function normalizeSuggestedTeam(team?: SuggestedTeamInput | null): NormalizedSuggestedTeam | null {
+  if (!team) return null;
+  const warnings: string[] = [];
+  const explicitStarters = team.startingXi ?? team.starters;
+  const sourcePlayers = team.players ?? [];
+  const rawStarters = explicitStarters ?? sourcePlayers.filter((player) => player.isStarter !== false && player.benchOrder == null);
+  const starterIds = new Set(rawStarters.map((player) => player.playerId));
+  const rawBench = team.bench ?? sourcePlayers.filter((player) => player.isStarter === false || player.benchOrder != null).filter((player) => !starterIds.has(player.playerId));
+  const starters = uniquePlayers(rawStarters, warnings).map((player) => ({ ...player, isStarter: true }));
+  const starterIdSet = new Set(starters.map((player) => player.playerId));
+  const bench = uniquePlayers(rawBench.filter((player) => !starterIdSet.has(player.playerId)), warnings)
+    .map((player, index) => ({ ...player, isStarter: false, benchOrder: player.benchOrder ?? index + 1 }))
+    .sort((a, b) => (a.benchOrder ?? 99) - (b.benchOrder ?? 99));
+  const groupedPlayers = groupPlayersByPosition(starters);
+  const derivedFormation = deriveFormation(starters);
+  const suppliedFormation = team.formation && SUPPORTED_FORMATIONS.has(team.formation) ? team.formation : null;
+  const formation = derivedFormation ?? suppliedFormation;
 
-export function mapPlayersToLineup(grouped: GroupedPlayers): Team {
+  if (starters.length !== 11) warnings.push(`Expected 11 starters but received ${starters.length}.`);
+  if (!derivedFormation) warnings.push("A standard formation could not be derived; players are shown by position.");
+  else if (suppliedFormation && suppliedFormation !== derivedFormation) warnings.push(`The supplied formation did not match the players; ${derivedFormation} is shown instead.`);
+  if (bench.length !== 4) warnings.push(`Expected 4 substitutes but received ${bench.length}.`);
+
+  const allPlayers = [...starters, ...bench];
+  const captain = allPlayers.find((player) => player.playerId === team.captainPlayerId) ?? allPlayers.find((player) => player.captain) ?? null;
+  const viceCaptain = allPlayers.find((player) => player.playerId === team.viceCaptainPlayerId) ?? allPlayers.find((player) => player.viceCaptain) ?? null;
+  if (!captain) warnings.push("Captain information is not available.");
+  if (!viceCaptain) warnings.push("Vice-captain information is not available.");
+
   return {
-    squad: {
-      gk: toPitchPlayer(grouped.goalkeeper[0]),
-      df: grouped.defenders.map(toPitchPlayer),
-      cm: grouped.midfielders.map(toPitchPlayer),
-      fw: grouped.forwards.map(toPitchPlayer)
-    },
-    style: {
-      color: "#f7f9f8",
-      borderColor: "#17241f",
-      numberColor: "#17241f",
-      nameColor: "#ffffff",
-      nameBackgroundColor: "rgba(12, 36, 27, .88)",
-      nameOverflow: "ellipsis",
-      pattern: "none"
-    }
+    starters,
+    bench,
+    allPlayers,
+    groupedPlayers,
+    formation,
+    captain,
+    viceCaptain,
+    warnings: [...new Set(warnings)],
+    completeStartingXi: starters.length === 11 && derivedFormation !== null
   };
 }
 
-export function describeLineup(formation: string, grouped: GroupedPlayers): string {
-  const names = (players: SuggestedPlayer[]) => players.map((player) => player.name).join(", ");
-  return `Suggested formation ${formation}. Goalkeeper: ${names(grouped.goalkeeper)}. Defenders: ${names(grouped.defenders)}. Midfielders: ${names(grouped.midfielders)}. Forwards: ${names(grouped.forwards)}.`;
+export function validateStartingXi(players: SuggestedPlayer[], suppliedFormation?: string) {
+  if (players.some((player) => player.number !== undefined && player.number !== null && (!Number.isInteger(player.number) || player.number < 1 || player.number > 99))) {
+    return { valid: false as const, reason: "invalid-player-number" };
+  }
+  const normalized = normalizeSuggestedTeam({ startingXi: players, formation: suppliedFormation });
+  if (!normalized?.completeStartingXi) return { valid: false as const, reason: "incomplete-or-invalid" };
+  if (suppliedFormation !== undefined && normalized.formation !== suppliedFormation) return { valid: false as const, reason: "formation-mismatch" };
+  return { valid: true as const, formation: normalized.formation!, groupedPlayers: normalized.groupedPlayers };
+}
+
+export function playerLabel(player: SuggestedPlayer, captainId?: number, viceCaptainId?: number): string {
+  if (player.playerId === captainId || player.captain) return `${player.name} (C)`;
+  if (player.playerId === viceCaptainId || player.viceCaptain) return `${player.name} (VC)`;
+  return player.name;
+}
+
+export function describeLineup(formation: string | null, grouped: GroupedPlayers): string {
+  const names = (players: SuggestedPlayer[]) => players.map((player) => playerLabel(player)).join(", ") || "Not available";
+  return `Suggested formation ${formation ?? "not available"}. Goalkeeper: ${names(grouped.goalkeeper)}. Defenders: ${names(grouped.defenders)}. Midfielders: ${names(grouped.midfielders)}. Forwards: ${names(grouped.forwards)}.`;
 }

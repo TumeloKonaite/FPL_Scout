@@ -43,8 +43,8 @@ For a Vercel deployment backed by Modal, set `API_PROXY_TARGET` to the public Mo
 API URL and set `PIPELINE_API_TOKEN` to the same value stored in the Modal secret.
 Both are server-only variables and must not use a `NEXT_PUBLIC_*` prefix.
 
-`NEXT_PUBLIC_API_BASE_URL` remains available when a direct browser-to-API connection
-is required, but that API must then allow the frontend origin through CORS.
+Browser requests always use the same-origin `/backend/*` proxy; no backend URL or
+pipeline credential is included in the client bundle.
 
 Start the FastAPI backend from the repository root:
 

@@ -4,12 +4,13 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from unittest.mock import patch
 
-from agents import ModelResponse
+from agents import AgentOutputSchema, ModelResponse
 from agents.models.interface import Model, ModelTracing
 from openai.types.responses.response_prompt_param import ResponsePromptParam
 
 from src.agents.expert_video_agent import build_expert_video_agent
 from src.agents.final_synthesis_agent import build_final_synthesis_agent
+from src.schemas.expert_analysis import ExpertVideoAnalysis
 
 
 class FakeModel(Model):
@@ -58,6 +59,9 @@ def test_build_expert_video_agent_uses_shared_model_factory(tmp_path: Path) -> N
         agent = build_expert_video_agent(prompt_path)
 
     assert agent.model is fake_model
+    assert isinstance(agent.output_type, AgentOutputSchema)
+    assert agent.output_type.is_strict_json_schema() is False
+    assert agent.output_type.output_type is ExpertVideoAnalysis
     mock_factory.assert_called_once_with()
 
 

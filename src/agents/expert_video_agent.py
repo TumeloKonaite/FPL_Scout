@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from agents import Agent
+from agents import Agent, AgentOutputSchema
 
 from src.agents.model_factory import build_openai_model
 from src.schemas.expert_analysis import ExpertVideoAnalysis
@@ -29,6 +29,12 @@ def build_expert_video_agent(prompt_path: Path | None = None) -> Agent:
     return Agent(
         name="FPL Video Analyst",
         instructions=instructions,
-        output_type=ExpertVideoAnalysis,
+        # player_positions is intentionally keyed by arbitrary player names. JSON
+        # Schema represents that mapping with additionalProperties, which the
+        # Agents SDK's strict schema mode rejects before a model call is made.
+        output_type=AgentOutputSchema(
+            ExpertVideoAnalysis,
+            strict_json_schema=False,
+        ),
         model=build_openai_model(),
     )

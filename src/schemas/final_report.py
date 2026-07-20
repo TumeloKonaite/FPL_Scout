@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from src.schemas.aggregate_report import (
@@ -48,6 +50,28 @@ class FinalExpertTeamReveal(BaseModel):
     confidence: float | None = Field(default=None, ge=0, le=1)
 
 
+class SuggestedPlayer(BaseModel):
+    playerId: int = Field(gt=0)
+    name: str = Field(min_length=1)
+    number: int = Field(ge=1, le=99)
+    position: Literal["GK", "DEF", "MID", "FWD"]
+    club: str | None = None
+    price: float | None = None
+    predictedPoints: float | None = None
+    ownership: float | None = None
+    expectedMinutes: int | None = Field(default=None, ge=0, le=120)
+    fixtureDifficulty: int | None = Field(default=None, ge=1, le=5)
+    captain: bool = False
+    viceCaptain: bool = False
+    isStarter: bool = True
+
+
+class SuggestedTeam(BaseModel):
+    formation: str | None = None
+    startingXi: list[SuggestedPlayer]
+    players: list[SuggestedPlayer] | None = None
+
+
 class FinalGameweekReport(BaseModel):
     gameweek: int | None = None
     overview: str
@@ -59,4 +83,5 @@ class FinalGameweekReport(BaseModel):
     conditional_advice: list[str] = Field(default_factory=list)
     wait_for_news: list[str] = Field(default_factory=list)
     expert_team_reveals: list[FinalExpertTeamReveal] = Field(default_factory=list)
+    suggested_team: SuggestedTeam | None = None
     conclusion: str

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from src.app.core.dependencies import get_report_service
 from src.app.domain.reports.service import EmptyReportDirectoryError, ReportNotFoundError
 from src.app.main import create_app
-from src.schemas.final_report import FinalGameweekReport
+from src.schemas.final_report import FinalGameweekReport, SuggestedPlayer, SuggestedTeam
 
 
 @dataclass(frozen=True)
@@ -90,6 +90,44 @@ def test_latest_report_returns_200_when_report_exists() -> None:
     assert response.status_code == 200
     assert response.json()["run_id"] == "gw32"
     assert response.json()["report"]["gameweek"] == 32
+
+
+def test_latest_report_preserves_structured_suggested_team() -> None:
+    positions = ["GK", *(["DEF"] * 3), *(["MID"] * 4), *(["FWD"] * 3)]
+    report = _final_report()
+    report.suggested_team = SuggestedTeam(
+        formation="3-4-3",
+        startingXi=[
+            SuggestedPlayer(
+                playerId=index,
+                name=f"Player {index}",
+                number=index,
+                position=position,
+            )
+            for index, position in enumerate(positions, start=1)
+        ],
+    )
+    client = _client(StubReportService({"gw32": StubReportBundle("gw32", report)}))
+
+    payload = client.get("/api/reports/latest").json()["report"]["suggested_team"]
+
+    assert payload["formation"] == "3-4-3"
+    assert len(payload["startingXi"]) == 11
+    assert payload["startingXi"][0] == {
+        "playerId": 1,
+        "name": "Player 1",
+        "number": 1,
+        "position": "GK",
+        "club": None,
+        "price": None,
+        "predictedPoints": None,
+        "ownership": None,
+        "expectedMinutes": None,
+        "fixtureDifficulty": None,
+        "captain": False,
+        "viceCaptain": False,
+        "isStarter": True,
+    }
 
 
 def test_latest_report_returns_404_when_no_reports_exist() -> None:

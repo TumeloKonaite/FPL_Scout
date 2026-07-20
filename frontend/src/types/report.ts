@@ -26,6 +26,12 @@ export type FinalExpertTeamReveal = {
   confidence?: number | null;
 };
 
+export type SuggestedTeam = {
+  formation?: string;
+  startingXi: import("@/components/suggestedTeam").SuggestedPlayer[];
+  players?: import("@/components/suggestedTeam").SuggestedPlayer[];
+};
+
 export type Report = {
   gameweek?: number;
   overview: string;
@@ -37,6 +43,7 @@ export type Report = {
   conditional_advice?: string[];
   wait_for_news?: string[];
   expert_team_reveals?: FinalExpertTeamReveal[];
+  suggested_team?: SuggestedTeam | null;
   conclusion: string;
   [key: string]: unknown;
 };

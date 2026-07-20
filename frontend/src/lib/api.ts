@@ -1,4 +1,4 @@
-import type { FullReportResponse, PipelineRun, ReportSummary } from "../types/report";
+import type { AdminReportResponse, FullReportResponse, PipelineRun, PipelineStatus, ReportSummary } from "../types/report";
 
 const DEFAULT_API_BASE_URL = "/backend";
 
@@ -84,26 +84,37 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 }
 
 export function getReports(): Promise<ReportSummary[]> {
-  return apiRequest<ReportSummary[]>("/api/reports");
+  return apiRequest<ReportSummary[]>("/api/admin/reports");
 }
 
 export function getLatestReport(): Promise<FullReportResponse> {
-  return apiRequest<FullReportResponse>("/api/reports/latest");
+  return apiRequest<FullReportResponse>("/api/recommendations/latest");
 }
 
-export function getReport(runId: string): Promise<FullReportResponse> {
-  return apiRequest<FullReportResponse>(`/api/reports/${encodeURIComponent(runId)}`);
+export function getReport(runId: string): Promise<AdminReportResponse> {
+  return apiRequest<AdminReportResponse>(`/api/admin/reports/${encodeURIComponent(runId)}`);
 }
 
 export function runPipeline(inputData?: Record<string, unknown>): Promise<PipelineRun> {
-  return apiRequest<PipelineRun>("/api/pipeline-runs", {
+  return apiRequest<PipelineRun>("/api/admin/pipeline/run", {
+    body: inputData === undefined ? {} : { input_data: inputData },
+    method: "POST"
+  });
+}
+
+export function generateReport(inputData?: Record<string, unknown>): Promise<PipelineRun> {
+  return apiRequest<PipelineRun>("/api/admin/reports/generate", {
     body: inputData === undefined ? {} : { input_data: inputData },
     method: "POST"
   });
 }
 
 export function getPipelineRun(runId: string): Promise<PipelineRun> {
-  return apiRequest<PipelineRun>(`/api/pipeline-runs/${encodeURIComponent(runId)}`);
+  return apiRequest<PipelineRun>(`/api/admin/runs/${encodeURIComponent(runId)}`);
+}
+
+export function getPipelineStatus(): Promise<PipelineStatus> {
+  return apiRequest<PipelineStatus>("/api/admin/pipeline/status");
 }
 
 type PollPipelineOptions = {
@@ -128,7 +139,7 @@ export async function pollPipelineRun(
   let current = initialRun;
   options.onUpdate?.(current);
 
-  while (current.status === "pending" || current.status === "running") {
+  while (current.status === "pending" || current.status === "queued" || current.status === "running") {
     if (Date.now() >= deadline) {
       throw new Error("Pipeline polling timed out after 30 minutes. The job may still be running; retry status shortly.");
     }
@@ -154,7 +165,9 @@ export const api = {
   getLatestReport,
   getReport,
   runPipeline,
+  generateReport,
   getPipelineRun,
+  getPipelineStatus,
   pollPipelineRun,
   request: apiRequest
 };

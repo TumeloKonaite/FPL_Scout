@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from fastapi.testclient import TestClient
 
 from src.app.core.dependencies import get_report_service
+from src.app.core.auth import AdminPrincipal, require_admin
 from src.app.domain.reports.service import EmptyReportDirectoryError, ReportNotFoundError
 from src.app.main import create_app
 from src.schemas.final_report import FinalGameweekReport, SuggestedPlayer, SuggestedTeam
@@ -60,6 +61,7 @@ def _final_report(gameweek: int = 32) -> FinalGameweekReport:
 def _client(service: StubReportService) -> TestClient:
     app = create_app()
     app.dependency_overrides[get_report_service] = lambda: service
+    app.dependency_overrides[require_admin] = lambda: AdminPrincipal()
     return TestClient(app)
 
 
@@ -90,6 +92,17 @@ def test_latest_report_returns_200_when_report_exists() -> None:
     assert response.status_code == 200
     assert response.json()["run_id"] == "gw32"
     assert response.json()["report"]["gameweek"] == 32
+
+
+def test_public_latest_recommendations_excludes_internal_run_metadata() -> None:
+    client = _client(StubReportService({"internal-run-id": StubReportBundle("internal-run-id", _final_report())}))
+
+    response = client.get("/api/recommendations/latest")
+
+    assert response.status_code == 200
+    assert response.json()["gameweek"] == 32
+    assert response.json()["available"] is True
+    assert "run_id" not in response.json()
 
 
 def test_latest_report_preserves_structured_suggested_team() -> None:

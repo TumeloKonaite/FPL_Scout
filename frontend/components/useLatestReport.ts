@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getErrorMessage } from "./apiError";
 import { getLatestReport } from "@/src/lib/api";
 import type { FullReportResponse } from "@/src/types/report";
 
@@ -14,7 +13,7 @@ export function useLatestReport() {
     let active = true;
     getLatestReport()
       .then((report) => { if (active) setData(report); })
-      .catch((caught) => { if (active) setError(getErrorMessage(caught)); })
+      .catch(() => { if (active) setError("The latest gameweek analysis is temporarily unavailable."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);

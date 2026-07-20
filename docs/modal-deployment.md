@@ -21,10 +21,11 @@ uv run modal secret create fpl-scout-secrets \
   ENABLE_WEBSHARE_PROXY="true" \
   WEBSHARE_PROXY_USERNAME="..." \
   WEBSHARE_PROXY_PASSWORD="..." \
+  ADMIN_API_TOKEN="..." \
   PIPELINE_API_TOKEN="..."
 ```
 
-An empty `OPENAI_BASE_URL` safely selects `https://api.openai.com/v1`. Rotate secrets by running the same command with the replacement values, then redeploy. The token is read by FastAPI. A separately deployed frontend should keep the same token in a server-only environment variable and inject it from its `/backend/*` route; never use a `NEXT_PUBLIC_*` variable for it.
+An empty `OPENAI_BASE_URL` safely selects `https://api.openai.com/v1`. Rotate secrets by running the same command with the replacement values, then redeploy. `ADMIN_API_TOKEN` protects admin pages and APIs; `PIPELINE_API_TOKEN` remains available for compatible automation.
 
 ## Volume and deployment
 
@@ -81,14 +82,13 @@ To roll back, revert the relevant commit on `main` and merge the revert. The res
 
 ## Vercel frontend handoff
 
-The existing Next.js server route already proxies `/backend/*`, injects `PIPELINE_API_TOKEN` for pipeline mutations, and keeps browser requests same-origin. In the future Vercel project, configure these server-side environment variables:
+The existing Next.js server route proxies `/backend/*` and forwards an authenticated admin's HttpOnly session credential only to `/api/admin/*`. Configure this server-side environment variable:
 
 ```text
 API_PROXY_TARGET=https://<modal-api-host>.modal.run
-PIPELINE_API_TOKEN=<same value stored in fpl-scout-secrets>
 ```
 
-Neither variable should be prefixed with `NEXT_PUBLIC_`. The Modal API's CORS settings do not need the Vercel origin when the frontend uses this server-side proxy.
+The value should not be prefixed with `NEXT_PUBLIC_`. The Modal API's CORS settings do not need the Vercel origin when the frontend uses this server-side proxy.
 
 ## Operations
 

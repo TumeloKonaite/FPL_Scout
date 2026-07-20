@@ -14,9 +14,10 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     if (value) headers.set(name, value);
   }
 
-  const isPipelineMutation = request.method === "POST" && path.join("/") === "api/pipeline-runs";
-  if (isPipelineMutation && process.env.PIPELINE_API_TOKEN) {
-    headers.set("authorization", `Bearer ${process.env.PIPELINE_API_TOKEN}`);
+  const isAdminApi = path[0] === "api" && path[1] === "admin";
+  const adminToken = request.cookies.get("fpl_admin_session")?.value;
+  if (isAdminApi && adminToken) {
+    headers.set("authorization", `Bearer ${adminToken}`);
   }
 
   try {
@@ -35,7 +36,7 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     });
   } catch {
     return NextResponse.json(
-      { detail: "The FPL API is unavailable. Check the Modal API deployment and API_PROXY_TARGET." },
+      { detail: "The FPL API is unavailable." },
       { status: 502 }
     );
   }

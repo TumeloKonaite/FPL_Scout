@@ -253,7 +253,7 @@ def create_pipeline_run(input_data: dict[str, Any] | None) -> dict[str, Any]:
     payload = _validate_api_input(input_data)
     run_id = str(uuid4())
     store = PipelineRunStore()
-    record = store.create(run_id, payload)
+    record = store.create_if_idle(run_id, payload)
     commit_runtime_volume()
     try:
         _pipeline_dispatcher(run_id, payload)

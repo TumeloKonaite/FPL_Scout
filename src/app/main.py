@@ -7,9 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from src.app.api.routes.chat import router as chat_router
+from src.app.api.routes.admin import router as admin_router
 from src.app.api.routes.health import router as health_router
 from src.app.api.routes.pipeline_runs import router as pipeline_runs_router
 from src.app.api.routes.reports import router as reports_router
+from src.app.api.routes.public import router as public_router
 from src.app.core.config import bootstrap_data_directories
 from src.app.core.dependencies import get_app_settings
 
@@ -43,6 +45,8 @@ def create_app() -> FastAPI:
         return {"message": "FPL Technocrat API"}
 
     app.include_router(health_router)
+    app.include_router(public_router)
+    app.include_router(admin_router)
     app.include_router(reports_router)
     app.include_router(pipeline_runs_router)
     app.include_router(chat_router)

@@ -1,29 +1,10 @@
 "use client";
 
-import type { FullReportResponse, Report, ReportSummary } from "@/src/types/report";
+import type { FullReportResponse, Report } from "@/src/types/report";
 
 type ReportViewerProps = {
   report: FullReportResponse;
-  reports?: ReportSummary[];
-  selectedRunId?: string;
-  onSelectRun?: (runId: string) => void;
 };
-
-function formatDate(value?: string | null): string {
-  if (!value) {
-    return "Unknown";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(date);
-}
 
 function confidenceLabel(confidence?: number | null): string | null {
   if (confidence === undefined || confidence === null) {
@@ -199,41 +180,13 @@ function renderReportSections(report: Report) {
   );
 }
 
-export function ReportViewer({
-  onSelectRun,
-  report,
-  reports,
-  selectedRunId
-}: ReportViewerProps) {
+export function ReportViewer({ report }: ReportViewerProps) {
   return (
     <div className="report-layout">
-      {reports && onSelectRun ? (
-        <aside className="report-library" aria-label="Historical reports">
-          <h2>Report History</h2>
-          {reports.length ? (
-            <div className="run-list">
-              {[...reports].reverse().map((item) => (
-                <button
-                  className={item.run_id === selectedRunId ? "run-button active" : "run-button"}
-                  key={item.run_id}
-                  onClick={() => onSelectRun(item.run_id)}
-                  type="button"
-                >
-                  <strong>{item.title || item.run_id}</strong>
-                  <span>{formatDate(item.created_at)}</span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <EmptySection message="No saved reports were found." />
-          )}
-        </aside>
-      ) : null}
-
       <article className="report-panel">
         <header className="report-title">
           <span>{report.report.gameweek ? `GW${report.report.gameweek}` : "Gameweek report"}</span>
-          <h2>{report.run_id}</h2>
+          <h2>{report.report.gameweek ? `Gameweek ${report.report.gameweek} recommendations` : "Latest recommendations"}</h2>
         </header>
         {renderReportSections(report.report)}
       </article>

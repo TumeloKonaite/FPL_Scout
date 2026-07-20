@@ -14,7 +14,7 @@ test("dashboard presents a read-only gameweek summary with resilient states", ()
   const dashboard = source("app/dashboard/page.tsx");
 
   assert.match(dashboard, /getLatestReport\(\)/);
-  assert.match(dashboard, /getReports\(\)/);
+  assert.doesNotMatch(dashboard, /getReports\(\)/);
   assert.match(dashboard, /<DashboardSkeleton \/>/);
   assert.match(dashboard, /No gameweek summary is available yet\./);
   assert.match(dashboard, /ErrorState label=\{error\}/);
@@ -29,14 +29,13 @@ test("dashboard presents a read-only gameweek summary with resilient states", ()
   assert.doesNotMatch(dashboard, /Generate report/);
 });
 
-test("reports page supports historical report selection", () => {
+test("reports page only renders the latest public report", () => {
   const reportsPage = source("app/reports/page.tsx");
 
-  assert.match(reportsPage, /getReports\(\)/);
-  assert.match(reportsPage, /getReport\(selectedRunId as string\)/);
-  assert.match(reportsPage, /onSelectRun=\{setSelectedRunId\}/);
-  assert.match(reportsPage, /selectedRunId=\{selectedRunId \?\? undefined\}/);
-  assert.match(reportsPage, /LoadingState label="Loading selected report\.\.\."/);
+  assert.match(reportsPage, /getLatestReport\(\)/);
+  assert.doesNotMatch(reportsPage, /getReports\(\)/);
+  assert.doesNotMatch(reportsPage, /selectedRunId/);
+  assert.match(reportsPage, /The latest gameweek analysis is temporarily unavailable\./);
 });
 
 test("report viewer renders every final report section", () => {
@@ -59,16 +58,11 @@ test("report viewer renders every final report section", () => {
   }
 });
 
-test("pipeline runner triggers backend runs and surfaces failures", () => {
+test("legacy public pipeline route redirects to protected admin", () => {
   const runner = source("app/pipeline-runner/page.tsx");
 
-  assert.match(runner, /runPipeline\(inputData\)/);
-  assert.match(runner, /pollPipelineRun\(accepted, \{ onUpdate: setPipelineRun \}\)/);
-  assert.match(runner, /setError\(result\.error \|\| "Pipeline run failed\."\)/);
-  assert.match(runner, /ErrorState label=\{error\}/);
-  assert.match(runner, /pipelineRun\?\.status \?\? "pending"/);
-  assert.match(runner, /"Retry Pipeline"/);
-  assert.match(runner, /No pipeline run has been started in this browser session\./);
+  assert.match(runner, /redirect\("\/admin"\)/);
+  assert.doesNotMatch(runner, /runPipeline/);
 });
 
 test("API errors prefer backend detail messages", () => {
@@ -80,13 +74,14 @@ test("API errors prefer backend detail messages", () => {
   assert.match(apiError, /return `\$\{error\.status\} \$\{error\.statusText\}`/);
 });
 
-test("backend proxy injects mutation authentication server-side", () => {
+test("backend proxy forwards an HttpOnly admin session only to admin APIs", () => {
   const nextConfig = source("next.config.ts");
   const route = source("app/backend/[...path]/route.ts");
 
   assert.match(nextConfig, /output:\s*"standalone"/);
   assert.match(route, /process\.env\.API_PROXY_TARGET/);
-  assert.match(route, /process\.env\.PIPELINE_API_TOKEN/);
+  assert.match(route, /fpl_admin_session/);
+  assert.match(route, /isAdminApi/);
   assert.match(route, /headers\.set\("authorization", `Bearer/);
   assert.doesNotMatch(source("src/lib/api.ts"), /PIPELINE_API_TOKEN/);
   assert.doesNotMatch(source("src/lib/api.ts"), /NEXT_PUBLIC_/);
@@ -95,8 +90,27 @@ test("backend proxy injects mutation authentication server-side", () => {
 test("polling stops on terminal states and has retry and timeout limits", () => {
   const api = source("src/lib/api.ts");
 
-  assert.match(api, /current\.status === "pending" \|\| current\.status === "running"/);
+  assert.match(api, /current\.status === "pending" \|\| current\.status === "queued" \|\| current\.status === "running"/);
   assert.match(api, /maxConsecutiveErrors \?\? 3/);
   assert.match(api, /Date\.now\(\) >= deadline/);
   assert.match(api, /current = await getPipelineRun\(current\.run_id\)/);
+});
+
+test("public navigation and APIs do not expose operational controls", () => {
+  const sidebar = source("components/Sidebar.tsx");
+  const api = source("src/lib/api.ts");
+  assert.doesNotMatch(sidebar, /\/admin|pipeline-runner|Pipeline Runner/);
+  assert.match(api, /\/api\/recommendations\/latest/);
+  assert.match(api, /\/api\/admin\/pipeline\/run/);
+});
+
+test("admin dashboard exposes controls and internal failure details", () => {
+  const admin = source("app/admin/(protected)/page.tsx");
+  const guard = source("app/admin/(protected)/layout.tsx");
+  assert.match(admin, /"Run pipeline"/);
+  assert.match(admin, />Generate report</);
+  assert.match(admin, />Failure details</);
+  assert.match(admin, /disabled=\{isRunning\}/);
+  assert.match(guard, /redirect\("\/admin\/login"\)/);
+  assert.match(guard, /authorization: `Bearer/);
 });

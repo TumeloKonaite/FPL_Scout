@@ -191,13 +191,14 @@ make run-api
 ```
 
 The API exposes:
-- `GET /api/reports`: list generated reports in `data/reports/`
-- `GET /api/reports/latest`: load the newest report
-- `GET /api/reports/{run_id}`: load a specific historical report
-- `POST /api/pipeline-runs`: trigger a pipeline run from JSON input
-- `GET /api/pipeline-runs/{run_id}`: poll durable pending/running/completed/failed state
+- `GET /api/gameweek/current`: load public gameweek timing and availability
+- `GET /api/recommendations/latest`: load the latest public recommendations without run metadata
+- `GET /api/admin/pipeline/status`: inspect the latest internal run
+- `POST /api/admin/pipeline/run`: trigger a protected pipeline run
+- `POST /api/admin/reports/generate`: generate and publish a protected report
+- `GET /api/admin/runs/{run_id}`: poll durable queued/running/completed/failed state
 
-Pipeline POSTs return `202 Accepted`; work continues in a background thread locally and a detached worker on Modal. Set `PIPELINE_API_TOKEN` to require a bearer token for starts.
+All `/api/admin` endpoints require an administrator bearer token. Set `ADMIN_API_TOKEN`; `PIPELINE_API_TOKEN` remains an accepted compatibility credential. Pipeline POSTs return `202 Accepted`; work continues in a background thread locally and a detached worker on Modal.
 
 ### Next.js Frontend
 Production: [https://fpl-scout-kappa.vercel.app](https://fpl-scout-kappa.vercel.app)
@@ -215,11 +216,11 @@ npm --prefix frontend run dev
 make run-frontend
 ```
 
-Open `http://localhost:3000`. The frontend's same-origin `/backend/*` route proxies to `http://localhost:8000` by default. To use another API URL, set the server-only `API_PROXY_TARGET` in `frontend/.env.local`. Pipeline starts use the server-only `PIPELINE_API_TOKEN`; neither setting belongs in a `NEXT_PUBLIC_*` variable.
+Open `http://localhost:3000`. The frontend's same-origin `/backend/*` route proxies to `http://localhost:8000` by default. To use another API URL, set the server-only `API_PROXY_TARGET` in `frontend/.env.local`.
 
-The frontend can load the latest report, select historical reports, render all final report sections, trigger pipeline runs, and display loading, empty, and API error states.
+Visitors can load only the latest published recommendations and see neutral unavailable states. Operational controls and internal run metadata are restricted to `/admin`; sign in there with the configured `ADMIN_API_TOKEN`.
 
-Trigger a pipeline run from the UI by opening `/pipeline-runner`, entering the gameweek and run limits, and choosing **Run Pipeline**. The same flow is available through `POST /api/pipeline-runs` when you want to trigger it programmatically.
+Administrators can trigger a pipeline or report generation from `/admin`. Duplicate runs are rejected while another run is queued or running.
 
 ### Test Suite
 Source of truth command:

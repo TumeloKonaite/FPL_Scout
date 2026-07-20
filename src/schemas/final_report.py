@@ -11,7 +11,10 @@ from src.schemas.aggregate_report import (
     ExpertTeamRevealItem,
     FixtureInsightConsensusItem,
     TransferConsensusItem,
+    RecommendationSource,
+    CompetingRecommendation,
 )
+from src.services.consensus import ConsensusLevel
 
 
 class AggregatedFPLReport(BaseModel):
@@ -43,6 +46,26 @@ class FinalRecommendation(BaseModel):
     playerOut: str | None = None
     position: str | None = None
     price: float | None = None
+    consensus: "RecommendationConsensus | None" = None
+    freshness: "RecommendationFreshness | None" = None
+    sources: list[RecommendationSource] = Field(default_factory=list)
+    alternatives: list[CompetingRecommendation] = Field(default_factory=list)
+
+
+class RecommendationConsensus(BaseModel):
+    label: ConsensusLevel
+    supportCount: int = Field(ge=0)
+    relevantExpertCount: int | None = Field(default=None, ge=0)
+    oppositionCount: int = Field(default=0, ge=0)
+    mentionCount: int = Field(default=0, ge=0)
+    supportRatio: float | None = Field(default=None, ge=0, le=1)
+
+
+class RecommendationFreshness(BaseModel):
+    generatedAt: str
+    newestSourceAt: str | None = None
+    oldestSourceAt: str | None = None
+    sourceWindowHours: int | None = Field(default=None, ge=0)
 
 
 class KeyRisk(BaseModel):

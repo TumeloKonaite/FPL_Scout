@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from src.schemas.aggregate_report import (
+    CompetingRecommendation,
     ConsensusItem,
     ExpertTeamRevealItem,
     FixtureInsightConsensusItem,
     TransferConsensusItem,
+    RecommendationSource,
 )
 from src.schemas.expert_analysis import ExpertVideoAnalysis
 from src.schemas.final_report import AggregatedFPLReport
@@ -23,6 +25,7 @@ from src.services.normalization import (
     normalize_text_label,
     titleize_normalized,
 )
+from src.services.consensus import consensus_level, support_ratio
 
 
 _CONFIDENCE_TO_SCORE = {
@@ -38,6 +41,61 @@ def _confidence_score(level: str) -> float:
 
 def _sorted_experts(experts: set[str]) -> list[str]:
     return sorted(experts, key=str.casefold)
+
+
+def _source(analysis: ExpertVideoAnalysis) -> RecommendationSource:
+    return RecommendationSource(
+        name=analysis.expert_name,
+        title=analysis.video_title,
+        url=analysis.source_url,
+        publishedAt=analysis.published_at,
+    )
+
+
+def _with_consensus_evidence(
+    items: list[ConsensusItem],
+    grouped: dict[str, dict[str, object]],
+    relevant_experts: set[str],
+) -> list[ConsensusItem]:
+    enriched: list[ConsensusItem] = []
+    for item in items:
+        key = next(
+            grouped_key
+            for grouped_key in grouped
+            if normalize_lookup_key(grouped_key) == normalize_lookup_key(item.item)
+        )
+        data = grouped[key]
+        alternatives = [
+            CompetingRecommendation(
+                recommendation=other.item,
+                support_count=other.mention_count,
+                sources=other.supporting_experts,
+            )
+            for other in items
+            if normalize_lookup_key(other.item) != normalize_lookup_key(item.item)
+        ]
+        level = consensus_level(item.mention_count, len(relevant_experts))
+        if any(other.support_count >= item.mention_count for other in alternatives):
+            level = "split"
+        enriched.append(
+            item.model_copy(
+                update={
+                    "relevant_expert_count": len(relevant_experts),
+                    "opposition_count": len(relevant_experts - set(item.supporting_experts)),
+                    "support_ratio": support_ratio(item.mention_count, len(relevant_experts)),
+                    "consensus": level,
+                    "sources": list(data["sources"])
+                    + [
+                        source.model_copy(update={"position": "alternative"})
+                        for other_key, other_data in grouped.items()
+                        if other_key != key
+                        for source in other_data["sources"]
+                    ],
+                    "alternatives": alternatives,
+                }
+            )
+        )
+    return enriched
 
 
 def _unique_normalized_players(players: list[str]) -> set[str]:
@@ -167,8 +225,9 @@ def aggregate_player_consensus(
         for player_key in _unique_normalized_players(analysis.recommended_players):
             entry = grouped.setdefault(
                 player_key,
-                {"experts": set(), "confidences": []},
+                {"experts": set(), "confidences": [], "sources": []},
             )
+            entry["sources"].append(_source(analysis))
             experts = entry["experts"]
             if analysis.expert_name in experts:
                 continue
@@ -187,10 +246,14 @@ def aggregate_player_consensus(
         )
         for player_key, data in grouped.items()
     ]
-    return sorted(
+    items = sorted(
         items,
         key=lambda item: (-item.mention_count, -item.average_confidence, normalize_lookup_key(item.item)),
     )
+    relevant = {
+        analysis.expert_name for analysis in analyses if analysis.recommended_players
+    }
+    return _with_consensus_evidence(items, grouped, relevant)
 
 
 def aggregate_captaincy(
@@ -203,8 +266,9 @@ def aggregate_captaincy(
         for player_key in _unique_normalized_players(analysis.captaincy_picks):
             entry = grouped.setdefault(
                 player_key,
-                {"experts": set(), "confidences": []},
+                {"experts": set(), "confidences": [], "sources": []},
             )
+            entry["sources"].append(_source(analysis))
             experts = entry["experts"]
             if analysis.expert_name in experts:
                 continue
@@ -223,10 +287,12 @@ def aggregate_captaincy(
         )
         for player_key, data in grouped.items()
     ]
-    return sorted(
+    items = sorted(
         items,
         key=lambda item: (-item.mention_count, -item.average_confidence, normalize_lookup_key(item.item)),
     )
+    relevant = {analysis.expert_name for analysis in analyses if analysis.captaincy_picks}
+    return _with_consensus_evidence(items, grouped, relevant)
 
 
 def aggregate_transfers(
@@ -240,8 +306,9 @@ def aggregate_transfers(
         for player_key in _unique_normalized_players(analysis.recommended_players):
             entry = grouped.setdefault(
                 ("buy", player_key),
-                {"experts": set(), "confidences": []},
+                {"experts": set(), "confidences": [], "sources": []},
             )
+            entry["sources"].append(_source(analysis))
             experts = entry["experts"]
             if analysis.expert_name in experts:
                 continue
@@ -251,8 +318,9 @@ def aggregate_transfers(
         for player_key in _unique_normalized_players(analysis.avoid_players):
             entry = grouped.setdefault(
                 ("sell", player_key),
-                {"experts": set(), "confidences": []},
+                {"experts": set(), "confidences": [], "sources": []},
             )
+            entry["sources"].append(_source(analysis))
             experts = entry["experts"]
             if analysis.expert_name in experts:
                 continue
@@ -272,7 +340,7 @@ def aggregate_transfers(
         )
         for (direction, player_key), data in grouped.items()
     ]
-    return sorted(
+    items = sorted(
         items,
         key=lambda item: (
             item.direction,
@@ -281,6 +349,62 @@ def aggregate_transfers(
             normalize_lookup_key(item.player_name),
         ),
     )
+    enriched: list[TransferConsensusItem] = []
+    for item in items:
+        key = (item.direction, normalize_player_name(item.player_name))
+        same_direction_experts = {
+            analysis.expert_name
+            for analysis in analyses
+            if (item.direction == "buy" and analysis.recommended_players)
+            or (item.direction == "sell" and analysis.avoid_players)
+        }
+        opposite_direction = "sell" if item.direction == "buy" else "buy"
+        opposing_experts = set(grouped.get((opposite_direction, key[1]), {}).get("experts", set()))
+        relevant = same_direction_experts | opposing_experts
+        alternatives = [
+            CompetingRecommendation(
+                recommendation=f"{other.direction.title()} {other.player_name}",
+                support_count=other.mention_count,
+                sources=other.supporting_experts,
+            )
+            for other in items
+            if (other.direction == item.direction and other.player_name != item.player_name)
+            or (other.direction == opposite_direction and other.player_name == item.player_name)
+        ]
+        level = consensus_level(item.mention_count, len(relevant))
+        if any(other.support_count >= item.mention_count for other in alternatives):
+            level = "split"
+        enriched.append(
+            item.model_copy(
+                update={
+                    "relevant_expert_count": len(relevant),
+                    "opposition_count": len(relevant - set(item.supporting_experts)),
+                    "support_ratio": support_ratio(item.mention_count, len(relevant)),
+                    "consensus": level,
+                    "sources": list(grouped[key]["sources"])
+                    + [
+                        source.model_copy(
+                            update={
+                                "position": (
+                                    "oppose"
+                                    if other_direction == opposite_direction and other_key == key[1]
+                                    else "alternative"
+                                )
+                            }
+                        )
+                        for (other_direction, other_key), other_data in grouped.items()
+                        if (
+                            other_direction == item.direction
+                            and (other_direction, other_key) != key
+                        )
+                        or (other_direction == opposite_direction and other_key == key[1])
+                        for source in other_data["sources"]
+                    ],
+                    "alternatives": alternatives,
+                }
+            )
+        )
+    return enriched
 
 
 def aggregate_fixture_insights(
@@ -326,8 +450,9 @@ def aggregate_chip_strategy(
 
         entry = grouped.setdefault(
             chip_key,
-            {"experts": set(), "confidences": []},
+            {"experts": set(), "confidences": [], "sources": []},
         )
+        entry["sources"].append(_source(analysis))
         experts = entry["experts"]
         if analysis.expert_name in experts:
             continue
@@ -346,10 +471,16 @@ def aggregate_chip_strategy(
         )
         for chip_key, data in grouped.items()
     ]
-    return sorted(
+    items = sorted(
         items,
         key=lambda item: (-item.mention_count, -item.average_confidence, normalize_lookup_key(item.item)),
     )
+    relevant = {
+        analysis.expert_name
+        for analysis in analyses
+        if normalize_chip_name(analysis.chip_strategy) != "none"
+    }
+    return _with_consensus_evidence(items, grouped, relevant)
 
 
 def build_aggregated_fpl_report(

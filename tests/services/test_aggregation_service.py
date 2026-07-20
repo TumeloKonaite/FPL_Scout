@@ -61,6 +61,31 @@ def test_player_consensus_counts_supporting_experts_once() -> None:
     assert report.player_consensus[0].item == "Bukayo Saka"
     assert report.player_consensus[0].mention_count == 2
     assert report.player_consensus[0].supporting_experts == ["Expert A", "Expert B"]
+    assert report.player_consensus[0].relevant_expert_count == 3
+    assert report.player_consensus[0].support_ratio == 0.6667
+    assert report.player_consensus[0].consensus == "moderate"
+    assert report.player_consensus[0].opposition_count == 1
+
+
+def test_source_mentions_do_not_inflate_unique_expert_support() -> None:
+    first = _build_analysis("Expert A", captaincy_picks=["Salah"])
+    first.published_at = "2026-07-19T10:00:00+00:00"
+    first.source_url = "https://example.com/first"
+    second = _build_analysis("Expert A", captaincy_picks=["Salah"])
+    second.video_title = "Expert A deadline stream"
+    second.summary = "A separate source"
+    third = _build_analysis("Expert B", captaincy_picks=["Haaland"])
+
+    report = build_aggregated_fpl_report([first, second, third])
+    salah = next(item for item in report.captaincy_consensus if item.item == "Mohamed Salah")
+
+    assert salah.mention_count == 1
+    assert len([source for source in salah.sources if source.position == "support"]) == 2
+    assert salah.sources[0].name == "Expert A"
+    assert salah.sources[0].url == "https://example.com/first"
+    assert salah.sources[0].publishedAt == "2026-07-19T10:00:00+00:00"
+    assert salah.alternatives[0].recommendation == "Erling Haaland"
+    assert salah.consensus == "split"
 
 
 def test_confidence_averaging_is_arithmetic_mean() -> None:
@@ -149,6 +174,26 @@ def test_transfer_and_fixture_aggregation_are_deterministic() -> None:
     assert [item.direction for item in report.transfer_consensus] == ["buy", "sell"]
     assert report.fixture_insights[0].insight == "Arsenal have a strong fixture run"
     assert report.fixture_insights[0].mention_count == 2
+
+
+def test_transfer_opposition_is_attributed_without_becoming_support() -> None:
+    report = build_aggregated_fpl_report(
+        [
+            _build_analysis("Expert A", recommended_players=["Saka"]),
+            _build_analysis("Expert B", avoid_players=["Bukayo Saka"]),
+        ]
+    )
+
+    buy = next(
+        item
+        for item in report.transfer_consensus
+        if item.direction == "buy" and item.player_name == "Bukayo Saka"
+    )
+    assert buy.mention_count == 1
+    assert buy.relevant_expert_count == 2
+    assert buy.opposition_count == 1
+    assert buy.consensus == "split"
+    assert any(source.name == "Expert B" and source.position == "oppose" for source in buy.sources)
 
 
 def test_aggregated_report_includes_disagreements_and_conditional_advice() -> None:

@@ -129,17 +129,22 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
     assert payload["startingXi"][0] == {
         "playerId": 1,
         "name": "Player 1",
-        "number": 1,
+            "number": 1,
+            "shirtNumber": None,
         "position": "GK",
         "club": None,
         "price": None,
         "predictedPoints": None,
         "ownership": None,
         "expectedMinutes": None,
-        "fixtureDifficulty": None,
+            "fixtureDifficulty": None,
+            "fixture": None,
+            "expertSupportCount": None,
+            "consensus": None,
         "captain": False,
         "viceCaptain": False,
-        "isStarter": True,
+            "isStarter": True,
+            "benchOrder": None,
     }
 
 

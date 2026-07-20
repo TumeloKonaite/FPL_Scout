@@ -83,7 +83,11 @@ export type FinalExpertTeamReveal = {
 export type SuggestedTeam = {
   formation?: string;
   startingXi: import("@/components/suggestedTeam").SuggestedPlayer[];
+  starters?: import("@/components/suggestedTeam").SuggestedPlayer[];
+  bench?: import("@/components/suggestedTeam").SuggestedPlayer[];
   players?: import("@/components/suggestedTeam").SuggestedPlayer[];
+  captainPlayerId?: number | null;
+  viceCaptainPlayerId?: number | null;
 };
 
 export type Report = {
@@ -110,6 +114,13 @@ export type FullReportResponse = {
   last_updated_at?: string | null;
   available: boolean;
   report: Report;
+};
+
+export type CurrentGameweekResponse = {
+  gameweek?: number | null;
+  deadline?: string | null;
+  last_updated_at?: string | null;
+  recommendations_available: boolean;
 };
 
 export type AdminReportResponse = {

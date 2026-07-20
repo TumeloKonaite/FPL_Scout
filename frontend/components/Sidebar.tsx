@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "./Icons";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+  { href: "/dashboard", label: "This Gameweek", icon: "dashboard" },
   { href: "/reports", label: "Reports", icon: "reports" },
   { href: "/suggested-team", label: "Suggested Team", icon: "team" },
   { href: "/captaincy", label: "Captaincy", icon: "captain" },

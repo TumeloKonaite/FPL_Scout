@@ -93,6 +93,62 @@ button { color: inherit; }
 .signal-item strong { font-size: 12px; }
 .signal-item span { color: var(--text-muted); font-size: 11px; line-height: 1.4; }
 
+.gameweek-dashboard { display: grid; gap: 18px; }
+.gameweek-metadata { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); overflow: hidden; border: 1px solid #badbce; border-radius: 14px; background: linear-gradient(135deg,#15392c,#0d281e); color: white; box-shadow: 0 16px 36px rgba(13,40,29,.13); }
+.gameweek-metadata > div { display: grid; align-content: center; gap: 7px; min-height: 112px; padding: 22px 24px; }
+.gameweek-metadata > div + div { border-left: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.035); }
+.metadata-label { color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+.gameweek-metadata strong { font: 700 17px/1.35 Manrope,sans-serif; letter-spacing: -.35px; }
+.deadline-countdown { width: fit-content; border-radius: 999px; background: rgba(201,242,105,.13); color: #e6ffad; padding: 4px 8px; font-size: 10px; font-weight: 700; }
+
+.summary-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.summary-card { position: relative; display: flex; min-height: 300px; flex-direction: column; align-items: flex-start; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); padding: 21px; box-shadow: var(--shadow); }
+.summary-card::before { position: absolute; inset: 0 0 auto; height: 3px; background: var(--accent); content: ""; }
+.summary-card.transfer-card::before { background: #3d76c5; }
+.summary-card.risk-card::before { background: var(--warning); }
+.summary-card-icon { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 16px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-dark); }
+.transfer-card .summary-card-icon { background: #eef5ff; color: #285b9e; }
+.risk-card .summary-card-icon { background: #fff6df; color: #8b5700; }
+.summary-card-icon svg { width: 18px; height: 18px; }
+.summary-card h2 { margin: 7px 0 7px; font: 700 18px/1.3 Manrope,sans-serif; letter-spacing: -.45px; }
+.summary-card p { margin: 0 0 12px; color: var(--text-muted); font-size: 12px; line-height: 1.55; }
+.summary-card .player-fixture { margin-bottom: 9px; color: var(--text); font-weight: 700; }
+.summary-card .secondary-detail { margin-top: -3px; font-size: 11px; }
+.summary-stat { display: inline-block; margin: 1px 0 11px; border-radius: 999px; background: var(--surface-muted); color: var(--text); padding: 5px 8px; font-size: 10px; font-weight: 700; }
+.risk-response { border-left: 3px solid #e5af42; padding-left: 9px; }
+.summary-link { display: inline-flex; align-items: center; gap: 7px; margin-top: auto; color: var(--accent-dark); font-size: 11px; font-weight: 800; }
+.summary-link:hover, .summary-link:focus-visible { text-decoration: underline; text-underline-offset: 3px; outline: none; }
+.summary-link svg { width: 14px; height: 14px; }
+
+.dashboard-section { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); padding: 21px; box-shadow: var(--shadow); }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 17px; }
+.section-heading h2 { margin: 5px 0 0; font: 700 17px Manrope,sans-serif; letter-spacing: -.35px; }
+.section-heading > span { color: var(--text-muted); font-size: 10px; }
+.action-plan ol { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; counter-reset: action; }
+.action-plan li { display: grid; grid-template-columns: 29px minmax(0,1fr); align-items: center; gap: 11px; border-top: 1px solid var(--border); padding: 11px 0; }
+.action-plan li:first-child { border-top: 0; padding-top: 0; }
+.action-plan li:last-child { padding-bottom: 0; }
+.action-plan li > span { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 8px; background: var(--accent-soft); color: var(--accent-dark); font-size: 10px; font-weight: 800; }
+.action-plan li a { display: flex; align-items: center; justify-content: space-between; gap: 14px; font-size: 12px; line-height: 1.45; }
+.action-plan li a:hover, .action-plan li a:focus-visible { color: var(--accent-dark); outline: none; }
+.action-plan li svg { flex: 0 0 auto; width: 14px; height: 14px; color: var(--accent-dark); }
+
+.position-groups { display: grid; gap: 0; }
+.position-row { display: grid; grid-template-columns: 52px minmax(0,1fr); gap: 14px; border-top: 1px solid var(--border); padding: 12px 0; }
+.position-row:first-child { border-top: 0; padding-top: 0; }
+.position-row:last-child { padding-bottom: 0; }
+.position-row > strong { color: var(--accent-dark); font-size: 10px; letter-spacing: .7px; }
+.position-row > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.preview-player { border-radius: 999px; background: var(--surface-muted); color: var(--text); padding: 5px 9px; font-size: 11px; font-weight: 600; }
+.preview-player abbr { border: 0; color: var(--accent-dark); font-size: 9px; font-weight: 800; text-decoration: none; }
+
+.dashboard-skeleton { display: grid; gap: 18px; }
+.skeleton-block { border-radius: 14px; background: linear-gradient(100deg,#e7ece9 30%,#f5f7f6 50%,#e7ece9 70%); background-size: 300% 100%; animation: dashboard-shimmer 1.4s infinite; }
+.skeleton-meta { height: 112px; }
+.skeleton-card { height: 300px; }
+.skeleton-wide { height: 190px; }
+@keyframes dashboard-shimmer { to { background-position: -300% 0; } }
+
 .placeholder-grid, .insight-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
 .placeholder-card, .insight-card { min-height: 150px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 18px; box-shadow: var(--shadow); }
 .placeholder-card h2, .insight-card h2 { margin: 0 0 9px; font: 700 15px Manrope,sans-serif; }
@@ -182,6 +238,8 @@ button { color: inherit; }
   .sidebar-link.active::before { left: -11px; }
   .sidebar-foot { justify-content: center; margin-inline: 0; }
   .dashboard-grid { grid-template-columns: 1fr; }
+  .summary-card-grid { grid-template-columns: 1fr; }
+  .summary-card { min-height: 0; }
 }
 @media (min-width: 1100px) {
   .suggested-team-layout:has(.suggested-team-table-card) { grid-template-columns: minmax(360px,.9fr) minmax(0,1.1fr); }
@@ -199,6 +257,9 @@ button { color: inherit; }
   .metric-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .insight-grid, .placeholder-grid { grid-template-columns: 1fr; }
   .report-layout, .runner-layout { grid-template-columns: 1fr; }
+  .gameweek-metadata { grid-template-columns: 1fr; }
+  .gameweek-metadata > div { min-height: 0; padding: 19px; }
+  .gameweek-metadata > div + div { border-top: 1px solid rgba(255,255,255,.12); border-left: 0; }
 }
 @media (max-width: 500px) {
   .page-heading-row { align-items: flex-start; flex-direction: column; }
@@ -209,4 +270,8 @@ button { color: inherit; }
   .detail-grid { grid-template-columns: 1fr; }
   .pitch-heading { align-items: flex-start; }
   .pitch-frame { padding-inline: 8px; }
+  .dashboard-section, .summary-card { padding: 17px; }
+  .section-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .consensus-preview .section-heading .summary-link { min-height: 30px; margin-top: 0; }
+  .position-row { grid-template-columns: 38px minmax(0,1fr); gap: 8px; }
 }

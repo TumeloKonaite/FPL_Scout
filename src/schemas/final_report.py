@@ -32,6 +32,24 @@ class FinalRecommendation(BaseModel):
     title: str
     rationale: str
     confidence: float | None = Field(default=None, ge=0, le=1)
+    playerName: str | None = None
+    club: str | None = None
+    opponent: str | None = None
+    venue: Literal["home", "away"] | None = None
+    consensusCount: int | None = Field(default=None, ge=0)
+    expertCount: int | None = Field(default=None, ge=0)
+    viceCaptain: str | None = None
+    playerIn: str | None = None
+    playerOut: str | None = None
+    position: str | None = None
+    price: float | None = None
+
+
+class KeyRisk(BaseModel):
+    subject: str
+    riskType: str | None = None
+    explanation: str
+    recommendedAction: str | None = None
 
 
 class FinalDisagreement(BaseModel):
@@ -74,6 +92,8 @@ class SuggestedTeam(BaseModel):
 
 class FinalGameweekReport(BaseModel):
     gameweek: int | None = None
+    deadline: str | None = None
+    lastUpdated: str | None = None
     overview: str
     transfers: list[FinalRecommendation] = Field(default_factory=list)
     captaincy: list[FinalRecommendation] = Field(default_factory=list)
@@ -82,6 +102,7 @@ class FinalGameweekReport(BaseModel):
     disagreements: list[FinalDisagreement] = Field(default_factory=list)
     conditional_advice: list[str] = Field(default_factory=list)
     wait_for_news: list[str] = Field(default_factory=list)
+    key_risk: KeyRisk | None = None
     expert_team_reveals: list[FinalExpertTeamReveal] = Field(default_factory=list)
     suggested_team: SuggestedTeam | None = None
     conclusion: str

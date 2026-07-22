@@ -36,11 +36,32 @@ def build_suggested_team_from_reveals(
         reveals,
         key=lambda reveal: (-(reveal.confidence or 0), reveal.expert_name.casefold()),
     )
+    support_counts = _expert_support_counts(reveals)
     for reveal in candidates:
-        team = _team_from_reveal(reveal, position_catalog or {})
+        team = _team_from_reveal(reveal, position_catalog or {}, support_counts)
         if team is not None:
             return team
     return None
+
+
+def _expert_support_counts(
+    reveals: list[ExpertTeamRevealItem],
+) -> Counter[str]:
+    counts: Counter[str] = Counter()
+    for reveal in reveals:
+        # Count an expert at most once per player even when the source lists the
+        # player in both its complete squad and its starting/bench split.
+        names = {
+            normalized
+            for raw_name in (
+                *reveal.current_team,
+                *reveal.starting_xi,
+                *reveal.bench,
+            )
+            if (normalized := normalize_team_player(raw_name))
+        }
+        counts.update(names)
+    return counts
 
 
 def build_explicit_position_catalog(
@@ -78,6 +99,7 @@ def build_explicit_position_catalog(
 def _team_from_reveal(
     reveal: ExpertTeamRevealItem,
     position_catalog: dict[str, str],
+    support_counts: Counter[str],
 ) -> SuggestedTeam | None:
     if len(reveal.starting_xi) != 11:
         return None
@@ -103,6 +125,7 @@ def _team_from_reveal(
                 name=display_name,
                 number=squad_number,
                 position=position,
+                expertSupportCount=support_counts[normalized_name],
                 captain=(normalized_name == normalize_team_player(reveal.captain)),
                 viceCaptain=(
                     normalized_name == normalize_team_player(reveal.vice_captain)
@@ -131,6 +154,7 @@ def _team_from_reveal(
                 playerId=player_id,
                 name=bench_name.strip(),
                 position=position,
+                expertSupportCount=support_counts[normalized_name],
                 captain=(normalized_name == normalize_team_player(reveal.captain)),
                 viceCaptain=(normalized_name == normalize_team_player(reveal.vice_captain)),
                 isStarter=False,

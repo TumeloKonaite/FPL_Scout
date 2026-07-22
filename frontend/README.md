@@ -4,7 +4,7 @@ Next.js provides a public recommendations experience and a protected operations 
 
 ## Suggested-team API contract
 
-The latest report may include `report.suggested_team` with an optional `formation`, an
+The selected report may include `report.suggested_team` with an optional `formation`, an
 exactly 11-player `startingXi`, and an optional complete `players` array (starters and
 substitutes) for the detail table. Each player requires `playerId`, `name`, `number`, and
 a normalized `position` (`GK`, `DEF`, `MID`, or `FWD`). Optional detail fields include
@@ -17,8 +17,10 @@ the detail table remains available for diagnosis and legacy reports remain suppo
 
 ## Pages
 
-- Dashboard: loads the latest generated report
-- Reports: renders the latest published report without internal run metadata
+- Dashboard: loads the URL-selected season/gameweek report
+- Reports: renders the selected canonical public report without internal run metadata
+- Public report pages share `?season=YYYY-YY&gameweek=N`; the header selector and
+  report navigation preserve that selection for bookmarkable historical views
 - Suggested Team
 - Captaincy
 - Transfers

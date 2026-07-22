@@ -5,6 +5,7 @@ import { RecommendationEvidence } from "@/components/RecommendationEvidence";
 
 type ReportViewerProps = {
   report: FullReportResponse;
+  historical?: boolean;
 };
 
 function EmptySection({ message }: { message: string }) {
@@ -168,13 +169,15 @@ function renderReportSections(report: Report) {
   );
 }
 
-export function ReportViewer({ report }: ReportViewerProps) {
+export function ReportViewer({ report, historical = false }: ReportViewerProps) {
+  const updatedAt = report.report.lastUpdated ?? report.last_updated_at;
   return (
     <div className="report-layout">
       <article className="report-panel">
         <header className="report-title">
-          <span>{report.report.gameweek ? `GW${report.report.gameweek}` : "Gameweek report"}</span>
-          <h2>{report.report.gameweek ? `Gameweek ${report.report.gameweek} recommendations` : "Latest recommendations"}</h2>
+          <span>{historical ? "Historical report" : report.report.gameweek ? `GW${report.report.gameweek}` : "Gameweek report"}</span>
+          <h2>{report.report.gameweek ? `Gameweek ${report.report.gameweek} — ${report.season.replace("-", "/")}` : "Gameweek recommendations"}</h2>
+          {updatedAt ? <time dateTime={updatedAt}>Generated {new Intl.DateTimeFormat(undefined, { dateStyle: "long", timeStyle: "short" }).format(new Date(updatedAt))}</time> : null}
         </header>
         {renderReportSections(report.report)}
       </article>

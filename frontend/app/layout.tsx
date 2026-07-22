@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
+import { ReportSelectionProvider } from "@/components/useSelectedReport";
 
 export const metadata: Metadata = {
   title: { default: "FPL Technocrat", template: "%s · FPL Technocrat" },
@@ -17,13 +18,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="app-layout">
-          <Sidebar />
-          <div className="main-column">
-            <Header />
-            <main className="content">{children}</main>
-          </div>
-        </div>
+        <Suspense fallback={<div className="app-layout"><div className="main-column"><main className="content">Loading reports…</main></div></div>}>
+          <ReportSelectionProvider>
+            <div className="app-layout">
+              <Sidebar />
+              <div className="main-column">
+                <Header />
+                <main className="content">{children}</main>
+              </div>
+            </div>
+          </ReportSelectionProvider>
+        </Suspense>
       </body>
     </html>
   );

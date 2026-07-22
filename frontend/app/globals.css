@@ -51,6 +51,11 @@ button { color: inherit; }
 .header { display: flex; min-height: 62px; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,.88); padding: 0 34px; backdrop-filter: blur(12px); }
 .header-title span { color: #98a39e; font-size: 12px; }
 .header-title b { color: #c1c9c5; padding: 0 5px; }
+.report-selector { display: flex; align-items: flex-end; gap: 9px; }
+.report-selector label { display: grid; gap: 3px; color: var(--text-muted); font-size: 9px; font-weight: 700; letter-spacing: .45px; text-transform: uppercase; }
+.report-selector select { min-width: 112px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); padding: 6px 28px 6px 9px; font-size: 11px; font-weight: 600; text-transform: none; }
+.report-selector select:focus-visible { border-color: var(--accent); outline: 3px solid var(--accent-soft); }
+.report-selector select:disabled { cursor: progress; opacity: .6; }
 .header-status { display: flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-muted); padding: 6px 10px; font-size: 11px; font-weight: 600; }
 .header-status i { width: 7px; height: 7px; border-radius: 50%; background: #aeb8b3; }
 .header-status.online i { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
@@ -100,6 +105,8 @@ button { color: inherit; }
 .metadata-label { color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
 .gameweek-metadata strong { font: 700 17px/1.35 Manrope,sans-serif; letter-spacing: -.35px; }
 .deadline-countdown { width: fit-content; border-radius: 999px; background: rgba(201,242,105,.13); color: #e6ffad; padding: 4px 8px; font-size: 10px; font-weight: 700; }
+.deadline-status { width: fit-content; color: #d5e1dc; font-size: 10px; font-weight: 700; }
+.historical-report-badge { display: inline-flex; align-items: center; min-height: 30px; border: 1px solid #e2c77f; border-radius: 999px; background: #fff7df; color: #76500b; padding: 5px 10px; font-size: 10px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; }
 
 .summary-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
 .summary-card { position: relative; display: flex; min-height: 300px; flex-direction: column; align-items: flex-start; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); padding: 21px; box-shadow: var(--shadow); }
@@ -177,6 +184,10 @@ button { color: inherit; }
 .recommendation-evidence.compact .source-preview { margin: 0; }
 
 .state-panel { border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--text-muted); padding: 16px; font-size: 13px; }
+.state-panel p { margin: 0; }
+.state-action { display: inline-flex; width: fit-content; margin-top: 12px; border: 0; border-radius: 8px; background: var(--accent); color: white; padding: 8px 11px; cursor: pointer; font-size: 11px; font-weight: 700; }
+.missing-report-state { border-color: #e2c77f; background: #fffbef; color: #66511c; }
+.section-empty-state { border-style: dashed; }
 .loading-state { border-color: #b8ded0; color: var(--accent-dark); animation: pulse 1.5s ease infinite; }
 .error-state { border-color: #efc4be; background: var(--danger-surface); color: var(--danger); }
 @keyframes pulse { 50% { opacity: .62; } }
@@ -293,6 +304,10 @@ button { color: inherit; }
   .sidebar-link svg { width: 19px; height: 19px; }
   .sidebar-link.active::before { top: -8px; left: 50%; width: 22px; height: 3px; transform: translateX(-50%); border-radius: 0 0 3px 3px; }
   .header { padding: 0 18px; }
+  .header-title { display: none; }
+  .report-selector { width: 100%; }
+  .report-selector label { flex: 1; }
+  .report-selector select { width: 100%; }
   .content { padding: 25px 18px 36px; }
   .metric-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .insight-grid, .placeholder-grid { grid-template-columns: 1fr; }

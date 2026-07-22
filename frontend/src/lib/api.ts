@@ -1,4 +1,5 @@
 import type { AdminReportResponse, AvailableGameweeksResponse, CurrentGameweekResponse, FullReportResponse, PipelineRun, PipelineStatus, ReportSummary } from "../types/report";
+import type { AdminPipelineInput } from "../../lib/admin/season";
 
 const DEFAULT_API_BASE_URL = "/backend";
 
@@ -109,16 +110,16 @@ export function getReport(runId: string): Promise<AdminReportResponse> {
   return apiRequest<AdminReportResponse>(`/api/admin/reports/${encodeURIComponent(runId)}`);
 }
 
-export function runPipeline(inputData?: Record<string, unknown>): Promise<PipelineRun> {
+export function runPipeline(inputData: AdminPipelineInput): Promise<PipelineRun> {
   return apiRequest<PipelineRun>("/api/admin/pipeline/run", {
-    body: inputData === undefined ? {} : { input_data: inputData },
+    body: { input_data: inputData },
     method: "POST"
   });
 }
 
-export function generateReport(inputData?: Record<string, unknown>): Promise<PipelineRun> {
+export function generateReport(inputData: AdminPipelineInput): Promise<PipelineRun> {
   return apiRequest<PipelineRun>("/api/admin/reports/generate", {
-    body: inputData === undefined ? {} : { input_data: inputData },
+    body: { input_data: inputData },
     method: "POST"
   });
 }

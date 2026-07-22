@@ -273,6 +273,8 @@ button { color: inherit; }
 .form-panel label { display: grid; gap: 6px; color: var(--text-muted); font-size: 11px; font-weight: 600; }
 .form-panel input[type="number"], .form-panel input[type="text"] { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text); padding: 9px 10px; }
 .form-panel input:focus-visible { border-color: var(--accent); outline: 3px solid var(--accent-soft); }
+.form-panel input[aria-invalid="true"] { border-color: var(--danger); }
+.field-error { color: var(--danger); font-size: 11px; font-weight: 600; }
 .checkbox-row { align-items: center; grid-template-columns: auto 1fr; }
 .checkbox-row input { width: 17px; height: 17px; accent-color: var(--accent); }
 .primary-button { cursor: pointer; min-height: 40px; border: 0; border-radius: 8px; background: var(--accent); color: white; padding: 9px 13px; font-size: 12px; font-weight: 700; }

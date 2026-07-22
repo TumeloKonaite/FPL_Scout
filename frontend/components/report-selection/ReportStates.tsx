@@ -10,8 +10,10 @@ export function HistoricalReportBadge() {
 }
 
 export function MissingReportState() {
-  const { selection, newestAvailable } = useSelectedReport();
-  const message = selection && selection.season && Number.isInteger(selection.gameweek)
+  const { selection, newestAvailable, availableSeasons } = useSelectedReport();
+  const message = availableSeasons.length === 0
+    ? "No published reports are available yet."
+    : selection && selection.season && Number.isInteger(selection.gameweek)
     ? `No report is available for Gameweek ${selection.gameweek} of the ${seasonLabel(selection.season)} season.`
     : "The requested report selection is invalid or unavailable.";
   return <div className="state-panel missing-report-state"><p>{message}</p>{newestAvailable ? <Link className="state-action" href={reportHref("/reports", newestAvailable)}>View the newest available report</Link> : null}</div>;

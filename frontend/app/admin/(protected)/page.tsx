@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 import { ErrorState, LoadingState } from "@/components/ReportViewer";
 import { getErrorMessage } from "@/components/apiError";
+import { buildAdminPipelineInput, seasonValidationError } from "@/lib/admin/season";
 import { generateReport, getPipelineStatus, pollPipelineRun, runPipeline } from "@/src/lib/api";
 import type { PipelineRun } from "@/src/types/report";
 
@@ -14,11 +15,13 @@ function formatDate(value?: string) {
 }
 
 export default function AdminDashboardPage() {
+  const [season, setSeason] = useState("");
   const [gameweek, setGameweek] = useState("32");
   const [perExpertLimit, setPerExpertLimit] = useState("2");
   const [run, setRun] = useState<PipelineRun | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [seasonError, setSeasonError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -38,11 +41,15 @@ export default function AdminDashboardPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const validationError = seasonValidationError(season);
+    setSeasonError(validationError);
+    if (validationError) return;
+
     setError(null);
     setIsRunning(true);
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
     const action = submitter instanceof HTMLButtonElement ? submitter.value : "pipeline";
-    const input = { gameweek: Number(gameweek), per_expert_limit: Number(perExpertLimit), synthesis_enabled: true };
+    const input = buildAdminPipelineInput(season, gameweek, perExpertLimit);
     try {
       const accepted = action === "report" ? await generateReport(input) : await runPipeline(input);
       setRun(accepted);
@@ -62,6 +69,29 @@ export default function AdminDashboardPage() {
       <section className="runner-layout" aria-label="Administrator pipeline controls">
         <form className="form-panel" onSubmit={handleSubmit}>
           <h2>Manual execution</h2>
+          <label>
+            <span>Season</span>
+            <input
+              aria-describedby={seasonError ? "season-error" : undefined}
+              aria-invalid={Boolean(seasonError)}
+              maxLength={7}
+              onBlur={() => setSeasonError(seasonValidationError(season))}
+              onChange={(event) => {
+                setSeason(event.target.value);
+                if (seasonError) setSeasonError(seasonValidationError(event.target.value));
+              }}
+              onInvalid={(event) => {
+                event.preventDefault();
+                setSeasonError(seasonValidationError(season));
+              }}
+              pattern="[0-9]{4}-[0-9]{2}"
+              placeholder="2025-26"
+              required
+              type="text"
+              value={season}
+            />
+            {seasonError ? <small className="field-error" id="season-error" role="alert">{seasonError}</small> : null}
+          </label>
           <label><span>Gameweek</span><input min="1" max="38" onChange={(event) => setGameweek(event.target.value)} required type="number" value={gameweek} /></label>
           <label><span>Videos per expert</span><input min="1" onChange={(event) => setPerExpertLimit(event.target.value)} required type="number" value={perExpertLimit} /></label>
           <button className="primary-button" disabled={isRunning} name="action" type="submit" value="pipeline">{isRunning ? "Execution in progress..." : "Run pipeline"}</button>

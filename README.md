@@ -66,6 +66,16 @@ Review in Next.js dashboard
 ## Outputs
 Each run produces reviewable artifacts under `data/reports/<gameweek-or-run-name>/`.
 
+Legacy runs can be assigned an explicit season without inferring it from file dates:
+
+```bash
+python -m scripts.backfill_report_seasons --season 2025-26 --dry-run
+```
+
+Remove `--dry-run` after reviewing the reported runs. Use `--season unknown` only for
+unclassified runs; those records are retained for administration but excluded from
+canonical public report resolution.
+
 Core outputs:
 - `discovered_videos.json`: normalized metadata for candidate videos discovered from expert channels
 - `input_jobs.json`: validated transcript-backed jobs sent into analysis
@@ -237,16 +247,17 @@ make install-frontend
 Source of truth command:
 
 ```bash
-uv run python -m src.app.cli.run_gameweek_report --gameweek 32 --output-dir data/reports/gw32-example --per-expert-limit 2 --no-synthesis
+uv run python -m src.app.cli.run_gameweek_report --season 2025-26 --gameweek 32 --output-dir data/reports/2025-26-gw32-example --per-expert-limit 2 --no-synthesis
 ```
 
 Equivalent Make target:
 
 ```bash
-make run-cli GAMEWEEK=32 OUTPUT_DIR=data/reports/gw32-example
+make run-cli SEASON=2025-26 GAMEWEEK=32 OUTPUT_DIR=data/reports/2025-26-gw32-example
 ```
 
 Useful overrides:
+- `SEASON=2025-26` (required)
 - `PER_EXPERT_LIMIT=3`
 - `EXPERT_NAME="FPL Focal"`
 - `EXPERT_COUNT=5`
@@ -349,7 +360,7 @@ Notes:
 docker run --rm -it --env-file .env \
   -v "$(pwd)/data:/app/data" \
   fpl-agent:latest \
-  uv run python -m src.app.cli.run_gameweek_report --gameweek 32 --output-dir data/reports/gw32-docker --per-expert-limit 2 --no-synthesis
+  uv run python -m src.app.cli.run_gameweek_report --season 2025-26 --gameweek 32 --output-dir data/reports/2025-26-gw32-docker --per-expert-limit 2 --no-synthesis
 ```
 
 Stop the Compose service with:

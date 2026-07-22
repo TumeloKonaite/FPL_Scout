@@ -15,6 +15,7 @@ from src.app.infrastructure.storage.report_store import (
 
 def _final_report_payload(gameweek: int = 32) -> dict[str, Any]:
     return {
+        "season": "2025-26",
         "gameweek": gameweek,
         "overview": "Clean overview",
         "transfers": [],

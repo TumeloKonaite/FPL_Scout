@@ -33,7 +33,7 @@ def _build_analysis(
 def test_aggregation_dedupes_duplicate_analysis_content() -> None:
     analysis = _build_analysis("Expert A", recommended_players=["Saka"], captaincy_picks=["Salah"])
 
-    report = build_aggregated_fpl_report([analysis, analysis.model_copy()])
+    report = build_aggregated_fpl_report([analysis, analysis.model_copy()], season="2025-26", gameweek=33)
 
     assert report.expert_count == 1
     assert report.player_consensus[0].mention_count == 1
@@ -42,6 +42,7 @@ def test_aggregation_dedupes_duplicate_analysis_content() -> None:
 
 def test_fallback_report_handles_empty_sections_without_broken_phrasing() -> None:
     report = AggregatedFPLReport(
+        season="2025-26",
         gameweek=33,
         expert_count=2,
         player_consensus=[],
@@ -71,7 +72,7 @@ def test_sparse_structured_input_still_keeps_conditional_advice() -> None:
         )
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=33)
 
     assert report.conditional_advice
     assert report.wait_for_news == ["Bukayo Saka"]

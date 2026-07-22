@@ -10,6 +10,8 @@ from src.app.domain.pipeline.service import PipelineService
 def _pipeline_result(run_path: Path) -> SimpleNamespace:
     return SimpleNamespace(
         run_path=run_path,
+        season="2025-26",
+        gameweek=32,
         discovered_videos=[{"video_id": "one"}],
         input_jobs=[object(), object()],
         expert_outputs=[object()],
@@ -32,6 +34,7 @@ def test_pipeline_service_executes_with_explicit_arguments(tmp_path) -> None:
     service = PipelineService(executor=executor)
 
     response = service.run_pipeline(
+        season="2025-26",
         gameweek=32,
         output_dir=run_path,
         per_expert_limit=1,
@@ -42,6 +45,8 @@ def test_pipeline_service_executes_with_explicit_arguments(tmp_path) -> None:
     assert response["error"] is None
     assert response["result"] == {
         "run_path": run_path,
+        "season": "2025-26",
+        "gameweek": 32,
         "discovered_video_count": 1,
         "input_job_count": 2,
         "expert_output_count": 1,
@@ -63,6 +68,7 @@ def test_pipeline_service_tracks_api_run_by_generated_run_id(tmp_path, monkeypat
 
     response = service.run_pipeline(
         input_data={
+            "season": "2025-26",
             "gameweek": 33,
             "output_dir": run_path,
             "synthesis_enabled": False,
@@ -87,8 +93,8 @@ def test_pipeline_service_returns_failed_status_when_required_inputs_are_missing
     assert response == {
         "status": "failed",
         "result": None,
-        "error": "Pipeline run requires gameweek and output_dir",
+        "error": "Pipeline run requires season, gameweek and output_dir",
     }
     assert service.get_pipeline_status()["last_error"] == (
-        "Pipeline run requires gameweek and output_dir"
+        "Pipeline run requires season, gameweek and output_dir"
     )

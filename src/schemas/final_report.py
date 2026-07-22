@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from src.schemas.report_identity import validate_season
 
 from src.schemas.aggregate_report import (
     ConsensusItem,
@@ -18,7 +20,8 @@ from src.services.consensus import ConsensusLevel
 
 
 class AggregatedFPLReport(BaseModel):
-    gameweek: int | None = None
+    season: str
+    gameweek: int = Field(ge=1, le=38, strict=True)
     expert_count: int = Field(ge=0)
     player_consensus: list[ConsensusItem]
     captaincy_consensus: list[ConsensusItem]
@@ -29,6 +32,8 @@ class AggregatedFPLReport(BaseModel):
     conditional_advice: list[ConditionalAdviceItem]
     wait_for_news: list[str]
     expert_team_reveals: list[ExpertTeamRevealItem] = Field(default_factory=list)
+
+    _validate_season = field_validator("season")(validate_season)
 
 
 class FinalRecommendation(BaseModel):
@@ -122,7 +127,8 @@ class SuggestedTeam(BaseModel):
 
 
 class FinalGameweekReport(BaseModel):
-    gameweek: int | None = None
+    season: str
+    gameweek: int = Field(ge=1, le=38, strict=True)
     deadline: str | None = None
     lastUpdated: str | None = None
     overview: str
@@ -137,3 +143,5 @@ class FinalGameweekReport(BaseModel):
     expert_team_reveals: list[FinalExpertTeamReveal] = Field(default_factory=list)
     suggested_team: SuggestedTeam | None = None
     conclusion: str
+
+    _validate_season = field_validator("season")(validate_season)

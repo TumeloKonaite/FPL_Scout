@@ -19,7 +19,7 @@ def test_api_pipeline_loads_webshare_settings(monkeypatch) -> None:
         lambda **kwargs: captured.update(kwargs) or {"status": "completed"},
     )
 
-    service.run_pipeline(input_data={"gameweek": 21})
+    service.run_pipeline(input_data={"season": "2025-26", "gameweek": 21})
 
     assert captured["proxy_settings"] == expected
 
@@ -39,6 +39,6 @@ def test_explicit_proxy_settings_are_preserved(monkeypatch) -> None:
         lambda **kwargs: captured.update(kwargs) or {"status": "completed"},
     )
 
-    service.run_pipeline(input_data={"gameweek": 21}, proxy_settings=expected)
+    service.run_pipeline(input_data={"season": "2025-26", "gameweek": 21}, proxy_settings=expected)
 
     assert captured["proxy_settings"] == expected

@@ -36,7 +36,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["src*", "scripts*"]
 
 [tool.ruff]
 extend-exclude = ["notebooks"]

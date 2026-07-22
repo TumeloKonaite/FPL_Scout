@@ -104,6 +104,7 @@ def test_run_pipeline_skips_duplicate_jobs_and_preserves_partial_failures(tmp_pa
     ), patch("src.services.pipeline_service.run_gameweek_orchestration", side_effect=fake_orchestration):
         result = asyncio.run(
             run_pipeline(
+                season="2025-26",
                 gameweek=32,
                 output_dir=output_dir,
                 synthesis_enabled=False,

@@ -24,6 +24,7 @@ from src.services.synthesis_service import build_fallback_final_report, synthesi
 
 def _build_aggregated_report() -> AggregatedFPLReport:
     return AggregatedFPLReport(
+        season="2025-26",
         gameweek=31,
         expert_count=3,
         player_consensus=[
@@ -140,6 +141,7 @@ def test_prompt_input_formatting_is_deterministic() -> None:
 def test_synthesize_final_report_returns_schema_valid_output() -> None:
     report = _build_aggregated_report()
     expected = FinalGameweekReport(
+        season="2025-26",
         gameweek=31,
         overview="The strongest expert consensus centers on buying Arsenal attackers, with Salah still edging captaincy while a few strategic splits remain.",
         transfers=[
@@ -196,7 +198,8 @@ def test_synthesize_final_report_returns_schema_valid_output() -> None:
 
 def test_synthesize_final_report_short_circuits_empty_input() -> None:
     report = AggregatedFPLReport(
-        gameweek=None,
+        season="2025-26",
+        gameweek=1,
         expert_count=0,
         player_consensus=[],
         captaincy_consensus=[],
@@ -212,7 +215,7 @@ def test_synthesize_final_report_short_circuits_empty_input() -> None:
     with patch("src.services.synthesis_service.run_final_synthesis", new_callable=AsyncMock) as mocked_run:
         result = asyncio.run(synthesize_final_report(report))
 
-    assert result.gameweek is None
+    assert result.gameweek == 1
     assert result.transfers == []
     assert "not enough aggregated expert data" in result.overview
     mocked_run.assert_not_awaited()
@@ -287,7 +290,7 @@ def test_fallback_recommendations_publish_evidence_not_confidence() -> None:
         published_at="2026-07-20T12:00:00Z",
         source_url="https://example.com/captaincy",
     )
-    aggregate = build_aggregated_fpl_report([analysis])
+    aggregate = build_aggregated_fpl_report([analysis], season="2025-26", gameweek=31)
 
     recommendation = build_fallback_final_report(aggregate).captaincy[0]
 

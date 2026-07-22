@@ -7,6 +7,8 @@ from pydantic import BaseModel
 
 class ReportSummary(BaseModel):
     run_id: str
+    season: str | None = None
+    gameweek: int | None = None
     created_at: str | None = None
     title: str | None = None
 

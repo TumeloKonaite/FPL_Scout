@@ -32,6 +32,7 @@ def test_returns_the_official_upcoming_gameweek() -> None:
     assert current is not None
     assert current.gameweek == 1
     assert current.deadline == "2026-08-15T10:00:00Z"
+    assert current.season == "2026-27"
 
 
 def test_returns_none_when_there_is_no_upcoming_gameweek() -> None:

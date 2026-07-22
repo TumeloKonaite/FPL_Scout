@@ -18,6 +18,7 @@ from src.app.infrastructure.storage.report_store import (
 
 def _final_report_payload(gameweek: int) -> dict:
     return {
+        "season": "2025-26",
         "gameweek": gameweek,
         "overview": "Overview",
         "transfers": [],
@@ -34,6 +35,7 @@ def _final_report_payload(gameweek: int) -> dict:
 
 def _aggregate_report_payload(gameweek: int) -> dict:
     return {
+        "season": "2025-26",
         "gameweek": gameweek,
         "expert_count": 2,
         "player_consensus": [],

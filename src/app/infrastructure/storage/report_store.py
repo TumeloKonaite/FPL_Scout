@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
+import json
+import os
 from pathlib import Path
 from typing import Any
 
 from src.adapters.storage import load_json
 from src.app.core.config import get_settings
+from src.schemas.report_identity import ReportIdentity
 
 
 FINAL_REPORT_FILENAME = "final_report.json"
 AGGREGATE_REPORT_FILENAME = "aggregate_report.json"
+MANIFEST_FILENAME = "manifest.json"
+REPORT_INDEX_FILENAME = "index.json"
 
 
 class ReportStoreError(Exception):
@@ -39,7 +45,24 @@ class ReportRecord:
     final_report_path: Path
     aggregate_report_path: Path | None
     updated_at: float
+    season: str | None = None
     gameweek: int | None = None
+    status: str = "completed"
+    created_at: float | None = None
+
+    @property
+    def is_canonical(self) -> bool:
+        if (
+            self.status != "completed"
+            or self.season in {None, "unknown"}
+            or self.gameweek is None
+        ):
+            return False
+        try:
+            ReportIdentity(self.season, self.gameweek)
+        except ValueError:
+            return False
+        return True
 
 
 class ReportStore:
@@ -65,34 +88,74 @@ class ReportStore:
             raise EmptyReportDirectoryError(
                 f"No run folders containing {FINAL_REPORT_FILENAME} were found in {self.base_dir}"
             )
-        return sorted(
-            records,
-            key=lambda record: (
-                record.gameweek is not None,
-                record.gameweek if record.gameweek is not None else -1,
-                record.updated_at,
-                record.run_id,
-            ),
-        )
+        return sorted(records, key=lambda record: (record.updated_at, record.run_id))
 
-    def get_latest_report(self) -> ReportRecord:
-        return self.list_reports()[-1]
+    def get_latest_report(
+        self,
+        season: str | None = None,
+        gameweek: int | None = None,
+    ) -> ReportRecord:
+        if season is not None or gameweek is not None:
+            if season is None or gameweek is None:
+                raise ValueError("season and gameweek must be provided together")
+            current = self.get_report_for_gameweek(season, gameweek)
+            if current is not None:
+                return current
+        canonical = [record for record in self.list_reports() if record.is_canonical]
+        if not canonical:
+            raise EmptyReportDirectoryError(
+                "No completed reports with a valid season and gameweek were found"
+            )
+        return max(canonical, key=lambda record: (record.updated_at, record.run_id))
+
+    def get_reports_for_gameweek(
+        self, season: str, gameweek: int
+    ) -> list[ReportRecord]:
+        identity = ReportIdentity(season, gameweek)
+        return [
+            record
+            for record in self.list_reports()
+            if record.season == identity.season and record.gameweek == identity.gameweek
+        ]
+
+    def get_report_for_gameweek(
+        self, season: str, gameweek: int
+    ) -> ReportRecord | None:
+        completed = [
+            record
+            for record in self.get_reports_for_gameweek(season, gameweek)
+            if record.is_canonical
+        ]
+        return max(
+            completed,
+            key=lambda record: (record.updated_at, record.run_id),
+            default=None,
+        )
 
     def get_report(self, run_id: str | Path) -> ReportRecord:
         requested = Path(run_id)
         run_dir = self._resolve_run_dir(requested)
         final_report_path = run_dir / FINAL_REPORT_FILENAME
         if not final_report_path.exists():
-            raise ReportNotFoundError(f"Could not find final report at {final_report_path}")
+            raise ReportNotFoundError(
+                f"Could not find final report at {final_report_path}"
+            )
         return self._record_for_run_dir(run_dir)
+
+    def get_report_by_run_id(self, run_id: str | Path) -> ReportRecord:
+        return self.get_report(run_id)
 
     def read_json(self, path: Path) -> dict[str, Any]:
         try:
             payload = load_json(path)
         except Exception as exc:
-            raise InvalidReportFileError(f"Could not read valid JSON report file: {path}") from exc
+            raise InvalidReportFileError(
+                f"Could not read valid JSON report file: {path}"
+            ) from exc
         if not isinstance(payload, dict):
-            raise InvalidReportFileError(f"Report file must contain a JSON object: {path}")
+            raise InvalidReportFileError(
+                f"Report file must contain a JSON object: {path}"
+            )
         return payload
 
     def _resolve_run_dir(self, requested: Path) -> Path:
@@ -107,20 +170,106 @@ class ReportStore:
     def _record_for_run_dir(self, run_dir: Path) -> ReportRecord:
         final_report_path = run_dir / FINAL_REPORT_FILENAME
         aggregate_report_path = run_dir / AGGREGATE_REPORT_FILENAME
+        payload = self._read_metadata(run_dir, final_report_path)
+        updated_at = self._timestamp(
+            payload.get("updated_at"), final_report_path.stat().st_mtime
+        )
         return ReportRecord(
             run_id=run_dir.name,
             run_dir=run_dir,
             final_report_path=final_report_path,
-            aggregate_report_path=aggregate_report_path if aggregate_report_path.exists() else None,
-            updated_at=final_report_path.stat().st_mtime,
-            gameweek=self._read_gameweek(final_report_path),
+            aggregate_report_path=aggregate_report_path
+            if aggregate_report_path.exists()
+            else None,
+            updated_at=updated_at,
+            created_at=self._timestamp(payload.get("created_at"), updated_at),
+            season=payload.get("season")
+            if isinstance(payload.get("season"), str)
+            else None,
+            gameweek=self._valid_gameweek(payload.get("gameweek")),
+            status=payload.get("status")
+            if isinstance(payload.get("status"), str)
+            else "completed",
         )
 
-    def _read_gameweek(self, final_report_path: Path) -> int | None:
+    def _read_metadata(self, run_dir: Path, final_report_path: Path) -> dict[str, Any]:
+        manifest_path = run_dir / MANIFEST_FILENAME
+        manifest: dict[str, Any] = {}
+        if manifest_path.exists():
+            try:
+                manifest = self.read_json(manifest_path)
+            except InvalidReportFileError:
+                return {"status": "invalid"}
         try:
-            gameweek = self.read_json(final_report_path).get("gameweek")
+            report = self.read_json(final_report_path)
         except InvalidReportFileError:
+            report = {}
+        status = manifest.get("status", "completed")
+        if manifest and any(
+            manifest.get(field) != report.get(field) for field in ("season", "gameweek")
+        ):
+            status = "invalid"
+        return {
+            "season": manifest.get("season", report.get("season")),
+            "gameweek": manifest.get("gameweek", report.get("gameweek")),
+            "status": status,
+            "created_at": manifest.get("created_at"),
+            "updated_at": manifest.get("updated_at"),
+        }
+
+    @staticmethod
+    def _valid_gameweek(gameweek: Any) -> int | None:
+        if (
+            isinstance(gameweek, bool)
+            or not isinstance(gameweek, int)
+            or not 1 <= gameweek <= 38
+        ):
             return None
-        if isinstance(gameweek, bool) or not isinstance(gameweek, int):
-            return None
-        return gameweek if gameweek > 0 else None
+        return gameweek
+
+    @staticmethod
+    def _timestamp(value: Any, fallback: float) -> float:
+        if not isinstance(value, str):
+            return fallback
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return fallback
+
+
+def update_report_index(base_dir: Path, record: ReportRecord) -> None:
+    """Atomically upsert discovery metadata without copying report payloads."""
+    index_path = base_dir / REPORT_INDEX_FILENAME
+    entries: list[dict[str, Any]] = []
+    if index_path.exists():
+        try:
+            loaded = json.loads(index_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, list):
+                entries = [item for item in loaded if isinstance(item, dict)]
+        except (OSError, json.JSONDecodeError):
+            entries = []
+    relative_path = record.final_report_path.relative_to(base_dir)
+    entry = {
+        "run_id": record.run_id,
+        "season": record.season,
+        "gameweek": record.gameweek,
+        "status": record.status,
+        "created_at": datetime.fromtimestamp(
+            record.created_at or record.updated_at, tz=UTC
+        )
+        .isoformat()
+        .replace("+00:00", "Z"),
+        "updated_at": datetime.fromtimestamp(record.updated_at, tz=UTC)
+        .isoformat()
+        .replace("+00:00", "Z"),
+        "report_path": str(relative_path),
+    }
+    entries = [item for item in entries if item.get("run_id") != record.run_id]
+    entries.append(entry)
+    entries.sort(key=lambda item: str(item.get("run_id")))
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = index_path.with_suffix(f".json.{os.getpid()}.tmp")
+    temporary.write_text(
+        json.dumps(entries, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, index_path)

@@ -6,6 +6,7 @@ IMAGE ?= fpl-agent
 API_PORT ?= 8000
 FRONTEND_PORT ?= 3000
 GAMEWEEK ?= 32
+SEASON ?=
 OUTPUT_DIR ?= data/reports/gw$(GAMEWEEK)-local
 PER_EXPERT_LIMIT ?= 2
 EXPERT_NAME ?=
@@ -47,7 +48,9 @@ run-frontend:
 	npm --prefix frontend run dev -- --port $(FRONTEND_PORT)
 
 run-cli:
+	@test -n "$(SEASON)" || (printf "SEASON is required (for example, SEASON=2025-26)\n" >&2; exit 2)
 	@args=( \
+		--season "$(SEASON)" \
 		--gameweek "$(GAMEWEEK)" \
 		--output-dir "$(OUTPUT_DIR)" \
 		--per-expert-limit "$(PER_EXPERT_LIMIT)" \

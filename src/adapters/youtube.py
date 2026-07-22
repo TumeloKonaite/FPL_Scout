@@ -75,13 +75,17 @@ def _normalize_video_entry(entry: dict[str, Any], expert_name: str) -> dict[str,
     if not isinstance(title, str) or not title.strip():
         return None
 
-    return {
+    description = entry.get("description")
+    normalized = {
         "video_id": video_id,
         "title": title.strip(),
         "video_url": _build_video_url(video_id, entry),
         "published_at": _normalize_published_at(entry),
         "expert_name": expert_name,
     }
+    if isinstance(description, str) and description.strip():
+        normalized["description"] = description.strip()
+    return normalized
 
 
 def _extract_channel_entries(channel_url: str, limit: int) -> list[dict[str, Any]]:
@@ -124,6 +128,38 @@ def get_latest_videos_for_expert(
             videos.append(normalized)
 
     return videos[:limit]
+
+
+def get_videos_for_gameweek(
+    expert_name: str,
+    channel_url: str,
+    *,
+    gameweek: int,
+    season: str,
+    archive_limit: int = 200,
+) -> list[dict[str, str]]:
+    """Retrieve channel history for gameweek-aware downstream selection.
+
+    ``yt-dlp`` paginates the channel's uploads tab up to ``playlistend``.  The
+    gameweek and season are deliberately required here so historical callers
+    cannot accidentally fall back to the latest-only discovery contract.
+    Selection and evidence annotation happen in the ingestion service, where a
+    deadline (when supplied) and transcript text are also available.
+    """
+    if not 1 <= gameweek <= 38:
+        raise ValueError("gameweek must be between 1 and 38")
+    if not season:
+        raise ValueError("season is required for historical video discovery")
+    if archive_limit <= 0:
+        return []
+
+    entries = _extract_channel_entries(channel_url, archive_limit)
+    videos: list[dict[str, str]] = []
+    for entry in entries:
+        normalized = _normalize_video_entry(entry, expert_name)
+        if normalized is not None:
+            videos.append(normalized)
+    return videos
 
 
 def get_latest_videos_for_all_experts(limit_per_expert: int = 3) -> list[dict[str, str]]:

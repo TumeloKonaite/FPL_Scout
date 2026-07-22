@@ -4,17 +4,18 @@ from dataclasses import dataclass
 import inspect
 
 from src.adapters.transcript_api import WebshareProxySettings
-from src.adapters.youtube import get_latest_videos_for_expert
+from src.adapters.youtube import get_videos_for_gameweek
+from src.app.core.config import get_settings
 from src.config.expert_sources import EXPERT_CHANNELS
 from src.schemas.video_job import VideoAnalysisJob
 from src.services.transcript_service import get_clean_transcript
-from src.services.video_selection_service import filter_relevant_videos
+from src.services.video_selection_service import assess_video
 
 
 @dataclass(slots=True)
 class YouTubeIngestionResult:
     configured_experts: int
-    discovered_videos: list[dict[str, str]]
+    discovered_videos: list[dict[str, object]]
     input_jobs: list[VideoAnalysisJob]
     transcript_failures: list[dict[str, str]]
 
@@ -57,30 +58,85 @@ def _select_experts(
 def ingest_youtube_video_jobs(
     *,
     gameweek: int,
+    season: str,
+    gameweek_deadline: str | None = None,
     per_expert_limit: int = 2,
+    archive_limit: int = 200,
+    window_days_before: int | None = None,
+    window_days_after: int | None = None,
     expert_name: str | None = None,
     expert_count: int | None = None,
     proxy_settings: WebshareProxySettings | None = None,
 ) -> YouTubeIngestionResult:
+    settings = get_settings()
+    resolved_window_days_before = (
+        settings.VIDEO_SELECTION_WINDOW_DAYS_BEFORE
+        if window_days_before is None
+        else window_days_before
+    )
+    resolved_window_days_after = (
+        settings.VIDEO_SELECTION_WINDOW_DAYS_AFTER
+        if window_days_after is None
+        else window_days_after
+    )
     selected_experts = _select_experts(
         expert_name=expert_name,
         expert_count=expert_count,
     )
-    discovered_videos: list[dict[str, str]] = []
+    discovered_videos: list[dict[str, object]] = []
     for expert in selected_experts:
-        discovered_videos.extend(
-            get_latest_videos_for_expert(
-                expert_name=str(expert["name"]),
-                channel_url=str(expert["url"]),
-                limit=per_expert_limit,
-            )
+        discovered = get_videos_for_gameweek(
+            expert_name=str(expert["name"]),
+            channel_url=str(expert["url"]),
+            gameweek=gameweek,
+            season=season,
+            archive_limit=archive_limit,
         )
+        discovered_videos.extend(discovered)
 
-    transcript_candidates: list[dict[str, str]] = []
+    transcript_candidates: list[dict[str, object]] = []
     transcript_failures: list[dict[str, str]] = []
+    selected_per_expert: dict[str, int] = {}
     for video in discovered_videos:
+        expert = str(video.get("expert_name", ""))
+        if selected_per_expert.get(expert, 0) >= per_expert_limit:
+            video.update(
+                assess_video(
+                    gameweek=gameweek,
+                    title=str(video.get("title", "")),
+                    description=str(video.get("description", "")),
+                    published_at=str(video.get("published_at", "")),
+                    season=season,
+                    gameweek_deadline=gameweek_deadline,
+                    window_days_before=resolved_window_days_before,
+                    window_days_after=resolved_window_days_after,
+                )
+            )
+            if video.get("selected"):
+                video["selected"] = False
+                video.pop("selection_reason", None)
+                video["rejection_reason"] = "per_expert_limit_reached"
+            continue
+
+        metadata_evidence = assess_video(
+            gameweek=gameweek,
+            title=str(video.get("title", "")),
+            description=str(video.get("description", "")),
+            published_at=str(video.get("published_at", "")),
+            season=season,
+            gameweek_deadline=gameweek_deadline,
+            window_days_before=resolved_window_days_before,
+            window_days_after=resolved_window_days_after,
+        )
+        video.update(metadata_evidence)
+        if not metadata_evidence["selected"]:
+            continue
+
         video_id = video.get("video_id")
         if not isinstance(video_id, str) or not video_id:
+            video["selected"] = False
+            video.pop("selection_reason", None)
+            video["rejection_reason"] = "missing_video_id"
             transcript_failures.append(
                 {
                     "expert_name": str(video.get("expert_name", "")),
@@ -104,6 +160,9 @@ def ingest_youtube_video_jobs(
             )
         transcript_payload = get_clean_transcript(video_id, **transcript_kwargs)
         if transcript_payload.get("status") != "available":
+            video["selected"] = False
+            video.pop("selection_reason", None)
+            video["rejection_reason"] = "transcript_unavailable"
             transcript_failures.append(
                 {
                     "expert_name": str(video.get("expert_name", "")),
@@ -118,6 +177,9 @@ def ingest_youtube_video_jobs(
 
         transcript_text = transcript_payload.get("transcript", "")
         if not isinstance(transcript_text, str) or not transcript_text.strip():
+            video["selected"] = False
+            video.pop("selection_reason", None)
+            video["rejection_reason"] = "empty_transcript"
             transcript_failures.append(
                 {
                     "expert_name": str(video.get("expert_name", "")),
@@ -130,6 +192,20 @@ def ingest_youtube_video_jobs(
             )
             continue
 
+        final_evidence = assess_video(
+            gameweek=gameweek,
+            title=str(video.get("title", "")),
+            description=str(video.get("description", "")),
+            transcript=transcript_text,
+            published_at=str(video.get("published_at", "")),
+            season=season,
+            gameweek_deadline=gameweek_deadline,
+            window_days_before=resolved_window_days_before,
+            window_days_after=resolved_window_days_after,
+        )
+        video.update(final_evidence)
+        if not final_evidence["selected"]:
+            continue
         transcript_candidates.append(
             {
                 **video,
@@ -138,8 +214,7 @@ def ingest_youtube_video_jobs(
                 "transcript_revision_id": transcript_payload.get("transcript_revision_id"),
             }
         )
-
-    relevant_videos = filter_relevant_videos(transcript_candidates, gameweek=gameweek)
+        selected_per_expert[expert] = selected_per_expert.get(expert, 0) + 1
 
     input_jobs = [
         VideoAnalysisJob(
@@ -152,7 +227,7 @@ def ingest_youtube_video_jobs(
             transcript_id=video.get("transcript_id"),
             transcript_revision_id=video.get("transcript_revision_id"),
         )
-        for video in relevant_videos
+        for video in transcript_candidates
     ]
 
     return YouTubeIngestionResult(
@@ -166,14 +241,24 @@ def ingest_youtube_video_jobs(
 def build_video_jobs_from_youtube(
     *,
     gameweek: int,
+    season: str,
+    gameweek_deadline: str | None = None,
     per_expert_limit: int = 2,
+    archive_limit: int = 200,
+    window_days_before: int | None = None,
+    window_days_after: int | None = None,
     expert_name: str | None = None,
     expert_count: int | None = None,
     proxy_settings: WebshareProxySettings | None = None,
 ) -> list[VideoAnalysisJob]:
     return ingest_youtube_video_jobs(
         gameweek=gameweek,
+        season=season,
+        gameweek_deadline=gameweek_deadline,
         per_expert_limit=per_expert_limit,
+        archive_limit=archive_limit,
+        window_days_before=window_days_before,
+        window_days_after=window_days_after,
         expert_name=expert_name,
         expert_count=expert_count,
         proxy_settings=proxy_settings,

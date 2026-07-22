@@ -42,8 +42,8 @@ def test_build_video_jobs_from_youtube_skips_missing_error_and_irrelevant_videos
         ],
     }
     monkeypatch.setattr(
-        "src.services.transcript_ingestion_service.get_latest_videos_for_expert",
-        lambda expert_name, channel_url, limit: fixtures.get(expert_name, [])[:limit],
+        "src.services.transcript_ingestion_service.get_videos_for_gameweek",
+        lambda expert_name, channel_url, *, gameweek, season, archive_limit: fixtures.get(expert_name, []),
     )
 
     monkeypatch.setattr(
@@ -56,7 +56,7 @@ def test_build_video_jobs_from_youtube_skips_missing_error_and_irrelevant_videos
         }[video_id],
     )
 
-    jobs = build_video_jobs_from_youtube(gameweek=32, per_expert_limit=2)
+    jobs = build_video_jobs_from_youtube(season="2025-26", gameweek=32, per_expert_limit=2)
 
     assert len(jobs) == 1
     assert jobs[0].expert_name == "FPL Harry"
@@ -88,8 +88,8 @@ def test_ingest_youtube_video_jobs_returns_discovery_and_failure_metadata(monkey
         ],
     }
     monkeypatch.setattr(
-        "src.services.transcript_ingestion_service.get_latest_videos_for_expert",
-        lambda expert_name, channel_url, limit: fixtures.get(expert_name, [])[:limit],
+        "src.services.transcript_ingestion_service.get_videos_for_gameweek",
+        lambda expert_name, channel_url, *, gameweek, season, archive_limit: fixtures.get(expert_name, []),
     )
     monkeypatch.setattr(
         "src.services.transcript_ingestion_service.get_clean_transcript",
@@ -99,7 +99,7 @@ def test_ingest_youtube_video_jobs_returns_discovery_and_failure_metadata(monkey
         }[video_id],
     )
 
-    result = ingest_youtube_video_jobs(gameweek=32, per_expert_limit=2)
+    result = ingest_youtube_video_jobs(season="2025-26", gameweek=32, per_expert_limit=2)
 
     assert result.videos_discovered == 2
     assert result.videos_selected == 1
@@ -121,10 +121,10 @@ def test_ingest_youtube_video_jobs_returns_discovery_and_failure_metadata(monkey
 def test_build_video_jobs_from_youtube_passes_per_expert_limit_to_discovery(monkeypatch) -> None:
     captured: dict[str, str | int] = {}
 
-    def _fake_discovery(expert_name: str, channel_url: str, limit: int) -> list[dict[str, str]]:
+    def _fake_discovery(expert_name: str, channel_url: str, *, gameweek: int, season: str, archive_limit: int) -> list[dict[str, str]]:
         captured["expert_name"] = expert_name
         captured["channel_url"] = channel_url
-        captured["limit_per_expert"] = limit
+        captured["archive_limit"] = archive_limit
         return [
             {
                 "video_id": "abc123",
@@ -136,7 +136,7 @@ def test_build_video_jobs_from_youtube_passes_per_expert_limit_to_discovery(monk
         ]
 
     monkeypatch.setattr(
-        "src.services.transcript_ingestion_service.get_latest_videos_for_expert",
+        "src.services.transcript_ingestion_service.get_videos_for_gameweek",
         _fake_discovery,
     )
     monkeypatch.setattr(
@@ -149,6 +149,7 @@ def test_build_video_jobs_from_youtube_passes_per_expert_limit_to_discovery(monk
     )
 
     jobs = build_video_jobs_from_youtube(
+        season="2025-26",
         gameweek=32,
         per_expert_limit=4,
         expert_name="FPL Harry",
@@ -158,7 +159,7 @@ def test_build_video_jobs_from_youtube_passes_per_expert_limit_to_discovery(monk
     assert captured == {
         "expert_name": "FPL Harry",
         "channel_url": "https://www.youtube.com/@FPLHarry/videos",
-        "limit_per_expert": 4,
+        "archive_limit": 200,
     }
     assert len(jobs) == 1
     assert jobs[0].video_title == "GW32 Best Picks"
@@ -173,8 +174,8 @@ def test_ingest_youtube_video_jobs_passes_proxy_settings_to_transcript_fetch(mon
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(
-        "src.services.transcript_ingestion_service.get_latest_videos_for_expert",
-        lambda expert_name, channel_url, limit: [
+        "src.services.transcript_ingestion_service.get_videos_for_gameweek",
+        lambda expert_name, channel_url, *, gameweek, season, archive_limit: [
             {
                 "video_id": "keep-1",
                 "title": "FPL GW32 Preview",
@@ -200,6 +201,7 @@ def test_ingest_youtube_video_jobs_passes_proxy_settings_to_transcript_fetch(mon
     )
 
     result = ingest_youtube_video_jobs(
+        season="2025-26",
         gameweek=32,
         per_expert_limit=1,
         expert_name="FPL Harry",
@@ -212,3 +214,59 @@ def test_ingest_youtube_video_jobs_passes_proxy_settings_to_transcript_fetch(mon
         "video_id": "keep-1",
         "proxy_settings": proxy_settings,
     }
+
+
+def test_historical_ingestion_uses_archive_and_records_selection_evidence(monkeypatch) -> None:
+    archive = [
+        {
+            "video_id": "latest-38",
+            "title": "FPL GW38 Final Team",
+            "video_url": "https://youtube.com/watch?v=latest-38",
+            "published_at": "2026-05-23T12:00:00Z",
+            "expert_name": "FPL Focal",
+        },
+        {
+            "video_id": "historical-31",
+            "title": "FPL GW31 Team Selection",
+            "video_url": "https://youtube.com/watch?v=historical-31",
+            "published_at": "2026-03-27T18:00:00Z",
+            "expert_name": "FPL Focal",
+        },
+    ]
+    captured: dict[str, object] = {}
+
+    def fake_archive(expert_name, channel_url, *, gameweek, season, archive_limit):
+        captured.update(
+            gameweek=gameweek,
+            season=season,
+            archive_limit=archive_limit,
+        )
+        return archive
+
+    monkeypatch.setattr(
+        "src.services.transcript_ingestion_service.get_videos_for_gameweek",
+        fake_archive,
+    )
+    monkeypatch.setattr(
+        "src.services.transcript_ingestion_service.get_clean_transcript",
+        lambda video_id, *, proxy_settings=None: {
+            "video_id": video_id,
+            "transcript": "FPL GW31 captaincy and transfers",
+            "status": "available",
+        },
+    )
+
+    result = ingest_youtube_video_jobs(
+        gameweek=31,
+        season="2025-26",
+        per_expert_limit=1,
+        archive_limit=120,
+        expert_name="FPL Focal",
+    )
+
+    assert captured == {"gameweek": 31, "season": "2025-26", "archive_limit": 120}
+    assert [job.video_title for job in result.input_jobs] == ["FPL GW31 Team Selection"]
+    assert result.discovered_videos[0]["rejection_reason"] == "mentions_different_gameweek"
+    assert result.discovered_videos[1]["selection_reason"] == "exact_gameweek_match"
+    assert result.discovered_videos[1]["requested_gameweek"] == 31
+    assert result.discovered_videos[1]["detected_gameweeks"] == [31]

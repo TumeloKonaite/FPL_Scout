@@ -84,6 +84,38 @@ def test_equal_timestamps_use_run_id_deterministically(tmp_path) -> None:
     assert ReportStore(tmp_path).get_report_for_gameweek("2026-27", 4).run_id == "run-b"
 
 
+def test_list_available_gameweeks_returns_one_canonical_run_per_identity(
+    tmp_path,
+) -> None:
+    _write_run(tmp_path, "old-gw4", season="2026-27", gameweek=4)
+    _write_run(
+        tmp_path,
+        "new-gw4",
+        season="2026-27",
+        gameweek=4,
+        updated_at="2026-08-02T00:00:00Z",
+    )
+    _write_run(tmp_path, "gw3", season="2026-27", gameweek=3)
+    _write_run(tmp_path, "old-season", season="2025-26", gameweek=38)
+    _write_run(
+        tmp_path,
+        "incomplete",
+        season="2027-28",
+        gameweek=1,
+        status="running",
+    )
+
+    records = ReportStore(tmp_path).list_available_gameweeks()
+
+    assert [
+        (record.season, record.gameweek, record.run_id) for record in records
+    ] == [
+        ("2026-27", 4, "new-gw4"),
+        ("2026-27", 3, "gw3"),
+        ("2025-26", 38, "old-season"),
+    ]
+
+
 def test_latest_crosses_season_boundary_and_can_prefer_current_identity(
     tmp_path,
 ) -> None:

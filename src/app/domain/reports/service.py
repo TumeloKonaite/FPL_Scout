@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -40,6 +41,30 @@ class ReportBundle:
     aggregate_report_path: Path | None
     final_report: FinalGameweekReport
     aggregate_report: AggregatedFPLReport | None
+    updated_at: float
+
+
+@dataclass(frozen=True)
+class GameweekReportSummary:
+    gameweek: int
+    last_updated_at: datetime
+    has_suggested_team: bool
+
+
+@dataclass(frozen=True)
+class SeasonGameweekSummary:
+    season: str
+    gameweeks: list[GameweekReportSummary]
+
+
+class GameweekReportNotFoundError(LookupError):
+    def __init__(self, season: str, gameweek: int) -> None:
+        self.season = season
+        self.gameweek = gameweek
+        super().__init__(
+            f"No completed report is available for season {season}, "
+            f"gameweek {gameweek}."
+        )
 
 
 class ReportService:
@@ -56,18 +81,75 @@ class ReportService:
         season: str | None = None,
         gameweek: int | None = None,
     ) -> ReportBundle:
-        record = (
-            self.store.get_latest_report(season, gameweek)
-            if season is not None or gameweek is not None
-            else self.store.get_latest_report()
-        )
-        return self._load_record(record)
+        if (season is None) != (gameweek is None):
+            raise ValueError("season and gameweek must be provided together")
+        if season is not None and gameweek is not None:
+            try:
+                return self.get_report_for_gameweek(season, gameweek)
+            except GameweekReportNotFoundError:
+                pass
+        candidates = [
+            record for record in self.store.list_reports() if record.is_canonical
+        ]
+        if candidates:
+            return self._newest_valid_bundle(candidates)
+        # Keep compatibility with storage implementations that hydrate identity
+        # only when the report body is loaded. The filesystem store itself still
+        # rejects non-canonical public reports in get_latest_report().
+        return self._load_record(self.store.get_latest_report())
 
     def get_report_for_gameweek(
         self, season: str, gameweek: int
-    ) -> ReportBundle | None:
-        record = self.store.get_report_for_gameweek(season, gameweek)
-        return self._load_record(record) if record is not None else None
+    ) -> ReportBundle:
+        try:
+            candidates = [
+                record
+                for record in self.store.get_reports_for_gameweek(season, gameweek)
+                if record.is_canonical
+            ]
+            return self._newest_valid_bundle(candidates)
+        except (EmptyReportDirectoryError, ReportDirectoryNotFoundError) as exc:
+            raise GameweekReportNotFoundError(season, gameweek) from exc
+
+    def list_available_gameweeks(self) -> list[SeasonGameweekSummary]:
+        records = self.store.list_reports()
+        identities = sorted(
+            {
+                (record.season, record.gameweek)
+                for record in records
+                if record.is_canonical
+            },
+            reverse=True,
+        )
+        grouped: dict[str, list[GameweekReportSummary]] = {}
+        for season, gameweek in identities:
+            candidates = [
+                record
+                for record in records
+                if record.is_canonical
+                and record.season == season
+                and record.gameweek == gameweek
+            ]
+            try:
+                bundle = self._newest_valid_bundle(candidates)
+            except EmptyReportDirectoryError:
+                continue
+            grouped.setdefault(season, []).append(
+                GameweekReportSummary(
+                    gameweek=gameweek,
+                    last_updated_at=datetime.fromtimestamp(bundle.updated_at, tz=UTC),
+                    has_suggested_team=bundle.final_report.suggested_team is not None,
+                )
+            )
+        return [
+            SeasonGameweekSummary(
+                season=season,
+                gameweeks=sorted(
+                    gameweeks, key=lambda summary: summary.gameweek, reverse=True
+                ),
+            )
+            for season, gameweeks in sorted(grouped.items(), reverse=True)
+        ]
 
     def get_reports_for_gameweek(
         self, season: str, gameweek: int
@@ -99,7 +181,22 @@ class ReportService:
             aggregate_report_path=record.aggregate_report_path,
             final_report=final_report,
             aggregate_report=aggregate_report,
+            updated_at=record.updated_at,
         )
+
+    def _newest_valid_bundle(
+        self, candidates: list[ReportRecord]
+    ) -> ReportBundle:
+        for record in sorted(
+            candidates,
+            key=lambda candidate: (candidate.updated_at, candidate.run_id),
+            reverse=True,
+        ):
+            try:
+                return self._load_record(record)
+            except InvalidReportFileError:
+                continue
+        raise EmptyReportDirectoryError("No valid completed reports were found")
 
     def _build_position_catalog(self) -> dict[str, str]:
         catalog: dict[str, str] = {}
@@ -162,10 +259,13 @@ class ReportService:
 
 __all__ = [
     "EmptyReportDirectoryError",
+    "GameweekReportNotFoundError",
+    "GameweekReportSummary",
     "InvalidReportFileError",
     "ReportBundle",
     "ReportDirectoryNotFoundError",
     "ReportNotFoundError",
     "ReportService",
     "ReportSummary",
+    "SeasonGameweekSummary",
 ]

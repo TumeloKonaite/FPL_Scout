@@ -118,6 +118,27 @@ class ReportStore:
             if record.season == identity.season and record.gameweek == identity.gameweek
         ]
 
+    def list_available_gameweeks(self) -> list[ReportRecord]:
+        """Return the metadata-level canonical run for every public identity."""
+        canonical: dict[tuple[str, int], ReportRecord] = {}
+        for record in self.list_reports():
+            if not record.is_canonical:
+                continue
+            identity = (record.season, record.gameweek)
+            current = canonical.get(identity)
+            if current is None or (record.updated_at, record.run_id) > (
+                current.updated_at,
+                current.run_id,
+            ):
+                canonical[identity] = record
+        return sorted(
+            canonical.values(),
+            key=lambda record: ReportIdentity(
+                record.season, record.gameweek
+            ).sort_key,
+            reverse=True,
+        )
+
     def get_report_for_gameweek(
         self, season: str, gameweek: int
     ) -> ReportRecord | None:

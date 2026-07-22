@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     TRANSCRIPT_FILE_FALLBACK_ENABLED: bool = Field(default=True)
     TRANSCRIPT_FAILURE_RETRY_HOURS: int = Field(default=24, ge=0)
 
+    VIDEO_SELECTION_WINDOW_DAYS_BEFORE: int = Field(default=10, ge=0)
+    VIDEO_SELECTION_WINDOW_DAYS_AFTER: int = Field(default=2, ge=0)
+
     PIPELINE_API_TOKEN: str = Field(default="")
     ADMIN_API_TOKEN: str = Field(default="")
 

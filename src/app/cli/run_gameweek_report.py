@@ -39,7 +39,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--per-expert-limit",
         type=int,
         default=2,
-        help="Maximum number of recent videos to inspect per configured expert channel.",
+        help="Maximum number of validated videos to select per expert channel.",
+    )
+    parser.add_argument(
+        "--archive-limit",
+        type=int,
+        default=200,
+        help="Maximum channel uploads to inspect per expert (default: 200).",
+    )
+    parser.add_argument(
+        "--gameweek-deadline",
+        type=str,
+        help="Optional ISO-8601 deadline used for publication-date validation.",
     )
     parser.add_argument(
         "--expert-name",
@@ -70,6 +81,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             gameweek=args.gameweek,
             output_dir=args.output_dir,
             per_expert_limit=args.per_expert_limit,
+            archive_limit=getattr(args, "archive_limit", 200),
+            gameweek_deadline=getattr(args, "gameweek_deadline", None),
             expert_name=args.expert_name,
             expert_count=args.expert_count,
             synthesis_enabled=not args.no_synthesis,

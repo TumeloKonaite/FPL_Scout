@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from threading import Thread
 from typing import Any
@@ -43,6 +44,8 @@ class PipelineService:
         output_dir: str | Path | None = None,
         input_data: dict[str, Any] | None | object = _UNSET,
         per_expert_limit: int = 2,
+        archive_limit: int = 200,
+        gameweek_deadline: str | None = None,
         expert_name: str | None = None,
         expert_count: int | None = None,
         synthesis_enabled: bool = True,
@@ -56,6 +59,8 @@ class PipelineService:
             gameweek = gameweek or input_data.get("gameweek")
             output_dir = output_dir or input_data.get("output_dir")
             per_expert_limit = input_data.get("per_expert_limit", per_expert_limit)
+            archive_limit = input_data.get("archive_limit", archive_limit)
+            gameweek_deadline = input_data.get("gameweek_deadline", gameweek_deadline)
             expert_name = input_data.get("expert_name", expert_name)
             expert_count = input_data.get("expert_count", expert_count)
             synthesis_enabled = input_data.get("synthesis_enabled", synthesis_enabled)
@@ -86,6 +91,8 @@ class PipelineService:
                 gameweek=validate_gameweek(gameweek),
                 output_dir=output_dir,
                 per_expert_limit=per_expert_limit,
+                archive_limit=archive_limit,
+                gameweek_deadline=gameweek_deadline,
                 expert_name=expert_name,
                 expert_count=expert_count,
                 synthesis_enabled=synthesis_enabled,
@@ -164,6 +171,8 @@ def run_pipeline(
     output_dir: str | Path | None = None,
     input_data: dict[str, Any] | None | object = _UNSET,
     per_expert_limit: int = 2,
+    archive_limit: int = 200,
+    gameweek_deadline: str | None = None,
     expert_name: str | None = None,
     expert_count: int | None = None,
     synthesis_enabled: bool = True,
@@ -178,6 +187,8 @@ def run_pipeline(
         output_dir=output_dir,
         input_data=input_data,
         per_expert_limit=per_expert_limit,
+        archive_limit=archive_limit,
+        gameweek_deadline=gameweek_deadline,
         expert_name=expert_name,
         expert_count=expert_count,
         synthesis_enabled=synthesis_enabled,
@@ -205,12 +216,20 @@ def _validate_api_input(input_data: dict[str, Any] | None) -> dict[str, Any]:
         or not 1 <= gameweek <= 38
     ):
         raise ValueError("gameweek must be an integer between 1 and 38")
-    for field_name in ("per_expert_limit", "expert_count"):
+    for field_name in ("per_expert_limit", "archive_limit", "expert_count"):
         value = payload.get(field_name)
         if value is not None and (
             isinstance(value, bool) or not isinstance(value, int) or value < 1
         ):
             raise ValueError(f"{field_name} must be a positive integer")
+    deadline = payload.get("gameweek_deadline")
+    if deadline is not None:
+        if not isinstance(deadline, str):
+            raise ValueError("gameweek_deadline must be an ISO-8601 timestamp")
+        try:
+            datetime.fromisoformat(deadline.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("gameweek_deadline must be an ISO-8601 timestamp") from exc
     return payload
 
 
@@ -238,6 +257,8 @@ def execute_pipeline_run(
             gameweek=gameweek,
             output_dir=output_dir,
             per_expert_limit=payload.get("per_expert_limit", 2),
+            archive_limit=payload.get("archive_limit", 200),
+            gameweek_deadline=payload.get("gameweek_deadline"),
             expert_name=payload.get("expert_name"),
             expert_count=payload.get("expert_count"),
             synthesis_enabled=payload.get("synthesis_enabled", True),

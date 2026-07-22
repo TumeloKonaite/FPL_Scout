@@ -3,15 +3,18 @@ from __future__ import annotations
 from src.adapters.youtube import (
     get_latest_videos_for_all_experts,
     get_latest_videos_for_expert,
+    get_videos_for_gameweek,
 )
 
 
 class _FakeYoutubeDL:
     response: dict | None = None
     last_url: str | None = None
+    last_options: dict | None = None
 
     def __init__(self, options: dict) -> None:
         self.options = options
+        _FakeYoutubeDL.last_options = options
 
     def __enter__(self) -> "_FakeYoutubeDL":
         return self
@@ -153,3 +156,24 @@ def test_get_latest_videos_for_all_experts_uses_configured_sources(monkeypatch) 
         "FPL Raptor",
         "The FPL Wire",
     ]
+
+
+def test_gameweek_discovery_scans_archive_beyond_newest_uploads(monkeypatch) -> None:
+    _FakeYoutubeDL.response = {
+        "entries": [
+            {"id": "new", "title": "GW38 Final Team"},
+            {"id": "old", "title": "GW31 Team Selection", "upload_date": "20260327"},
+        ]
+    }
+    monkeypatch.setattr("yt_dlp.YoutubeDL", _FakeYoutubeDL)
+
+    videos = get_videos_for_gameweek(
+        "FPL Focal",
+        "https://www.youtube.com/@FPLFocal",
+        gameweek=31,
+        season="2025-26",
+        archive_limit=120,
+    )
+
+    assert [video["video_id"] for video in videos] == ["new", "old"]
+    assert _FakeYoutubeDL.last_options["playlistend"] == 120

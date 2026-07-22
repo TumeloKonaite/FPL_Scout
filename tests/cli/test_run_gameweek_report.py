@@ -212,6 +212,8 @@ def test_cli_smoke_test_reports_success_and_passes_expected_arguments(capsys, tm
         gameweek=32,
         output_dir=output_dir,
         per_expert_limit=4,
+        archive_limit=200,
+        gameweek_deadline=None,
         expert_name="FPL Harry",
         expert_count=1,
         synthesis_enabled=True,

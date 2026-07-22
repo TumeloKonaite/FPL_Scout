@@ -11,7 +11,11 @@ uv sync --frozen --group dev
 uv run modal setup
 ```
 
-Create a strong pipeline token, then create the server-side secret. Do not put real values in `.env`, shell history, source control, or a `NEXT_PUBLIC_*` variable. If your shell records commands, use Modal's interactive secret creation flow or temporarily disable history.
+Create a strong pipeline token, then create the server-side secret. The same
+secret must contain `DATABASE_URL` (and `DIRECT_DATABASE_URL` when migrations
+use a different direct connection). Do not put real values in `.env`, shell
+history, source control, or a `NEXT_PUBLIC_*` variable. If your shell records
+commands, use Modal's interactive secret creation flow or temporarily disable history.
 
 ```bash
 uv run modal secret create fpl-scout-secrets \
@@ -22,14 +26,18 @@ uv run modal secret create fpl-scout-secrets \
   WEBSHARE_PROXY_USERNAME="..." \
   WEBSHARE_PROXY_PASSWORD="..." \
   ADMIN_API_TOKEN="..." \
-  PIPELINE_API_TOKEN="..."
+  PIPELINE_API_TOKEN="..." \
+  DATABASE_URL="postgresql+psycopg://..." \
+  DIRECT_DATABASE_URL="postgresql+psycopg://..."
 ```
 
 An empty `OPENAI_BASE_URL` safely selects `https://api.openai.com/v1`. Rotate secrets by running the same command with the replacement values, then redeploy. `ADMIN_API_TOKEN` protects admin pages and APIs; `PIPELINE_API_TOKEN` remains available for compatible automation.
 
 ## Volume and deployment
 
-`modal_app.py` creates `fpl-scout-data` on first deployment. To create it explicitly:
+`modal_app.py` creates `fpl-scout-data` on first deployment. It remains the
+report/run artifact store, but transcript persistence and cache hits do not
+depend on Volume commits. To create it explicitly:
 
 ```bash
 uv run modal volume create fpl-scout-data

@@ -5,7 +5,31 @@ services:
     image: fpl-agent:latest
     env_file:
       - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres:5432/fpl_scout}
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:-postgresql+psycopg://postgres:postgres@postgres:5432/fpl_scout}
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+    command: ["/bin/sh", "-c", "uv run alembic upgrade head && uv run uvicorn src.app.main:app --host 0.0.0.0 --port 8000"]
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: fpl_scout
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fpl_scout"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

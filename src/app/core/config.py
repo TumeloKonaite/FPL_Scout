@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     TRANSCRIPTS_DIR: str = Field(default="data/transcripts")
     RUNS_DIR: str = Field(default="data/runs")
 
+    DATABASE_URL: str = Field(default="")
+    DIRECT_DATABASE_URL: str = Field(default="")
+    TRANSCRIPT_STORE: str = Field(default="postgres")
+    TRANSCRIPT_FILE_FALLBACK_ENABLED: bool = Field(default=True)
+    TRANSCRIPT_FAILURE_RETRY_HOURS: int = Field(default=24, ge=0)
+
     PIPELINE_API_TOKEN: str = Field(default="")
     ADMIN_API_TOKEN: str = Field(default="")
 

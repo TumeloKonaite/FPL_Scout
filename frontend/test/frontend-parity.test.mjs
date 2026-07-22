@@ -13,12 +13,13 @@ function source(path) {
 test("dashboard presents a read-only gameweek summary with resilient states", () => {
   const dashboard = source("app/dashboard/page.tsx");
 
-  assert.match(dashboard, /getLatestReport\(\)/);
+  assert.match(dashboard, /useSelectedReport\(\)/);
+  assert.doesNotMatch(dashboard, /getLatestReport\(\)/);
   assert.doesNotMatch(dashboard, /getReports\(\)/);
   assert.match(dashboard, /<DashboardSkeleton \/>/);
-  assert.match(dashboard, /No gameweek summary is available yet\./);
-  assert.match(dashboard, /ErrorState label=\{error\}/);
-  assert.match(dashboard, /title=\{`This Gameweek\$\{gameweekLabel\}`\}/);
+  assert.match(dashboard, /<MissingReportState \/>/);
+  assert.match(dashboard, /<ReportErrorState \/>/);
+  assert.match(dashboard, /isCurrentReport \? `This Gameweek\$\{gameweekLabel\}`/);
   assert.match(dashboard, /Gameweek \$\{report\.gameweek\} deadline/);
   assert.match(dashboard, /Last updated time unavailable/);
   assert.match(dashboard, />Top Captain</);
@@ -29,13 +30,15 @@ test("dashboard presents a read-only gameweek summary with resilient states", ()
   assert.doesNotMatch(dashboard, /Generate report/);
 });
 
-test("reports page only renders the latest public report", () => {
+test("reports page renders the URL-selected public report", () => {
   const reportsPage = source("app/reports/page.tsx");
 
-  assert.match(reportsPage, /getLatestReport\(\)/);
+  assert.match(reportsPage, /useSelectedReport\(\)/);
+  assert.doesNotMatch(reportsPage, /getLatestReport\(\)/);
   assert.doesNotMatch(reportsPage, /getReports\(\)/);
   assert.doesNotMatch(reportsPage, /selectedRunId/);
-  assert.match(reportsPage, /The latest gameweek analysis is temporarily unavailable\./);
+  assert.match(reportsPage, /<MissingReportState \/>/);
+  assert.match(reportsPage, /historical=\{!isCurrentReport\}/);
 });
 
 test("report viewer renders every final report section", () => {
@@ -117,6 +120,8 @@ test("public navigation and APIs do not expose operational controls", () => {
   const api = source("src/lib/api.ts");
   assert.doesNotMatch(sidebar, /\/admin|pipeline-runner|Pipeline Runner/);
   assert.match(api, /\/api\/recommendations\/latest/);
+  assert.match(api, /\/api\/recommendations\/gameweeks/);
+  assert.match(api, /getSelectedReport/);
   assert.match(api, /\/api\/admin\/pipeline\/run/);
 });
 

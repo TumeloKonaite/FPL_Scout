@@ -1,51 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
-import { EmptyState, ErrorState, LoadingState, ReportViewer } from "@/components/ReportViewer";
-import { ApiError, getLatestReport } from "@/src/lib/api";
-import type { FullReportResponse } from "@/src/types/report";
+import { LoadingState, ReportViewer } from "@/components/ReportViewer";
+import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
+import { useSelectedReport } from "@/components/useSelectedReport";
+import { seasonLabel } from "@/lib/reports/reportSelection";
 
 export default function ReportsPage() {
-  const [selectedReport, setSelectedReport] = useState<FullReportResponse | null>(null);
-  const [isLoadingReport, setIsLoadingReport] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadReport() {
-      setError(null);
-      try {
-        const report = await getLatestReport();
-        if (isMounted) setSelectedReport(report);
-      } catch (caught) {
-        if (isMounted) {
-          setError(caught instanceof ApiError && caught.status === 404
-            ? null
-            : "The latest gameweek analysis is temporarily unavailable.");
-        }
-      } finally {
-        if (isMounted) setIsLoadingReport(false);
-      }
-    }
-    loadReport();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { selection, report, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport, error } = useSelectedReport();
+  const loading = isLoadingIndex || isLoadingReport;
 
   return (
     <PageShell
       title="Reports"
-      eyebrow="Latest analysis"
-      description="Review the latest published gameweek recommendations and supporting analysis."
+      eyebrow={isCurrentReport ? "Current analysis" : "Report archive"}
+      description={selection ? `Review the published recommendations for Gameweek ${selection.gameweek} of ${seasonLabel(selection.season)}.` : "Review published gameweek recommendations and supporting analysis."}
+      action={!loading && report && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
     >
-      {isLoadingReport ? <LoadingState label="Loading the latest report..." /> : null}
-      {!isLoadingReport && error ? <ErrorState label={error} /> : null}
-      {!isLoadingReport && !error && !selectedReport ? <EmptyState label="The latest gameweek analysis is temporarily unavailable." /> : null}
-      {!isLoadingReport && !error && selectedReport ? <ReportViewer report={selectedReport} /> : null}
+      {loading ? <LoadingState label="Loading the selected report..." /> : null}
+      {!loading && error ? <ReportErrorState /> : null}
+      {!loading && !error && isMissingReport ? <MissingReportState /> : null}
+      {!loading && !error && report ? <ReportViewer report={report} historical={!isCurrentReport} /> : null}
     </PageShell>
   );
 }

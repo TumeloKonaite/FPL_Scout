@@ -110,10 +110,26 @@ export type Report = {
 };
 
 export type FullReportResponse = {
+  season: string;
   gameweek?: number | null;
   last_updated_at?: string | null;
   available: boolean;
   report: Report;
+};
+
+export type GameweekOption = {
+  gameweek: number;
+  last_updated_at: string;
+  has_suggested_team: boolean;
+};
+
+export type SeasonOption = {
+  season: string;
+  gameweeks: GameweekOption[];
+};
+
+export type AvailableGameweeksResponse = {
+  seasons: SeasonOption[];
 };
 
 export type CurrentGameweekResponse = {

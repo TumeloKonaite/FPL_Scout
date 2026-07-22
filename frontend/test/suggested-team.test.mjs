@@ -61,8 +61,9 @@ test("page declares loading, unavailable, warning, pitch, bench, and table state
   assert.match(page, /SuggestedTeamTable players=\{team\.allPlayers\}/);
   assert.match(page, /<SuggestedTeamPitch team=\{team\}/);
   assert.match(page, /<SuggestedTeamBench team=\{team\}/);
-  assert.match(page, /Suggested team not available yet/);
-  assert.match(page, /Suggested team data is incomplete/);
+  assert.match(page, /Suggested team unavailable/);
+  assert.match(page, /No recommended starting XI was generated for this gameweek/);
+  assert.match(page, /useSelectedReport/);
   assert.match(page, /SuggestedTeamSkeleton/);
 });
 

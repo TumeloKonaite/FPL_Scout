@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
-import { EmptyState, ErrorState } from "@/components/ReportViewer";
+import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
 import { Icon } from "@/components/Icons";
 import { validateStartingXi } from "@/components/suggestedTeam";
-import { ApiError, getLatestReport } from "@/src/lib/api";
-import type { FullReportResponse, KeyRisk } from "@/src/types/report";
+import type { KeyRisk } from "@/src/types/report";
 import { RecommendationEvidence } from "@/components/RecommendationEvidence";
+import { useSelectedReport } from "@/components/useSelectedReport";
+import { reportHref } from "@/lib/reports/reportHref";
+import { deadlineState } from "@/lib/reports/reportStatus";
+import { seasonLabel } from "@/lib/reports/reportSelection";
 
 type ActionItem = { text: string; href: string };
 
@@ -32,7 +35,7 @@ function formatDateTime(value?: string | null): string | null {
   }).format(date);
 }
 
-function DeadlineCountdown({ deadline }: { deadline?: string | null }) {
+function DeadlineCountdown({ deadline, historical }: { deadline?: string | null; historical: boolean }) {
   const [now, setNow] = useState(() => Date.now());
   const target = parseDate(deadline)?.getTime();
 
@@ -42,7 +45,10 @@ function DeadlineCountdown({ deadline }: { deadline?: string | null }) {
     return () => window.clearInterval(timer);
   }, [target]);
 
-  if (!target || target <= now) return null;
+  const state = deadlineState(deadline, historical, now);
+  if (state === "missing") return <span className="deadline-status">Deadline unavailable</span>;
+  if (state === "passed") return <span className="deadline-status">Deadline passed</span>;
+  if (!target) return <span className="deadline-status">Deadline unavailable</span>;
   const totalMinutes = Math.ceil((target - now) / 60_000);
   const days = Math.floor(totalMinutes / 1_440);
   const hours = Math.floor((totalMinutes % 1_440) / 60);
@@ -71,41 +77,10 @@ function SummaryLink({ href, children }: { href: string; children: ReactNode }) 
 }
 
 export default function DashboardPage() {
-  const [latestReport, setLatestReport] = useState<FullReportResponse | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadDashboard() {
-      setIsLoading(true);
-      setError(null);
-      const latestResult = await getLatestReport().then(
-        (value) => ({ status: "fulfilled" as const, value }),
-        (reason) => ({ status: "rejected" as const, reason })
-      );
-      if (!isMounted) return;
-
-      if (latestResult.status === "rejected") {
-        if (latestResult.reason instanceof ApiError && latestResult.reason.status === 404) {
-          setLatestReport(null);
-        } else {
-          setError("The latest gameweek analysis is temporarily unavailable.");
-        }
-      } else {
-        setLatestReport(latestResult.value);
-        setLastUpdated(latestResult.value.report.lastUpdated ?? latestResult.value.last_updated_at ?? null);
-      }
-      setIsLoading(false);
-    }
-
-    loadDashboard();
-    return () => { isMounted = false; };
-  }, []);
-
-  const report = latestReport?.report;
+  const { selection, report: selectedReport, error, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport } = useSelectedReport();
+  const isLoading = isLoadingIndex || isLoadingReport;
+  const report = selectedReport?.report;
+  const lastUpdated = report?.lastUpdated ?? selectedReport?.last_updated_at ?? null;
   const topCaptain = report?.captaincy?.[0];
   const topTransfer = report?.transfers?.[0];
   const keyRisk = useMemo<KeyRisk | null>(() => report?.key_risk ?? (report?.wait_for_news?.[0] ? {
@@ -123,19 +98,19 @@ export default function DashboardPage() {
 
   const actions = useMemo(() => {
     const items: ActionItem[] = [];
-    if (topCaptain) items.push({ text: `Captain ${topCaptain.playerName || topCaptain.title}.`, href: "/captaincy" });
-    if (topTransfer) items.push({ text: topTransfer.playerIn ? `Consider transferring ${topTransfer.playerIn} in.` : `Prioritise: ${topTransfer.title}.`, href: "/transfers" });
-    if (keyRisk) items.push({ text: keyRisk.recommendedAction || `Monitor ${keyRisk.subject.toLowerCase()} before the deadline.`, href: "/reports#risks" });
+    if (topCaptain) items.push({ text: `Captain ${topCaptain.playerName || topCaptain.title}.`, href: reportHref("/captaincy", selection) });
+    if (topTransfer) items.push({ text: topTransfer.playerIn ? `Consider transferring ${topTransfer.playerIn} in.` : `Prioritise: ${topTransfer.title}.`, href: reportHref("/transfers", selection) });
+    if (keyRisk) items.push({ text: keyRisk.recommendedAction || `Monitor ${keyRisk.subject.toLowerCase()} before the deadline.`, href: reportHref("/reports#risks", selection) });
     for (const advice of report?.conditional_advice ?? []) {
       if (items.length >= 5) break;
-      if (advice.trim()) items.push({ text: advice, href: "/reports#risks" });
+      if (advice.trim()) items.push({ text: advice, href: reportHref("/reports#risks", selection) });
     }
     for (const strategy of report?.chip_strategy ?? []) {
       if (items.length >= 5) break;
-      if (strategy.title.trim()) items.push({ text: strategy.title, href: "/reports" });
+      if (strategy.title.trim()) items.push({ text: strategy.title, href: reportHref("/reports", selection) });
     }
     return items;
-  }, [keyRisk, report?.chip_strategy, report?.conditional_advice, topCaptain, topTransfer]);
+  }, [keyRisk, report?.chip_strategy, report?.conditional_advice, selection, topCaptain, topTransfer]);
 
   const gameweekLabel = report?.gameweek ? ` — GW${report.gameweek}` : "";
   const formattedDeadline = formatDateTime(report?.deadline);
@@ -143,23 +118,22 @@ export default function DashboardPage() {
 
   return (
     <PageShell
-      title={`This Gameweek${gameweekLabel}`}
+      title={isCurrentReport ? `This Gameweek${gameweekLabel}` : selection ? `Gameweek ${selection.gameweek} — ${seasonLabel(selection.season)}` : "Gameweek report"}
       eyebrow="Your weekly briefing"
-      description="The latest expert consensus, distilled into the decisions that matter before the deadline."
+      description={isCurrentReport ? "The latest expert consensus, distilled into the decisions that matter before the deadline." : "A read-only snapshot of the recommendations published for this historical gameweek."}
+      action={!isLoading && selectedReport && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
     >
       {isLoading ? <DashboardSkeleton /> : null}
-      {!isLoading && error ? <ErrorState label={error} /> : null}
-      {!isLoading && !error && !latestReport ? (
-        <EmptyState label="No gameweek summary is available yet. The latest recommendations will appear here once the analysis pipeline has completed." />
-      ) : null}
+      {!isLoading && error ? <ReportErrorState /> : null}
+      {!isLoading && !error && isMissingReport ? <MissingReportState /> : null}
 
       {!isLoading && !error && report ? (
         <div className="gameweek-dashboard">
           <section className="gameweek-metadata" aria-label="Gameweek timing">
             <div>
               <span className="metadata-label">{report.gameweek ? `Gameweek ${report.gameweek} deadline` : "Gameweek deadline"}</span>
-              <strong>{formattedDeadline ?? "Deadline time unavailable"}</strong>
-              <DeadlineCountdown deadline={report.deadline} />
+              <strong>{formattedDeadline ? `Deadline: ${formattedDeadline}` : "Deadline unavailable"}</strong>
+              <DeadlineCountdown deadline={report.deadline} historical={!isCurrentReport} />
             </div>
             <div>
               <span className="metadata-label">Recommendations</span>
@@ -178,7 +152,7 @@ export default function DashboardPage() {
                 <p>{topCaptain.rationale}</p>
                 {topCaptain.viceCaptain ? <p className="secondary-detail">Vice-captain: {topCaptain.viceCaptain}</p> : null}
               </> : <p>No clear captain consensus was identified for this gameweek.</p>}
-              <SummaryLink href="/captaincy">View captaincy analysis</SummaryLink>
+              <SummaryLink href={reportHref("/captaincy", selection)}>View captaincy analysis</SummaryLink>
             </article>
 
             <article className="summary-card transfer-card">
@@ -191,7 +165,7 @@ export default function DashboardPage() {
                 <RecommendationEvidence recommendation={topTransfer} compact />
                 <p>{topTransfer.rationale}</p>
               </> : <p>No clear transfer consensus was identified for this gameweek.</p>}
-              <SummaryLink href="/transfers">View transfer recommendations</SummaryLink>
+              <SummaryLink href={reportHref("/transfers", selection)}>View transfer recommendations</SummaryLink>
             </article>
 
             <article className="summary-card risk-card">
@@ -202,7 +176,7 @@ export default function DashboardPage() {
                 <p>{keyRisk.explanation}</p>
                 {keyRisk.recommendedAction ? <p className="risk-response"><strong>Recommendation:</strong> {keyRisk.recommendedAction}</p> : null}
               </> : <p>No major risk was identified in the latest analysis.</p>}
-              <SummaryLink href="/reports#risks">View risks</SummaryLink>
+              <SummaryLink href={reportHref("/reports#risks", selection)}>View risks</SummaryLink>
             </article>
           </section>
 
@@ -212,7 +186,7 @@ export default function DashboardPage() {
           </section>
 
           <section className="dashboard-section consensus-preview" aria-labelledby="consensus-title">
-            <div className="section-heading"><div><span className="eyebrow">Recommended lineup</span><h2 id="consensus-title">Consensus XI{lineup ? ` — ${lineup.formation}` : ""}</h2></div><SummaryLink href="/suggested-team">View full suggested team</SummaryLink></div>
+            <div className="section-heading"><div><span className="eyebrow">Recommended lineup</span><h2 id="consensus-title">Consensus XI{lineup ? ` — ${lineup.formation}` : ""}</h2></div><SummaryLink href={reportHref("/suggested-team", selection)}>View full suggested team</SummaryLink></div>
             {lineup ? <div className="position-groups">
               {([ ["GK", lineup.groupedPlayers.goalkeeper], ["DEF", lineup.groupedPlayers.defenders], ["MID", lineup.groupedPlayers.midfielders], ["FWD", lineup.groupedPlayers.forwards] ] as const).map(([position, players]) => <div className="position-row" key={position}><strong>{position}</strong><div>{players.map((player) => <span className="preview-player" key={player.playerId}>{player.name}{player.captain ? <abbr title="Captain" aria-label="Captain"> C</abbr> : null}{player.viceCaptain ? <abbr title="Vice-captain" aria-label="Vice-captain"> VC</abbr> : null}</span>)}</div></div>)}
             </div> : <p className="empty-copy">A valid consensus starting XI is not available for this gameweek.</p>}

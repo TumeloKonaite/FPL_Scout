@@ -4,8 +4,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.adapters.storage import build_manifest, create_run_folder, load_json, save_json, save_text
+from src.adapters.storage import (
+    build_manifest,
+    create_run_folder,
+    load_json,
+    save_json,
+    save_text,
+)
 from src.app.core.config import get_settings
+from src.app.infrastructure.storage.report_store import ReportStore, update_report_index
+from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
+from src.schemas.report_identity import ReportIdentity
 from src.services.report_formatter_service import format_gameweek_markdown_report
 
 
@@ -57,12 +66,24 @@ class ReportService:
         transcript_failures: list[Any] | None = None,
         run_dir: str | Path | None = None,
     ) -> Path:
+        aggregate_report = AggregatedFPLReport.model_validate(aggregate_report)
+        final_report = FinalGameweekReport.model_validate(final_report)
+        identity = ReportIdentity(final_report.season, final_report.gameweek)
+        if (aggregate_report.season, aggregate_report.gameweek) != (
+            identity.season,
+            identity.gameweek,
+        ):
+            raise ValueError(
+                "aggregate and final reports must have the same season and gameweek"
+            )
         run_path = self._resolve_run_path(run_dir)
         artifact_paths = {
             artifact_name: run_path / filename
             for artifact_name, filename in ARTIFACT_FILENAMES.items()
         }
-        markdown_report = format_gameweek_markdown_report(aggregate_report, final_report)
+        markdown_report = format_gameweek_markdown_report(
+            aggregate_report, final_report
+        )
 
         save_json(artifact_paths["discovered_videos"], discovered_videos or [])
         save_json(artifact_paths["input_jobs"], input_jobs)
@@ -74,6 +95,8 @@ class ReportService:
         manifest = build_manifest(
             run_id=run_path.name,
             created_at=_created_at_for_run_path(run_path),
+            season=identity.season,
+            gameweek=identity.gameweek,
             artifacts=ARTIFACT_FILENAMES,
             input_jobs=input_jobs,
             expert_outputs=expert_outputs,
@@ -87,6 +110,10 @@ class ReportService:
             transcript_failures=transcript_failures,
         )
         save_json(run_path / MANIFEST_FILENAME, manifest)
+
+        index_base_dir = run_path.parent
+        store = ReportStore(index_base_dir)
+        update_report_index(index_base_dir, store.get_report(run_path))
 
         return run_path
 

@@ -8,12 +8,22 @@ from src.adapters.transcript_api import WebshareProxySettings
 from src.orchestrators.gameweek_orchestrator import run_gameweek_orchestration
 from src.schemas.expert_analysis import ExpertVideoAnalysis
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
+from src.schemas.report_identity import ReportIdentity
 from src.schemas.video_job import VideoAnalysisJob
-from src.services.aggregation_service import build_aggregated_fpl_report, dedupe_analyses
+from src.services.aggregation_service import (
+    build_aggregated_fpl_report,
+    dedupe_analyses,
+)
 from src.services.normalization import build_video_job_identity
 from src.services.report_service import ReportService
-from src.services.synthesis_service import build_fallback_final_report, synthesize_final_report
-from src.services.transcript_ingestion_service import YouTubeIngestionResult, ingest_youtube_video_jobs
+from src.services.synthesis_service import (
+    build_fallback_final_report,
+    synthesize_final_report,
+)
+from src.services.transcript_ingestion_service import (
+    YouTubeIngestionResult,
+    ingest_youtube_video_jobs,
+)
 
 
 class PipelineServiceError(Exception):
@@ -23,6 +33,8 @@ class PipelineServiceError(Exception):
 @dataclass(slots=True)
 class PipelineRunResult:
     run_path: Path
+    season: str
+    gameweek: int
     discovered_videos: list[dict[str, str]]
     input_jobs: list[VideoAnalysisJob]
     expert_outputs: list[ExpertVideoAnalysis]
@@ -51,7 +63,8 @@ def dedupe_video_jobs(
                 {
                     "reason": reason,
                     "kept_expert": original.expert_name,
-                    "kept_source": original.video_url or f"{original.expert_name}::{original.video_title}",
+                    "kept_source": original.video_url
+                    or f"{original.expert_name}::{original.video_title}",
                     "duplicate_expert": job.expert_name,
                     "duplicate_source": label,
                     "input_order": str(ordinal),
@@ -66,6 +79,7 @@ def dedupe_video_jobs(
 
 async def run_pipeline(
     *,
+    season: str,
     gameweek: int,
     output_dir: str | Path,
     per_expert_limit: int = 2,
@@ -75,6 +89,9 @@ async def run_pipeline(
     report_service: ReportService | None = None,
     proxy_settings: WebshareProxySettings | None = None,
 ) -> PipelineRunResult:
+    identity = ReportIdentity(season, gameweek)
+    season = identity.season
+    gameweek = identity.gameweek
     ingestion: YouTubeIngestionResult = ingest_youtube_video_jobs(
         gameweek=gameweek,
         per_expert_limit=per_expert_limit,
@@ -111,13 +128,17 @@ async def run_pipeline(
     ]
 
     if not expert_outputs:
-        failure_details = "; ".join(f"{job.expert_name}: {error}" for job, error in failed_jobs)
+        failure_details = "; ".join(
+            f"{job.expert_name}: {error}" for job, error in failed_jobs
+        )
         raise PipelineServiceError(
             "Pipeline did not produce any expert analyses."
             + (f" Failures: {failure_details}." if failure_details else "")
         )
 
-    aggregate_report = build_aggregated_fpl_report(expert_outputs)
+    aggregate_report = build_aggregated_fpl_report(
+        expert_outputs, season=season, gameweek=gameweek
+    )
     final_report = (
         await synthesize_final_report(aggregate_report)
         if synthesis_enabled
@@ -131,7 +152,11 @@ async def run_pipeline(
         aggregate_report=aggregate_report,
         final_report=final_report,
         failed_jobs=[
-            {"expert_name": job.expert_name, "video_title": job.video_title, "error": error}
+            {
+                "expert_name": job.expert_name,
+                "video_title": job.video_title,
+                "error": error,
+            }
             for job, error in failed_jobs
         ],
         duplicate_sources=duplicate_sources,
@@ -146,6 +171,8 @@ async def run_pipeline(
 
     return PipelineRunResult(
         run_path=run_path,
+        season=season,
+        gameweek=gameweek,
         discovered_videos=ingestion.discovered_videos,
         input_jobs=loaded_jobs,
         expert_outputs=expert_outputs,
@@ -161,6 +188,7 @@ async def run_pipeline(
 
 def run_pipeline_sync(
     *,
+    season: str,
     gameweek: int,
     output_dir: str | Path,
     per_expert_limit: int = 2,
@@ -172,6 +200,7 @@ def run_pipeline_sync(
 ) -> PipelineRunResult:
     return asyncio.run(
         run_pipeline(
+            season=season,
             gameweek=gameweek,
             output_dir=output_dir,
             per_expert_limit=per_expert_limit,

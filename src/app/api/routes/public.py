@@ -6,7 +6,10 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.adapters.fpl import FplApiClient, FplApiError
-from src.app.api.schemas.public import CurrentGameweekResponse, LatestRecommendationsResponse
+from src.app.api.schemas.public import (
+    CurrentGameweekResponse,
+    LatestRecommendationsResponse,
+)
 from src.app.core.dependencies import get_current_gameweek_service, get_report_service
 from src.app.domain.reports.service import (
     EmptyReportDirectoryError,
@@ -22,10 +25,18 @@ router = APIRouter(prefix="/api", tags=["Public recommendations"])
 UNAVAILABLE_DETAIL = "The latest gameweek analysis is temporarily unavailable."
 
 
-def _load_latest(service: ReportService) -> ReportBundle:
+def _load_latest(
+    service: ReportService,
+    season: str | None = None,
+    gameweek: int | None = None,
+) -> ReportBundle:
     reload_runtime_volume()
     try:
-        return service.get_latest_report()
+        return (
+            service.get_latest_report(season, gameweek)
+            if season and gameweek
+            else service.get_latest_report()
+        )
     except (EmptyReportDirectoryError, ReportDirectoryNotFoundError) as exc:
         raise HTTPException(status_code=404, detail=UNAVAILABLE_DETAIL) from exc
     except InvalidReportFileError as exc:
@@ -81,7 +92,7 @@ def get_current_gameweek(
         return CurrentGameweekResponse(recommendations_available=False)
 
     try:
-        report = _load_latest(service)
+        report = _load_latest(service, current.season, current.gameweek)
     except HTTPException as exc:
         if exc.status_code == 404:
             return CurrentGameweekResponse(
@@ -90,7 +101,9 @@ def get_current_gameweek(
                 recommendations_available=False,
             )
         raise
-    report_is_current = report.final_report.gameweek == current.gameweek
+    report_is_current = report.final_report.gameweek == current.gameweek and (
+        current.season is None or report.final_report.season == current.season
+    )
     return CurrentGameweekResponse(
         gameweek=current.gameweek,
         deadline=current.deadline,

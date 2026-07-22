@@ -40,8 +40,8 @@ def test_report_store_uses_configured_reports_dir(monkeypatch, tmp_path) -> None
 
 def test_report_store_lists_run_directories_with_final_reports(tmp_path) -> None:
     base_dir = tmp_path / "reports"
-    older = _write_final_report(base_dir / "gw31", {"gameweek": 31})
-    newer = _write_final_report(base_dir / "gw32", {"gameweek": 32})
+    older = _write_final_report(base_dir / "gw31", {"season": "2025-26", "gameweek": 31})
+    newer = _write_final_report(base_dir / "gw32", {"season": "2025-26", "gameweek": 32})
     (base_dir / "scratch").mkdir()
     os.utime(older, (1_700_000_000, 1_700_000_000))
     os.utime(newer, (1_700_000_100, 1_700_000_100))
@@ -52,23 +52,23 @@ def test_report_store_lists_run_directories_with_final_reports(tmp_path) -> None
     assert ReportStore(base_dir).get_latest_report().run_id == "gw32"
 
 
-def test_latest_report_prefers_highest_gameweek_over_newest_file(tmp_path) -> None:
+def test_latest_report_prefers_newest_completed_timestamp(tmp_path) -> None:
     base_dir = tmp_path / "reports"
-    higher_gameweek = _write_final_report(base_dir / "gw36-older", {"gameweek": 36})
-    newer_file = _write_final_report(base_dir / "gw30-newer", {"gameweek": 30})
+    higher_gameweek = _write_final_report(base_dir / "gw36-older", {"season": "2025-26", "gameweek": 36})
+    newer_file = _write_final_report(base_dir / "gw30-newer", {"season": "2025-26", "gameweek": 30})
     os.utime(higher_gameweek, (1_700_000_000, 1_700_000_000))
     os.utime(newer_file, (1_700_000_100, 1_700_000_100))
 
     records = ReportStore(base_dir).list_reports()
 
-    assert [record.run_id for record in records] == ["gw30-newer", "gw36-older"]
-    assert ReportStore(base_dir).get_latest_report().run_id == "gw36-older"
+    assert [record.run_id for record in records] == ["gw36-older", "gw30-newer"]
+    assert ReportStore(base_dir).get_latest_report().run_id == "gw30-newer"
 
 
 def test_latest_report_uses_mtime_between_runs_for_same_gameweek(tmp_path) -> None:
     base_dir = tmp_path / "reports"
-    older = _write_final_report(base_dir / "gw36-first", {"gameweek": 36})
-    newer = _write_final_report(base_dir / "gw36-second", {"gameweek": 36})
+    older = _write_final_report(base_dir / "gw36-first", {"season": "2025-26", "gameweek": 36})
+    newer = _write_final_report(base_dir / "gw36-second", {"season": "2025-26", "gameweek": 36})
     os.utime(older, (1_700_000_000, 1_700_000_000))
     os.utime(newer, (1_700_000_100, 1_700_000_100))
 
@@ -77,7 +77,7 @@ def test_latest_report_uses_mtime_between_runs_for_same_gameweek(tmp_path) -> No
 
 def test_report_store_resolves_run_id_directory_and_report_file_paths(tmp_path) -> None:
     base_dir = tmp_path / "reports"
-    final_report = _write_final_report(base_dir / "gw32", {"gameweek": 32})
+    final_report = _write_final_report(base_dir / "gw32", {"season": "2025-26", "gameweek": 32})
     store = ReportStore(base_dir)
 
     assert store.get_report("gw32").run_dir == base_dir / "gw32"

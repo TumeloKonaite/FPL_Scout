@@ -43,6 +43,7 @@ def _build_analysis(job: VideoAnalysisJob) -> ExpertVideoAnalysis:
 
 def _build_aggregate_report(gameweek: int = 32) -> AggregatedFPLReport:
     return AggregatedFPLReport(
+        season="2025-26",
         gameweek=gameweek,
         expert_count=1,
         player_consensus=[],
@@ -58,6 +59,7 @@ def _build_aggregate_report(gameweek: int = 32) -> AggregatedFPLReport:
 
 def _build_final_report(gameweek: int = 32) -> FinalGameweekReport:
     return FinalGameweekReport(
+        season="2025-26",
         gameweek=gameweek,
         overview="Overview",
         transfers=[],
@@ -121,6 +123,7 @@ def test_run_pipeline_persists_artifacts_to_requested_output_dir(tmp_path) -> No
     ):
         result = asyncio.run(
             run_pipeline(
+                season="2025-26",
                 gameweek=32,
                 output_dir=output_dir,
             )
@@ -193,6 +196,7 @@ def test_run_pipeline_uses_fallback_report_when_synthesis_is_disabled(tmp_path) 
     ) as mocked_synthesis:
         result = asyncio.run(
             run_pipeline(
+                season="2025-26",
                 gameweek=32,
                 output_dir=output_dir,
                 synthesis_enabled=False,
@@ -222,6 +226,7 @@ def test_run_pipeline_raises_readable_error_when_ingestion_builds_no_jobs(tmp_pa
     ):
         asyncio.run(
             run_pipeline(
+                season="2025-26",
                 gameweek=32,
                 output_dir=output_dir,
             )

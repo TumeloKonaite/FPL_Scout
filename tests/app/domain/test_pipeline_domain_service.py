@@ -9,6 +9,8 @@ from src.app.domain.pipeline.service import PipelineService
 def _pipeline_result(run_path: Path) -> SimpleNamespace:
     return SimpleNamespace(
         run_path=run_path,
+        season="2025-26",
+        gameweek=32,
         discovered_videos=[{"video_id": "one"}],
         input_jobs=[object(), object()],
         expert_outputs=[object()],
@@ -41,12 +43,14 @@ def test_successful_pipeline_execution_updates_status(tmp_path) -> None:
 
     service = PipelineService(executor=executor)
 
-    response = service.run_pipeline(gameweek=32, output_dir=run_path)
+    response = service.run_pipeline(season="2025-26", gameweek=32, output_dir=run_path)
 
     assert response == {
         "status": "completed",
         "result": {
             "run_path": run_path,
+            "season": "2025-26",
+            "gameweek": 32,
             "discovered_video_count": 1,
             "input_job_count": 2,
             "expert_output_count": 1,
@@ -71,7 +75,7 @@ def test_failed_pipeline_execution_updates_status(tmp_path) -> None:
 
     service = PipelineService(executor=executor)
 
-    response = service.run_pipeline(gameweek=32, output_dir=tmp_path / "runs" / "gw32")
+    response = service.run_pipeline(season="2025-26", gameweek=32, output_dir=tmp_path / "runs" / "gw32")
 
     assert response == {
         "status": "failed",

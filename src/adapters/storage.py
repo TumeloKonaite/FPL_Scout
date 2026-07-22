@@ -18,7 +18,12 @@ def _utc_now() -> datetime:
 
 
 def _format_timestamp(value: datetime) -> str:
-    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        value.astimezone(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def generate_run_id() -> str:
@@ -82,7 +87,9 @@ def save_json(path: str | Path, data: Any) -> None:
 def save_text(path: str | Path, text: str) -> None:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(text if text.endswith("\n") else f"{text}\n", encoding="utf-8")
+    output_path.write_text(
+        text if text.endswith("\n") else f"{text}\n", encoding="utf-8"
+    )
 
 
 def save_raw_data(filename: str | Path, data: Any) -> Path:
@@ -112,6 +119,8 @@ def build_manifest(
     *,
     run_id: str,
     created_at: str,
+    season: str,
+    gameweek: int,
     artifacts: Mapping[str, str],
     input_jobs: Sequence[Any],
     expert_outputs: Sequence[Any],
@@ -127,10 +136,20 @@ def build_manifest(
     return {
         "run_id": run_id,
         "created_at": created_at,
+        "updated_at": created_at,
+        "status": "completed",
+        "season": season,
+        "gameweek": gameweek,
         "input_mode": input_mode,
-        "configured_experts": configured_experts if configured_experts is not None else 0,
-        "videos_discovered": videos_discovered if videos_discovered is not None else len(input_jobs),
-        "videos_selected": videos_selected if videos_selected is not None else len(input_jobs),
+        "configured_experts": configured_experts
+        if configured_experts is not None
+        else 0,
+        "videos_discovered": videos_discovered
+        if videos_discovered is not None
+        else len(input_jobs),
+        "videos_selected": videos_selected
+        if videos_selected is not None
+        else len(input_jobs),
         "jobs_created": jobs_created if jobs_created is not None else len(input_jobs),
         "artifacts": dict(sorted(artifacts.items())),
         "counts": {

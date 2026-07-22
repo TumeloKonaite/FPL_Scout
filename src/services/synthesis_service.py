@@ -25,7 +25,9 @@ def _freshness(sources, generated_at: str) -> RecommendationFreshness:
             value = source.publishedAt.replace("Z", "+00:00")
             parsed = datetime.fromisoformat(value)
             parsed_dates.append(
-                parsed.replace(tzinfo=UTC) if parsed.tzinfo is None else parsed.astimezone(UTC)
+                parsed.replace(tzinfo=UTC)
+                if parsed.tzinfo is None
+                else parsed.astimezone(UTC)
             )
         except ValueError:
             continue
@@ -42,7 +44,9 @@ def _freshness(sources, generated_at: str) -> RecommendationFreshness:
 
 
 def _recommendation_evidence(item, generated_at: str) -> dict[str, object]:
-    supporting_sources = [source for source in item.sources if source.position == "support"]
+    supporting_sources = [
+        source for source in item.sources if source.position == "support"
+    ]
     return {
         # Confidence remains readable for older stored reports, but newly built
         # recommendations intentionally publish evidence instead of a score.
@@ -69,15 +73,19 @@ def _match_evidence(recommendation: FinalRecommendation, items, generated_at: st
         (
             item
             for item in items
-            if normalize_lookup_key(getattr(item, "item", getattr(item, "player_name", "")))
+            if normalize_lookup_key(
+                getattr(item, "item", getattr(item, "player_name", ""))
+            )
             in title_key
         ),
         None,
     )
-    return recommendation if best is None or (
-        best.relevant_expert_count == 0 and not best.sources
-    ) else recommendation.model_copy(
-        update=_recommendation_evidence(best, generated_at)
+    return (
+        recommendation
+        if best is None or (best.relevant_expert_count == 0 and not best.sources)
+        else recommendation.model_copy(
+            update=_recommendation_evidence(best, generated_at)
+        )
     )
 
 
@@ -101,11 +109,15 @@ def _attach_recommendation_evidence(
                 for item in final_report.transfers
             ],
             "captaincy": [
-                _match_evidence(item, aggregate_report.captaincy_consensus, generated_at)
+                _match_evidence(
+                    item, aggregate_report.captaincy_consensus, generated_at
+                )
                 for item in final_report.captaincy
             ],
             "chip_strategy": [
-                _match_evidence(item, aggregate_report.chip_strategy_consensus, generated_at)
+                _match_evidence(
+                    item, aggregate_report.chip_strategy_consensus, generated_at
+                )
                 for item in final_report.chip_strategy
             ],
         }
@@ -114,6 +126,7 @@ def _attach_recommendation_evidence(
 
 def _build_empty_final_report(report: AggregatedFPLReport) -> FinalGameweekReport:
     return FinalGameweekReport(
+        season=report.season,
         gameweek=report.gameweek,
         overview=(
             "There is not enough aggregated expert data yet to produce a confident final report. "
@@ -219,15 +232,20 @@ def build_fallback_final_report(report: AggregatedFPLReport) -> FinalGameweekRep
 
     conclusion_parts: list[str] = []
     if transfers or captaincy or chip_strategy:
-        conclusion_parts.append("Use the strongest consensus signals that are actually supported this week.")
+        conclusion_parts.append(
+            "Use the strongest consensus signals that are actually supported this week."
+        )
     else:
-        conclusion_parts.append("No strong consensus emerged from the structured input this week.")
+        conclusion_parts.append(
+            "No strong consensus emerged from the structured input this week."
+        )
     if report.wait_for_news:
         conclusion_parts.append("Monitor late team news before the deadline.")
     else:
         conclusion_parts.append("Stay flexible and avoid forcing marginal moves.")
 
     final_report = FinalGameweekReport(
+        season=report.season,
         gameweek=report.gameweek,
         overview=overview,
         transfers=transfers,
@@ -288,6 +306,10 @@ async def synthesize_final_report(report: AggregatedFPLReport) -> FinalGameweekR
         return _build_empty_final_report(report)
 
     try:
-        return _attach_suggested_team(await run_final_synthesis(report), report)
+        generated = await run_final_synthesis(report)
+        generated = generated.model_copy(
+            update={"season": report.season, "gameweek": report.gameweek}
+        )
+        return _attach_suggested_team(generated, report)
     except Exception:
         return build_fallback_final_report(report)

@@ -56,7 +56,7 @@ def test_player_consensus_counts_supporting_experts_once() -> None:
         _build_analysis("Expert C", recommended_players=["Salah"], confidence="low"),
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=5)
 
     assert report.player_consensus[0].item == "Bukayo Saka"
     assert report.player_consensus[0].mention_count == 2
@@ -76,7 +76,7 @@ def test_source_mentions_do_not_inflate_unique_expert_support() -> None:
     second.summary = "A separate source"
     third = _build_analysis("Expert B", captaincy_picks=["Haaland"])
 
-    report = build_aggregated_fpl_report([first, second, third])
+    report = build_aggregated_fpl_report([first, second, third], season="2025-26", gameweek=5)
     salah = next(item for item in report.captaincy_consensus if item.item == "Mohamed Salah")
 
     assert salah.mention_count == 1
@@ -95,7 +95,7 @@ def test_confidence_averaging_is_arithmetic_mean() -> None:
         _build_analysis("Expert C", recommended_players=["Salah"], confidence="low"),
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=5)
 
     salah = report.player_consensus[0]
     assert salah.item == "Mohamed Salah"
@@ -121,7 +121,7 @@ def test_duplicate_mentions_are_normalized_consistently() -> None:
         ),
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=5)
 
     assert [item.item for item in report.player_consensus] == ["Bukayo Saka"]
     assert report.player_consensus[0].mention_count == 2
@@ -131,12 +131,12 @@ def test_duplicate_mentions_are_normalized_consistently() -> None:
 
 
 def test_aggregated_report_is_schema_valid_for_empty_input() -> None:
-    report = build_aggregated_fpl_report([])
+    report = build_aggregated_fpl_report([], season="2025-26", gameweek=5)
 
     validated = AggregatedFPLReport.model_validate(report.model_dump())
 
     assert validated.expert_count == 0
-    assert validated.gameweek is None
+    assert validated.gameweek == 5
     assert validated.player_consensus == []
     assert validated.transfer_consensus == []
     assert validated.fixture_insights == []
@@ -165,7 +165,7 @@ def test_transfer_and_fixture_aggregation_are_deterministic() -> None:
         ),
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=5)
 
     assert [item.player_name for item in report.transfer_consensus] == [
         "Mohamed Salah",
@@ -181,7 +181,9 @@ def test_transfer_opposition_is_attributed_without_becoming_support() -> None:
         [
             _build_analysis("Expert A", recommended_players=["Saka"]),
             _build_analysis("Expert B", avoid_players=["Bukayo Saka"]),
-        ]
+        ],
+        season="2025-26",
+        gameweek=5,
     )
 
     buy = next(
@@ -214,7 +216,7 @@ def test_aggregated_report_includes_disagreements_and_conditional_advice() -> No
         ),
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=5)
 
     assert report.disagreements.players[0].player == "Bukayo Saka"
     assert report.disagreements.captaincy[0].options == [
@@ -250,7 +252,7 @@ def test_aggregated_report_includes_explicit_expert_team_reveals() -> None:
         _build_analysis("Expert B", recommended_players=["Haaland"]),
     ]
 
-    report = build_aggregated_fpl_report(analyses)
+    report = build_aggregated_fpl_report(analyses, season="2025-26", gameweek=5)
 
     assert len(report.expert_team_reveals) == 1
     reveal = report.expert_team_reveals[0]

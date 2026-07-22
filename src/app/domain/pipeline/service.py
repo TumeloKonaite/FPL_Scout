@@ -6,7 +6,10 @@ from threading import Thread
 from typing import Any
 from uuid import uuid4
 
-from src.adapters.transcript_api import WebshareProxySettings, load_webshare_proxy_settings
+from src.adapters.transcript_api import (
+    WebshareProxySettings,
+    load_webshare_proxy_settings,
+)
 from src.app.core.config import get_settings
 from src.app.infrastructure.storage.pipeline_run_store import PipelineRunStore
 from src.app.infrastructure.storage.runtime_volume import (
@@ -17,6 +20,7 @@ from src.services.pipeline_service import (
     PipelineRunResult,
     run_pipeline_sync as execute_pipeline_sync,
 )
+from src.schemas.report_identity import validate_gameweek, validate_season
 
 PipelineExecutor = Callable[..., PipelineRunResult]
 PipelineDispatcher = Callable[[str, dict[str, Any]], None]
@@ -34,6 +38,7 @@ class PipelineService:
     def run_pipeline(
         self,
         *,
+        season: str | None = None,
         gameweek: int | None = None,
         output_dir: str | Path | None = None,
         input_data: dict[str, Any] | None | object = _UNSET,
@@ -47,6 +52,7 @@ class PipelineService:
         run_id = str(uuid4()) if api_run else None
         if api_run:
             input_data = input_data or {}
+            season = season or input_data.get("season")
             gameweek = gameweek or input_data.get("gameweek")
             output_dir = output_dir or input_data.get("output_dir")
             per_expert_limit = input_data.get("per_expert_limit", per_expert_limit)
@@ -54,10 +60,10 @@ class PipelineService:
             expert_count = input_data.get("expert_count", expert_count)
             synthesis_enabled = input_data.get("synthesis_enabled", synthesis_enabled)
 
-            if output_dir is None and gameweek is not None:
+            if output_dir is None and season is not None and gameweek is not None:
                 output_dir = (
                     Path(get_settings().REPORTS_DIR)
-                    / f"gw{gameweek}-api-{run_id}"
+                    / f"{season}-gw{gameweek}-api-{run_id}"
                 )
 
             self._runs[run_id] = {
@@ -70,11 +76,14 @@ class PipelineService:
         self._last_error = None
 
         try:
-            if gameweek is None or output_dir is None:
-                raise ValueError("Pipeline run requires gameweek and output_dir")
+            if season is None or gameweek is None or output_dir is None:
+                raise ValueError(
+                    "Pipeline run requires season, gameweek and output_dir"
+                )
 
             pipeline_result = self._executor(
-                gameweek=int(gameweek),
+                season=validate_season(season),
+                gameweek=validate_gameweek(gameweek),
                 output_dir=output_dir,
                 per_expert_limit=per_expert_limit,
                 expert_name=expert_name,
@@ -132,6 +141,8 @@ class PipelineService:
 def _pipeline_result_to_dict(result: PipelineRunResult) -> dict[str, Any]:
     return {
         "run_path": result.run_path,
+        "season": result.season,
+        "gameweek": result.gameweek,
         "discovered_video_count": len(result.discovered_videos),
         "input_job_count": len(result.input_jobs),
         "expert_output_count": len(result.expert_outputs),
@@ -148,6 +159,7 @@ _default_pipeline_service = PipelineService()
 
 def run_pipeline(
     *,
+    season: str | None = None,
     gameweek: int | None = None,
     output_dir: str | Path | None = None,
     input_data: dict[str, Any] | None | object = _UNSET,
@@ -161,6 +173,7 @@ def run_pipeline(
         proxy_settings = load_webshare_proxy_settings()
 
     return _default_pipeline_service.run_pipeline(
+        season=season,
         gameweek=gameweek,
         output_dir=output_dir,
         input_data=input_data,
@@ -181,8 +194,16 @@ def get_pipeline_status(run_id: str | None = None) -> dict[str, Any] | None:
 
 def _validate_api_input(input_data: dict[str, Any] | None) -> dict[str, Any]:
     payload = dict(input_data or {})
+    season = payload.get("season")
+    if not isinstance(season, str):
+        raise ValueError("season is required and must use the YYYY-YY format")
+    validate_season(season)
     gameweek = payload.get("gameweek")
-    if isinstance(gameweek, bool) or not isinstance(gameweek, int) or not 1 <= gameweek <= 38:
+    if (
+        isinstance(gameweek, bool)
+        or not isinstance(gameweek, int)
+        or not 1 <= gameweek <= 38
+    ):
         raise ValueError("gameweek must be an integer between 1 and 38")
     for field_name in ("per_expert_limit", "expert_count"):
         value = payload.get(field_name)
@@ -210,8 +231,10 @@ def execute_pipeline_run(
     try:
         settings = get_settings()
         gameweek = int(payload["gameweek"])
-        output_dir = Path(settings.REPORTS_DIR) / f"gw{gameweek}-api-{run_id}"
+        season = str(payload["season"])
+        output_dir = Path(settings.REPORTS_DIR) / f"{season}-gw{gameweek}-api-{run_id}"
         result = executor(
+            season=season,
             gameweek=gameweek,
             output_dir=output_dir,
             per_expert_limit=payload.get("per_expert_limit", 2),
@@ -258,7 +281,9 @@ def create_pipeline_run(input_data: dict[str, Any] | None) -> dict[str, Any]:
     try:
         _pipeline_dispatcher(run_id, payload)
     except Exception as exc:
-        store.update(run_id, "failed", error=f"Could not dispatch pipeline worker: {exc}")
+        store.update(
+            run_id, "failed", error=f"Could not dispatch pipeline worker: {exc}"
+        )
         commit_runtime_volume()
         raise
     # Always acknowledge the accepted state, even if a fast worker has started.

@@ -41,6 +41,7 @@ def _build_expert_output(expert_name: str, index: int) -> ExpertVideoAnalysis:
 
 def _build_aggregate_report() -> AggregatedFPLReport:
     return AggregatedFPLReport(
+        season="2025-26",
         gameweek=5,
         expert_count=2,
         player_consensus=[],
@@ -56,6 +57,7 @@ def _build_aggregate_report() -> AggregatedFPLReport:
 
 def _build_final_report() -> FinalGameweekReport:
     return FinalGameweekReport(
+        season="2025-26",
         gameweek=5,
         overview="Strong week to target premium midfielders.",
         transfers=[],
@@ -199,6 +201,9 @@ def test_manifest_is_self_describing_and_points_to_existing_artifacts(tmp_path) 
     manifest = json.loads((run_path / "manifest.json").read_text(encoding="utf-8"))
 
     assert manifest["run_id"] == run_path.name
+    assert manifest["season"] == "2025-26"
+    assert manifest["gameweek"] == 5
+    assert manifest["status"] == "completed"
     assert manifest["created_at"].endswith("Z")
     assert manifest["input_mode"] == "youtube_auto"
     assert manifest["configured_experts"] == 0
@@ -226,3 +231,16 @@ def test_manifest_is_self_describing_and_points_to_existing_artifacts(tmp_path) 
 
     for filename in manifest["artifacts"].values():
         assert (run_path / filename).exists()
+
+    index = json.loads((run_path.parent / "index.json").read_text(encoding="utf-8"))
+    assert index == [
+        {
+            "created_at": manifest["created_at"],
+            "gameweek": 5,
+            "report_path": f"{run_path.name}/final_report.json",
+            "run_id": run_path.name,
+            "season": "2025-26",
+            "status": "completed",
+            "updated_at": manifest["updated_at"],
+        }
+    ]

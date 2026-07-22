@@ -81,8 +81,12 @@ def _with_consensus_evidence(
             item.model_copy(
                 update={
                     "relevant_expert_count": len(relevant_experts),
-                    "opposition_count": len(relevant_experts - set(item.supporting_experts)),
-                    "support_ratio": support_ratio(item.mention_count, len(relevant_experts)),
+                    "opposition_count": len(
+                        relevant_experts - set(item.supporting_experts)
+                    ),
+                    "support_ratio": support_ratio(
+                        item.mention_count, len(relevant_experts)
+                    ),
                     "consensus": level,
                     "sources": list(data["sources"])
                     + [
@@ -99,7 +103,11 @@ def _with_consensus_evidence(
 
 
 def _unique_normalized_players(players: list[str]) -> set[str]:
-    return {normalize_player_name(player) for player in players if normalize_player_name(player)}
+    return {
+        normalize_player_name(player)
+        for player in players
+        if normalize_player_name(player)
+    }
 
 
 def _unique_normalized_text(items: list[str]) -> set[str]:
@@ -142,15 +150,24 @@ def aggregate_expert_team_reveals(
 ) -> list[ExpertTeamRevealItem]:
     reveals: list[ExpertTeamRevealItem] = []
 
-    for analysis in sorted(analyses, key=lambda item: (item.expert_name.casefold(), item.video_title.casefold())):
+    for analysis in sorted(
+        analyses,
+        key=lambda item: (item.expert_name.casefold(), item.video_title.casefold()),
+    ):
         current_team = _canonicalize_player_like_list(analysis.current_team)
         starting_xi = _canonicalize_player_like_list(analysis.starting_xi)
         bench = _canonicalize_player_like_list(analysis.bench)
         player_positions = _canonicalize_player_positions(analysis.player_positions)
         transfers_in = _canonicalize_player_like_list(analysis.transfers_in)
         transfers_out = _canonicalize_player_like_list(analysis.transfers_out)
-        captain = canonical_player_display(analysis.captain) if analysis.captain else None
-        vice_captain = canonical_player_display(analysis.vice_captain) if analysis.vice_captain else None
+        captain = (
+            canonical_player_display(analysis.captain) if analysis.captain else None
+        )
+        vice_captain = (
+            canonical_player_display(analysis.vice_captain)
+            if analysis.vice_captain
+            else None
+        )
 
         if not any(
             [
@@ -248,7 +265,11 @@ def aggregate_player_consensus(
     ]
     items = sorted(
         items,
-        key=lambda item: (-item.mention_count, -item.average_confidence, normalize_lookup_key(item.item)),
+        key=lambda item: (
+            -item.mention_count,
+            -item.average_confidence,
+            normalize_lookup_key(item.item),
+        ),
     )
     relevant = {
         analysis.expert_name for analysis in analyses if analysis.recommended_players
@@ -289,9 +310,15 @@ def aggregate_captaincy(
     ]
     items = sorted(
         items,
-        key=lambda item: (-item.mention_count, -item.average_confidence, normalize_lookup_key(item.item)),
+        key=lambda item: (
+            -item.mention_count,
+            -item.average_confidence,
+            normalize_lookup_key(item.item),
+        ),
     )
-    relevant = {analysis.expert_name for analysis in analyses if analysis.captaincy_picks}
+    relevant = {
+        analysis.expert_name for analysis in analyses if analysis.captaincy_picks
+    }
     return _with_consensus_evidence(items, grouped, relevant)
 
 
@@ -359,7 +386,9 @@ def aggregate_transfers(
             or (item.direction == "sell" and analysis.avoid_players)
         }
         opposite_direction = "sell" if item.direction == "buy" else "buy"
-        opposing_experts = set(grouped.get((opposite_direction, key[1]), {}).get("experts", set()))
+        opposing_experts = set(
+            grouped.get((opposite_direction, key[1]), {}).get("experts", set())
+        )
         relevant = same_direction_experts | opposing_experts
         alternatives = [
             CompetingRecommendation(
@@ -368,8 +397,14 @@ def aggregate_transfers(
                 sources=other.supporting_experts,
             )
             for other in items
-            if (other.direction == item.direction and other.player_name != item.player_name)
-            or (other.direction == opposite_direction and other.player_name == item.player_name)
+            if (
+                other.direction == item.direction
+                and other.player_name != item.player_name
+            )
+            or (
+                other.direction == opposite_direction
+                and other.player_name == item.player_name
+            )
         ]
         level = consensus_level(item.mention_count, len(relevant))
         if any(other.support_count >= item.mention_count for other in alternatives):
@@ -387,7 +422,8 @@ def aggregate_transfers(
                             update={
                                 "position": (
                                     "oppose"
-                                    if other_direction == opposite_direction and other_key == key[1]
+                                    if other_direction == opposite_direction
+                                    and other_key == key[1]
                                     else "alternative"
                                 )
                             }
@@ -397,7 +433,10 @@ def aggregate_transfers(
                             other_direction == item.direction
                             and (other_direction, other_key) != key
                         )
-                        or (other_direction == opposite_direction and other_key == key[1])
+                        or (
+                            other_direction == opposite_direction
+                            and other_key == key[1]
+                        )
                         for source in other_data["sources"]
                     ],
                     "alternatives": alternatives,
@@ -473,7 +512,11 @@ def aggregate_chip_strategy(
     ]
     items = sorted(
         items,
-        key=lambda item: (-item.mention_count, -item.average_confidence, normalize_lookup_key(item.item)),
+        key=lambda item: (
+            -item.mention_count,
+            -item.average_confidence,
+            normalize_lookup_key(item.item),
+        ),
     )
     relevant = {
         analysis.expert_name
@@ -485,13 +528,17 @@ def aggregate_chip_strategy(
 
 def build_aggregated_fpl_report(
     analyses: list[ExpertVideoAnalysis],
+    *,
+    season: str,
+    gameweek: int,
 ) -> AggregatedFPLReport:
     deduped_analyses, _ = dedupe_analyses(analyses)
     analyses = deduped_analyses
 
     if not analyses:
         return AggregatedFPLReport(
-            gameweek=None,
+            season=season,
+            gameweek=gameweek,
             expert_count=0,
             player_consensus=[],
             captaincy_consensus=[],
@@ -507,6 +554,7 @@ def build_aggregated_fpl_report(
     conditional_advice = extract_conditional_advice(analyses)
 
     return AggregatedFPLReport(
+        season=season,
         gameweek=analyses[0].gameweek,
         expert_count=len({analysis.expert_name for analysis in analyses}),
         player_consensus=aggregate_player_consensus(analyses),

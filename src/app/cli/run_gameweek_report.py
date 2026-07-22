@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 from src.adapters.transcript_api import load_webshare_proxy_settings
 from src.services.pipeline_service import PipelineServiceError, run_pipeline_sync
+from src.schemas.report_identity import validate_gameweek, validate_season
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -16,7 +17,18 @@ def build_parser() -> argparse.ArgumentParser:
         prog="python -m src.app.cli.run_gameweek_report",
         description="Run the automated FPL gameweek report pipeline from YouTube expert sources.",
     )
-    parser.add_argument("--gameweek", type=int, required=True, help="Gameweek number to run.")
+    parser.add_argument(
+        "--gameweek",
+        type=lambda value: validate_gameweek(int(value)),
+        required=True,
+        help="Gameweek number to run (1-38).",
+    )
+    parser.add_argument(
+        "--season",
+        type=validate_season,
+        required=True,
+        help="FPL season in YYYY-YY format.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -54,6 +66,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         result = run_pipeline_sync(
+            season=args.season,
             gameweek=args.gameweek,
             output_dir=args.output_dir,
             per_expert_limit=args.per_expert_limit,
@@ -75,7 +88,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print(
         "Pipeline completed successfully for "
-        f"gameweek {args.gameweek}. "
+        f"{args.season} gameweek {args.gameweek}. "
         f"Discovered {len(result.discovered_videos)} video(s), "
         f"built {len(result.input_jobs)} job(s), "
         f"processed {success_count}/{len(result.input_jobs)} job(s); "
@@ -84,7 +97,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     print(f"Human-readable report: {result.run_path / 'report.md'}")
     if failure_count:
-        print(f"Warning: {failure_count} job(s) failed during orchestration.", file=sys.stderr)
+        print(
+            f"Warning: {failure_count} job(s) failed during orchestration.",
+            file=sys.stderr,
+        )
     if result.transcript_failures:
         print(
             f"Warning: {len(result.transcript_failures)} transcript fetch(es) were unusable during ingestion.",

@@ -23,10 +23,13 @@ from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 @dataclass(frozen=True)
 class ReportSummary:
     run_id: str
+    season: str | None
+    gameweek: int | None
     run_dir: Path
     final_report_path: Path
     aggregate_report_path: Path | None
     updated_at: float
+    status: str
 
 
 @dataclass(frozen=True)
@@ -44,10 +47,35 @@ class ReportService:
         self.store = store or ReportStore()
 
     def list_reports(self) -> list[ReportSummary]:
-        return [self._summary_from_record(record) for record in self.store.list_reports()]
+        return [
+            self._summary_from_record(record) for record in self.store.list_reports()
+        ]
 
-    def get_latest_report(self) -> ReportBundle:
-        return self._load_record(self.store.get_latest_report())
+    def get_latest_report(
+        self,
+        season: str | None = None,
+        gameweek: int | None = None,
+    ) -> ReportBundle:
+        record = (
+            self.store.get_latest_report(season, gameweek)
+            if season is not None or gameweek is not None
+            else self.store.get_latest_report()
+        )
+        return self._load_record(record)
+
+    def get_report_for_gameweek(
+        self, season: str, gameweek: int
+    ) -> ReportBundle | None:
+        record = self.store.get_report_for_gameweek(season, gameweek)
+        return self._load_record(record) if record is not None else None
+
+    def get_reports_for_gameweek(
+        self, season: str, gameweek: int
+    ) -> list[ReportSummary]:
+        return [
+            self._summary_from_record(record)
+            for record in self.store.get_reports_for_gameweek(season, gameweek)
+        ]
 
     def get_report(self, run_id: str | Path) -> ReportBundle:
         return self._load_record(self.store.get_report(run_id))
@@ -104,7 +132,9 @@ class ReportService:
                 f"Invalid final report file: {record.final_report_path}"
             ) from exc
 
-    def _load_aggregate_report(self, record: ReportRecord) -> AggregatedFPLReport | None:
+    def _load_aggregate_report(
+        self, record: ReportRecord
+    ) -> AggregatedFPLReport | None:
         if record.aggregate_report_path is None:
             return None
         try:
@@ -120,10 +150,13 @@ class ReportService:
     def _summary_from_record(record: ReportRecord) -> ReportSummary:
         return ReportSummary(
             run_id=record.run_id,
+            season=record.season,
+            gameweek=record.gameweek,
             run_dir=record.run_dir,
             final_report_path=record.final_report_path,
             aggregate_report_path=record.aggregate_report_path,
             updated_at=record.updated_at,
+            status=record.status,
         )
 
 

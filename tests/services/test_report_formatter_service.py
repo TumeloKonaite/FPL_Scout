@@ -19,6 +19,7 @@ def _build_aggregate_report():
     from src.schemas.final_report import AggregatedFPLReport
 
     return AggregatedFPLReport(
+        season="2025-26",
         gameweek=32,
         expert_count=3,
         player_consensus=[],
@@ -87,6 +88,7 @@ def _build_aggregate_report():
 
 def _build_final_report() -> FinalGameweekReport:
     return FinalGameweekReport(
+        season="2025-26",
         gameweek=32,
         overview="Aggregated input from 3 expert sources produced clear signals this week.",
         transfers=[FinalRecommendation(title="Buy Semenyo", rationale="Consensus", confidence=0.9)],
@@ -152,6 +154,7 @@ def test_markdown_report_handles_empty_input() -> None:
     from src.schemas.final_report import AggregatedFPLReport
 
     aggregate_report = AggregatedFPLReport(
+        season="2025-26",
         gameweek=32,
         expert_count=0,
         player_consensus=[],
@@ -164,6 +167,7 @@ def test_markdown_report_handles_empty_input() -> None:
         wait_for_news=[],
     )
     final_report = FinalGameweekReport(
+        season="2025-26",
         gameweek=32,
         overview="Not enough data yet.",
         transfers=[],

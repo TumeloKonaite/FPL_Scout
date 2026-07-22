@@ -40,6 +40,7 @@ def _build_analysis() -> ExpertVideoAnalysis:
 
 def _build_aggregate_report() -> AggregatedFPLReport:
     return AggregatedFPLReport(
+        season="2025-26",
         gameweek=32,
         expert_count=1,
         player_consensus=[],
@@ -55,6 +56,7 @@ def _build_aggregate_report() -> AggregatedFPLReport:
 
 def _build_final_report() -> FinalGameweekReport:
     return FinalGameweekReport(
+        season="2025-26",
         gameweek=32,
         overview="Overview",
         transfers=[],
@@ -76,6 +78,8 @@ def test_argument_parsing_supports_required_inputs_and_no_synthesis_flag() -> No
         [
             "--gameweek",
             "32",
+            "--season",
+            "2025-26",
             "--output-dir",
             "runs/gw32",
             "--per-expert-limit",
@@ -100,6 +104,8 @@ def test_cli_loads_dotenv_before_reading_proxy_settings(tmp_path) -> None:
     output_dir = tmp_path / "runs" / "gw32"
     result = PipelineRunResult(
         run_path=output_dir,
+        season="2025-26",
+        gameweek=32,
         discovered_videos=[],
         input_jobs=[],
         expert_outputs=[],
@@ -133,6 +139,8 @@ def test_cli_loads_dotenv_before_reading_proxy_settings(tmp_path) -> None:
             [
                 "--gameweek",
                 "32",
+                "--season",
+                "2025-26",
                 "--output-dir",
                 str(output_dir),
             ]
@@ -150,6 +158,8 @@ def test_cli_smoke_test_reports_success_and_passes_expected_arguments(capsys, tm
     )
     result = PipelineRunResult(
         run_path=output_dir,
+        season="2025-26",
+        gameweek=32,
         discovered_videos=[
             {
                 "video_id": "expert-a",
@@ -177,6 +187,8 @@ def test_cli_smoke_test_reports_success_and_passes_expected_arguments(capsys, tm
             [
                 "--gameweek",
                 "32",
+                "--season",
+                "2025-26",
                 "--output-dir",
                 str(output_dir),
                 "--per-expert-limit",
@@ -191,11 +203,12 @@ def test_cli_smoke_test_reports_success_and_passes_expected_arguments(capsys, tm
     captured = capsys.readouterr()
 
     assert exit_code == 0
-    assert "Pipeline completed successfully for gameweek 32." in captured.out
+    assert "Pipeline completed successfully for 2025-26 gameweek 32." in captured.out
     assert str(output_dir) in captured.out
     assert "report.md" in captured.out
     assert captured.err == ""
     mocked_run.assert_called_once_with(
+        season="2025-26",
         gameweek=32,
         output_dir=output_dir,
         per_expert_limit=4,
@@ -263,6 +276,8 @@ def test_cli_end_to_end_mocked_pipeline_run_persists_outputs(tmp_path) -> None:
             [
                 "--gameweek",
                 "32",
+                "--season",
+                "2025-26",
                 "--output-dir",
                 str(output_dir),
             ]
@@ -289,6 +304,8 @@ def test_cli_returns_readable_failure_message(capsys, tmp_path) -> None:
             [
                 "--gameweek",
                 "32",
+                "--season",
+                "2025-26",
                 "--output-dir",
                 str(tmp_path / "runs" / "gw32"),
             ]

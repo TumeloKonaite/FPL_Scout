@@ -68,7 +68,9 @@ def get_report(
     try:
         report = service.get_report(run_id)
     except ReportNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Report not found: {run_id}") from exc
+        raise HTTPException(
+            status_code=404, detail=f"Report not found: {run_id}"
+        ) from exc
     except ReportDirectoryNotFoundError as exc:
         raise HTTPException(status_code=404, detail="No reports found") from exc
     except InvalidReportFileError as exc:
@@ -88,6 +90,8 @@ def _summary_response(report: Any) -> ReportSummary:
 
     return ReportSummary(
         run_id=report.run_id,
+        season=getattr(report, "season", None),
+        gameweek=getattr(report, "gameweek", None),
         created_at=created_at,
         title=getattr(report, "title", None),
     )

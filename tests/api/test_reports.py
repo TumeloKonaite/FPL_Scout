@@ -16,6 +16,8 @@ from src.adapters.fpl import CurrentGameweek
 @dataclass(frozen=True)
 class StubReportSummary:
     run_id: str
+    season: str = "2025-26"
+    gameweek: int = 32
     updated_at: float = 1_700_000_000
 
 
@@ -56,6 +58,7 @@ class StubFplApiClient:
 
 def _final_report(gameweek: int = 32) -> FinalGameweekReport:
     return FinalGameweekReport(
+        season="2025-26",
         gameweek=gameweek,
         overview="Overview",
         transfers=[],
@@ -109,6 +112,8 @@ def test_list_reports_returns_200_and_a_list() -> None:
     assert response.json() == [
         {
             "run_id": "gw32",
+            "season": "2025-26",
+            "gameweek": 32,
             "created_at": "2023-11-14T22:13:20+00:00",
             "title": None,
         }

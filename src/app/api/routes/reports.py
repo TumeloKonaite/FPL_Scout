@@ -16,7 +16,6 @@ from src.app.domain.reports.service import (
     ReportNotFoundError,
     ReportService,
 )
-from src.app.domain.reports.suggested_team import build_suggested_team_from_reveals
 from src.app.infrastructure.storage.runtime_volume import reload_runtime_volume
 
 router = APIRouter(
@@ -98,17 +97,7 @@ def _summary_response(report: Any) -> ReportSummary:
 
 
 def _report_response(report: ReportBundle) -> ReportResponse:
-    final_report = report.final_report
-    aggregate_report = getattr(report, "aggregate_report", None)
-    if final_report.suggested_team is None and aggregate_report is not None:
-        final_report = final_report.model_copy(
-            update={
-                "suggested_team": build_suggested_team_from_reveals(
-                    aggregate_report.expert_team_reveals
-                )
-            }
-        )
     return ReportResponse(
         run_id=report.run_id,
-        report=final_report.model_dump(),
+        report=report.final_report.model_dump(),
     )

@@ -241,23 +241,60 @@ def test_fallback_report_embeds_suggested_team_from_structured_positions() -> No
     report = _build_aggregated_report()
     positions = ["GK", *(["DEF"] * 3), *(["MID"] * 4), *(["FWD"] * 3)]
     names = [f"Player {index}" for index in range(1, 12)]
+    bench_names = ["Bench Keeper", "Bench Defender"]
     report.expert_team_reveals = [
         ExpertTeamRevealItem(
             expert_name="Expert XI",
             video_title="Complete reveal",
-            current_team=names,
+            current_team=[*names, *bench_names],
             starting_xi=names,
+            bench=bench_names,
             player_positions=dict(zip(names, positions, strict=True)),
             captain="Player 9",
+            vice_captain="Player 8",
             confidence=1.0,
-        )
+        ),
+        ExpertTeamRevealItem(
+            expert_name="Supporting Expert",
+            video_title="Supporting reveal",
+            current_team=["Player 9"],
+        ),
     ]
+    report.expert_team_reveals[0].player_positions.update(
+        {"Bench Keeper": "GK", "Bench Defender": "DEF"}
+    )
 
     final_report = build_fallback_final_report(report)
 
     assert final_report.suggested_team is not None
-    assert final_report.suggested_team.formation == "3-4-3"
-    assert len(final_report.suggested_team.startingXi) == 11
+    snapshot = final_report.suggested_team.model_dump()
+    assert snapshot["formation"] == "3-4-3"
+    assert len(snapshot["startingXi"]) == 11
+    assert snapshot["captainPlayerId"] == snapshot["startingXi"][8]["playerId"]
+    assert snapshot["viceCaptainPlayerId"] == snapshot["startingXi"][7]["playerId"]
+    assert snapshot["startingXi"][8]["expertSupportCount"] == 2
+    assert snapshot["bench"][0]["isStarter"] is False
+    assert snapshot["bench"][0]["benchOrder"] == 1
+    assert set(snapshot["startingXi"][0]) == {
+        "playerId",
+        "name",
+        "number",
+        "shirtNumber",
+        "position",
+        "club",
+        "price",
+        "predictedPoints",
+        "ownership",
+        "expectedMinutes",
+        "fixtureDifficulty",
+        "fixture",
+        "expertSupportCount",
+        "consensus",
+        "captain",
+        "viceCaptain",
+        "isStarter",
+        "benchOrder",
+    }
 
 
 def test_synthesize_final_report_falls_back_when_agent_fails() -> None:

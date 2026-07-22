@@ -25,7 +25,6 @@ from src.app.domain.reports.service import (
     ReportDirectoryNotFoundError,
     ReportService,
 )
-from src.app.domain.reports.suggested_team import build_suggested_team_from_reveals
 from src.app.infrastructure.storage.runtime_volume import reload_runtime_volume
 from src.schemas.report_identity import validate_season
 
@@ -66,17 +65,7 @@ def _last_updated(report: ReportBundle) -> str | None:
 
 
 def _report_payload(report: ReportBundle) -> dict[str, Any]:
-    final_report = report.final_report
-    aggregate_report = getattr(report, "aggregate_report", None)
-    if final_report.suggested_team is None and aggregate_report is not None:
-        final_report = final_report.model_copy(
-            update={
-                "suggested_team": build_suggested_team_from_reveals(
-                    aggregate_report.expert_team_reveals
-                )
-            }
-        )
-    return final_report.model_dump()
+    return report.final_report.model_dump()
 
 
 @router.get("/recommendations/latest", response_model=LatestRecommendationsResponse)

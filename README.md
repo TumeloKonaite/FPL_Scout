@@ -87,6 +87,20 @@ Core outputs:
 
 This makes the project useful both as an automation tool and as an inspectable data pipeline.
 
+### Immutable report snapshots
+
+Each completed run is a point-in-time snapshot. `final_report.json` contains the
+player, recommendation, and suggested-team display data used to render that run and
+is authoritative for historical reads. Normal API reads never rewrite a completed
+run or enrich it from another report, the current FPL API, or another mutable data
+source. In particular, missing or `null` snapshot fields in legacy reports remain
+missing or `null`; restoring them requires an explicit, controlled migration.
+
+A season/gameweek resolves publicly to the newest valid completed run (ordered by
+the manifest update time and then run ID). A later completed run can therefore become
+canonical without modifying earlier run artifacts. Earlier runs remain unchanged and
+can still be inspected through administrative run access.
+
 ## Runtime Data
 Mutable and generated files live under `data/`:
 - `data/reports/`: generated run reports and review artifacts

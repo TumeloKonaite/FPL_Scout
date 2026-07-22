@@ -6,7 +6,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from src.schemas.expert_analysis import ExpertVideoAnalysis
-from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
+from src.schemas.aggregate_report import RecommendationSource
+from src.schemas.final_report import (
+    AggregatedFPLReport,
+    FinalGameweekReport,
+    FinalRecommendation,
+    RecommendationConsensus,
+    SuggestedPlayer,
+    SuggestedTeam,
+)
 from src.schemas.video_job import VideoAnalysisJob
 from src.adapters.storage import load_json, save_json
 from src.services.report_service import ReportService, load_run, persist_run
@@ -153,6 +161,77 @@ def test_persisted_json_is_stable_and_can_be_reloaded(tmp_path) -> None:
     assert reloaded["aggregate_report"] == aggregate_report.model_dump()
     assert reloaded["final_report"] == final_report.model_dump()
     assert reloaded["report_markdown"].startswith("## GW5 FPL Expert Summary")
+
+
+def test_new_report_persists_complete_display_snapshots(tmp_path) -> None:
+    final_report = _build_final_report()
+    positions = ["GK", *(["DEF"] * 3), *(["MID"] * 4), *(["FWD"] * 3)]
+    players = [
+        SuggestedPlayer(
+            playerId=index,
+            name=f"Snapshot Player {index}",
+            number=index,
+            shirtNumber=index,
+            position=position,
+            club="Snapshot FC",
+            price=5.0 + index / 10,
+            predictedPoints=4.0 + index / 10,
+            ownership=10.0 + index,
+            expectedMinutes=90,
+            fixtureDifficulty=2,
+            fixture="RIV (H)",
+            expertSupportCount=3,
+            consensus="strong",
+            captain=index == 9,
+            viceCaptain=index == 8,
+        )
+        for index, position in enumerate(positions, start=1)
+    ]
+    final_report.suggested_team = SuggestedTeam(
+        formation="3-4-3",
+        startingXi=players,
+        players=players,
+        captainPlayerId=9,
+        viceCaptainPlayerId=8,
+    )
+    final_report.transfers = [
+        FinalRecommendation(
+            title="Buy Snapshot Player 9",
+            rationale="Three experts support the move for the favorable fixture.",
+            playerName="Snapshot Player 9",
+            club="Snapshot FC",
+            position="FWD",
+            price=5.9,
+            consensusCount=3,
+            expertCount=3,
+            consensus=RecommendationConsensus(
+                label="strong",
+                supportCount=3,
+                relevantExpertCount=3,
+            ),
+            sources=[RecommendationSource(name="Snapshot Expert")],
+        )
+    ]
+
+    run_path = persist_run(
+        discovered_videos=[],
+        input_jobs=[],
+        expert_outputs=[],
+        aggregate_report=_build_aggregate_report(),
+        final_report=final_report,
+        base_dir=tmp_path / "runs",
+    )
+    persisted = json.loads((run_path / "final_report.json").read_text(encoding="utf-8"))
+
+    player = persisted["suggested_team"]["startingXi"][8]
+    assert player == players[8].model_dump()
+    assert persisted["suggested_team"]["formation"] == "3-4-3"
+    assert persisted["suggested_team"]["captainPlayerId"] == 9
+    assert persisted["suggested_team"]["viceCaptainPlayerId"] == 8
+    recommendation = persisted["transfers"][0]
+    assert recommendation["rationale"].startswith("Three experts")
+    assert recommendation["consensus"]["label"] == "strong"
+    assert recommendation["sources"][0]["name"] == "Snapshot Expert"
 
 
 def test_save_json_handles_nested_datetimes_paths_and_dataclasses(tmp_path) -> None:

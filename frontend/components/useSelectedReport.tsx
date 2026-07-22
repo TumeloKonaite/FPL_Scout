@@ -147,8 +147,9 @@ export function ReportSelectionProvider({ children }: { children: ReactNode }) {
   const selectedKey = keyOf(selection);
   const report = reportState?.key === selectedKey ? reportState.data : null;
   const reportPending = Boolean(validSelection && selectedKey !== settledReportKey) || isLoadingReport;
-  const isMissingReport = !isLoadingIndex && !indexError && Boolean(selection)
-    && (malformedSelection || !validSelection || (!reportPending && !report && !reportError));
+  const hasNoPublishedReports = !isLoadingIndex && !indexError && availableSeasons.length === 0;
+  const isMissingReport = hasNoPublishedReports || (!isLoadingIndex && !indexError && Boolean(selection)
+    && (malformedSelection || !validSelection || (!reportPending && !report && !reportError)));
   const value = useMemo<SelectedReportContextValue>(() => ({
     selection,
     report,

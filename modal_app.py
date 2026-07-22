@@ -54,7 +54,12 @@ def pipeline_worker(run_id: str, input_data: dict) -> dict:
 
     configure_runtime_volume(commit=data_volume.commit, reload=data_volume.reload)
     bootstrap_data_directories()
-    return execute_pipeline_run(run_id, input_data)
+    try:
+        return execute_pipeline_run(run_id, input_data)
+    finally:
+        from src.app.infrastructure.database import dispose_engine
+
+        dispose_engine()
 
 
 @app.function(

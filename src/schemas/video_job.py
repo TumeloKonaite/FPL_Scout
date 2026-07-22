@@ -8,3 +8,5 @@ class VideoAnalysisJob(BaseModel):
     gameweek: int
     transcript: str
     video_url: str | None = None
+    transcript_id: str | None = None
+    transcript_revision_id: str | None = None

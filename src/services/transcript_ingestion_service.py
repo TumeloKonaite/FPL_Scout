@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import inspect
 
 from src.adapters.transcript_api import WebshareProxySettings
 from src.adapters.youtube import get_latest_videos_for_expert
@@ -92,10 +93,16 @@ def ingest_youtube_video_jobs(
             )
             continue
 
-        transcript_payload = get_clean_transcript(
-            video_id,
-            proxy_settings=proxy_settings,
-        )
+        transcript_kwargs = {"proxy_settings": proxy_settings}
+        # Preserve compatibility with injected legacy fetch callables while
+        # passing provenance to the database-backed implementation.
+        if "video_url" in inspect.signature(get_clean_transcript).parameters:
+            transcript_kwargs.update(
+                video_url=video.get("video_url"),
+                title=video.get("title"),
+                expert=video.get("expert_name"),
+            )
+        transcript_payload = get_clean_transcript(video_id, **transcript_kwargs)
         if transcript_payload.get("status") != "available":
             transcript_failures.append(
                 {
@@ -123,7 +130,14 @@ def ingest_youtube_video_jobs(
             )
             continue
 
-        transcript_candidates.append({**video, "transcript": transcript_text})
+        transcript_candidates.append(
+            {
+                **video,
+                "transcript": transcript_text,
+                "transcript_id": transcript_payload.get("transcript_id"),
+                "transcript_revision_id": transcript_payload.get("transcript_revision_id"),
+            }
+        )
 
     relevant_videos = filter_relevant_videos(transcript_candidates, gameweek=gameweek)
 
@@ -135,6 +149,8 @@ def ingest_youtube_video_jobs(
             gameweek=gameweek,
             transcript=video["transcript"],
             video_url=video.get("video_url"),
+            transcript_id=video.get("transcript_id"),
+            transcript_revision_id=video.get("transcript_revision_id"),
         )
         for video in relevant_videos
     ]

@@ -35,7 +35,7 @@ This repository is not just a dashboard and not just an LLM wrapper.
 
 It is an end-to-end gameweek reporting pipeline that:
 - discovers recent YouTube videos from configured FPL experts
-- fetches and caches transcripts
+- fetches transcripts and persists their revisions in PostgreSQL
 - builds `VideoAnalysisJob` inputs per relevant video
 - runs expert-analysis agents over each transcript
 - aggregates the results into consensus and disagreement views
@@ -82,7 +82,13 @@ Mutable and generated files live under `data/`:
 - `data/reports/`: generated run reports and review artifacts
 - `data/raw/`: raw imported datasets before processing
 - `data/processed/`: cleaned or transformed datasets
-- `data/transcripts/`: cached transcripts and pipeline transcript logs
+- `data/transcripts/`: legacy transcript cache used only during staged file fallback/import
+
+PostgreSQL is the transcript source of truth. `input_jobs.json` remains as a
+transitional immutable run snapshot for debugging and backward compatibility;
+each job includes `transcript_id` and `transcript_revision_id`, identifying the
+exact persisted content used by that report. New transcript results are not
+written to the Modal Volume when PostgreSQL is configured.
 
 These directories are created automatically when the API starts. Their generated contents are ignored by Git, while `.gitkeep` placeholders preserve the folder structure.
 
@@ -120,6 +126,82 @@ Copy `.env.example` to `.env` and fill in the values you need.
 | `ENABLE_WEBSHARE_PROXY` | Optional | Set to `true` to route transcript fetches through Webshare |
 | `WEBSHARE_PROXY_USERNAME` | If proxy enabled | Webshare username |
 | `WEBSHARE_PROXY_PASSWORD` | If proxy enabled | Webshare password |
+| `DATABASE_URL` | For PostgreSQL transcript storage | Pooled application connection URL |
+| `DIRECT_DATABASE_URL` | For migrations | Optional direct/unpooled Alembic connection URL |
+| `TRANSCRIPT_FAILURE_RETRY_HOURS` | Optional | Hours before a failed or unavailable transcript is retried |
+| `TRANSCRIPT_FILE_FALLBACK_ENABLED` | Optional | Read legacy JSON only when PostgreSQL is unavailable during rollout |
+
+### Local PostgreSQL setup
+
+Create a dedicated login and database rather than running the application as
+the PostgreSQL superuser. From pgAdmin's Query Tool, connected as `postgres`:
+
+```sql
+CREATE ROLE fpl_scout_app WITH LOGIN PASSWORD 'choose-a-url-safe-password';
+CREATE DATABASE fpl_scout OWNER TO fpl_scout_app;
+```
+
+If `fpl_scout` already exists, assign it to the application role instead:
+
+```sql
+ALTER DATABASE fpl_scout OWNER TO fpl_scout_app;
+ALTER SCHEMA public OWNER TO fpl_scout_app;
+GRANT ALL PRIVILEGES ON DATABASE fpl_scout TO fpl_scout_app;
+GRANT ALL ON SCHEMA public TO fpl_scout_app;
+```
+
+For PostgreSQL installed on the same Linux host, configure `.env` with its
+actual port (normally `5432`):
+
+```dotenv
+DATABASE_URL=postgresql+psycopg://fpl_scout_app:password@127.0.0.1:5432/fpl_scout
+DIRECT_DATABASE_URL=postgresql+psycopg://fpl_scout_app:password@127.0.0.1:5432/fpl_scout
+TRANSCRIPT_STORE=postgres
+TRANSCRIPT_FILE_FALLBACK_ENABLED=true
+TRANSCRIPT_FAILURE_RETRY_HOURS=24
+```
+
+When PostgreSQL runs on Windows and the application runs inside WSL 2,
+`127.0.0.1` might not reach the Windows service. Find the current Windows host
+address with:
+
+```bash
+ip route show default
+```
+
+Use the address after `via` as the database hostname and PostgreSQL's configured
+port. For example, a PostgreSQL server on port `5433` might use:
+
+```dotenv
+DATABASE_URL=postgresql+psycopg://fpl_scout_app:password@172.28.208.1:5433/fpl_scout
+DIRECT_DATABASE_URL=postgresql+psycopg://fpl_scout_app:password@172.28.208.1:5433/fpl_scout
+```
+
+The WSL host address can change after a Windows or WSL restart. If connectivity
+stops working, rerun `ip route show default` and update `.env`. PostgreSQL must
+also listen on an interface reachable from WSL, and Windows Firewall should
+allow its port only from the local/WSL network.
+
+Test authentication without printing credentials:
+
+```bash
+uv run python -c "
+from sqlalchemy import text
+from src.app.infrastructure.database import get_engine
+with get_engine().connect() as connection:
+    print(connection.execute(text('select current_user, current_database()')).one())
+"
+```
+
+Then apply the schema and optionally import legacy files:
+
+```bash
+uv run alembic upgrade head
+uv run alembic current
+uv run alembic check
+uv run python -m src.scripts.import_transcripts --source data/transcripts --dry-run
+uv run python -m src.scripts.import_transcripts --source data/transcripts
+```
 
 `--no-synthesis` only skips the final LLM synthesis step. The pipeline still uses `openai-agents` earlier to analyze video transcripts, so full pipeline runs still need provider credentials.
 
@@ -292,7 +374,8 @@ The production backend deployment uses FastAPI, a detached worker, and a persist
 - `Pipeline did not produce any expert analyses`: every job failed or had an unusable transcript.
 - Webshare errors: if `ENABLE_WEBSHARE_PROXY=true`, both proxy credentials must be set.
 - Transcript fetch errors are retried with bounded backoff before being recorded in `manifest.json`.
-- Successful transcripts are cached under `data/transcripts/`.
+- Successful transcripts and their revisions are persisted in PostgreSQL.
+- When PostgreSQL on Windows times out from WSL, confirm the current host with `ip route show default`, verify the PostgreSQL port, and check that the server listens on a WSL-reachable interface.
 
 ## Key Code Paths
 - CLI entry: [src/app/cli/run_gameweek_report.py](/home/l/projects/fpl_agent/src/app/cli/run_gameweek_report.py)

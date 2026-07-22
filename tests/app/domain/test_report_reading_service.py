@@ -6,7 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from src.app.domain.reports.service import ReportService
+from src.app.domain.reports.service import (
+    GameweekReportNotFoundError,
+    ReportService,
+)
 from src.app.infrastructure.storage.report_store import (
     EmptyReportDirectoryError,
     InvalidReportFileError,
@@ -147,3 +150,136 @@ def test_invalid_report_schema_handling(tmp_path) -> None:
 
     with pytest.raises(InvalidReportFileError):
         _service(runs_dir).get_report("gw32")
+
+
+def _write_public_report(
+    root: Path,
+    run_id: str,
+    *,
+    season: str,
+    gameweek: int,
+    updated_at: str,
+    status: str = "completed",
+    suggested_team: bool = False,
+    valid: bool = True,
+) -> None:
+    run_dir = root / run_id
+    run_dir.mkdir(parents=True)
+    payload = _final_report_payload(gameweek)
+    payload["season"] = season
+    if suggested_team:
+        payload["suggested_team"] = {"startingXi": []}
+    if not valid:
+        payload.pop("overview")
+    (run_dir / "final_report.json").write_text(json.dumps(payload), encoding="utf-8")
+    (run_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "run_id": run_id,
+                "season": season,
+                "gameweek": gameweek,
+                "status": status,
+                "updated_at": updated_at,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_available_gameweeks_uses_valid_canonical_reports(tmp_path) -> None:
+    _write_public_report(
+        tmp_path,
+        "older",
+        season="2026-27",
+        gameweek=12,
+        updated_at="2026-10-29T15:00:00Z",
+    )
+    _write_public_report(
+        tmp_path,
+        "newer",
+        season="2026-27",
+        gameweek=12,
+        updated_at="2026-10-30T15:00:00Z",
+        suggested_team=True,
+    )
+    _write_public_report(
+        tmp_path,
+        "failed",
+        season="2026-27",
+        gameweek=13,
+        updated_at="2026-11-01T15:00:00Z",
+        status="failed",
+    )
+    _write_public_report(
+        tmp_path,
+        "prior-season",
+        season="2025-26",
+        gameweek=12,
+        updated_at="2025-10-30T15:00:00Z",
+    )
+
+    seasons = _service(tmp_path).list_available_gameweeks()
+
+    assert [season.season for season in seasons] == ["2026-27", "2025-26"]
+    assert [(item.gameweek, item.has_suggested_team) for item in seasons[0].gameweeks] == [
+        (12, True)
+    ]
+    assert seasons[0].gameweeks[0].last_updated_at.isoformat() == (
+        "2026-10-30T15:00:00+00:00"
+    )
+
+
+def test_gameweek_lookup_falls_back_from_newest_invalid_report(tmp_path) -> None:
+    _write_public_report(
+        tmp_path,
+        "valid",
+        season="2026-27",
+        gameweek=12,
+        updated_at="2026-10-30T15:00:00Z",
+    )
+    _write_public_report(
+        tmp_path,
+        "invalid",
+        season="2026-27",
+        gameweek=12,
+        updated_at="2026-10-31T15:00:00Z",
+        valid=False,
+    )
+
+    report = _service(tmp_path).get_report_for_gameweek("2026-27", 12)
+
+    assert report.run_id == "valid"
+
+
+def test_gameweek_lookup_raises_domain_not_found_error(tmp_path) -> None:
+    tmp_path.mkdir(exist_ok=True)
+
+    with pytest.raises(GameweekReportNotFoundError) as exc_info:
+        _service(tmp_path).get_report_for_gameweek("2026-27", 12)
+
+    assert exc_info.value.season == "2026-27"
+    assert exc_info.value.gameweek == 12
+
+
+def test_latest_prefers_current_identity_then_falls_back_across_seasons(
+    tmp_path,
+) -> None:
+    _write_public_report(
+        tmp_path,
+        "gw38",
+        season="2025-26",
+        gameweek=38,
+        updated_at="2026-05-20T00:00:00Z",
+    )
+    _write_public_report(
+        tmp_path,
+        "gw1",
+        season="2026-27",
+        gameweek=1,
+        updated_at="2026-08-15T00:00:00Z",
+    )
+    service = _service(tmp_path)
+
+    assert service.get_latest_report().run_id == "gw1"
+    assert service.get_latest_report("2025-26", 38).run_id == "gw38"
+    assert service.get_latest_report("2027-28", 1).run_id == "gw1"

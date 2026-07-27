@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from src.app.infrastructure.database import get_session_factory
 from src.app.infrastructure.models import CompletedReportRun, PipelineRun
+from src.app.infrastructure.serialization import to_json_value
 from src.schemas.report_identity import ReportIdentity
 
 
@@ -73,19 +74,23 @@ class ReportRepository:
                 "season": identity.season,
                 "gameweek": identity.gameweek,
                 "status": "processing" if pipeline is not None else "completed",
-                "discovered_videos": discovered_videos,
-                "input_jobs": input_jobs,
-                "expert_outputs": expert_outputs,
-                "failed_jobs": failed_jobs,
-                "duplicate_sources": duplicate_sources,
-                "transcript_failures": transcript_failures,
-                "aggregate_report": aggregate_report,
-                "final_report": final_report,
-                "manifest": {
-                    **manifest,
-                    "status": "processing" if pipeline is not None else "completed",
-                },
-                "rendered_markdown": rendered_markdown,
+                "discovered_videos": to_json_value(discovered_videos),
+                "input_jobs": to_json_value(input_jobs),
+                "expert_outputs": to_json_value(expert_outputs),
+                "failed_jobs": to_json_value(failed_jobs),
+                "duplicate_sources": to_json_value(duplicate_sources),
+                "transcript_failures": to_json_value(transcript_failures),
+                "aggregate_report": to_json_value(aggregate_report),
+                "final_report": to_json_value(final_report),
+                "manifest": to_json_value(
+                    {
+                        **manifest,
+                        "status": (
+                            "processing" if pipeline is not None else "completed"
+                        ),
+                    }
+                ),
+                "rendered_markdown": to_json_value(rendered_markdown),
                 "updated_at": now,
                 "completed_at": None if pipeline is not None else now,
             }

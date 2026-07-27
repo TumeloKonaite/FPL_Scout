@@ -22,8 +22,8 @@ export function Sidebar() {
   return (
     <aside className="sidebar" aria-label="Primary navigation">
       <Link className="sidebar-brand" href={reportHref("/", selection)}>
-        <span className="brand-mark"><span>FT</span></span>
-        <span className="brand-copy"><strong>FPL Technocrat</strong><small>Gameweek intelligence</small></span>
+        <span className="brand-mark"><span>KF</span></span>
+        <span className="brand-copy"><strong>kasifpl</strong><small>Gameweek intelligence</small></span>
       </Link>
       <nav className="sidebar-nav">
         {navItems.map((item) => (

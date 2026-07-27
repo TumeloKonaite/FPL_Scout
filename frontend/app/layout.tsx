@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { ReportSelectionProvider } from "@/components/useSelectedReport";
 
 export const metadata: Metadata = {
-  title: { default: "FPL Technocrat", template: "%s · FPL Technocrat" },
+  title: { default: "kasifpl", template: "%s · kasifpl" },
   description: "Fantasy Premier League reporting and decision support"
 };
 

@@ -1,4 +1,4 @@
-# FPL Technocrat Frontend
+# kasifpl Frontend
 
 Next.js provides a public recommendations experience and a protected operations area.
 

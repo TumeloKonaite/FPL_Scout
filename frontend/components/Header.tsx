@@ -17,7 +17,7 @@ export function Header() {
   return (
     <header className="header">
       <div className="header-title">
-        <span>FPL Technocrat <b>/</b> {pageNames[pathname] ?? "FPL Scout"}</span>
+        <span>kasifpl <b>/</b> {pageNames[pathname] ?? "FPL Scout"}</span>
       </div>
       {isReportPage ? <GameweekSelector /> : null}
     </header>

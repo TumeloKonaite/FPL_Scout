@@ -41,6 +41,10 @@ def _build_analysis(job: VideoAnalysisJob) -> ExpertVideoAnalysis:
 
 def test_get_clean_transcript_returns_readable_error_after_retries(monkeypatch) -> None:
     attempts = {"count": 0}
+    monkeypatch.setattr(
+        "src.services.transcript_service._default_repository",
+        lambda: None,
+    )
 
     def _fail(video_id: str, proxy_settings=None) -> str:
         attempts["count"] += 1

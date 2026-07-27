@@ -152,6 +152,8 @@ Copy `.env.example` to `.env` and fill in the values you need.
 | `WEBSHARE_PROXY_PASSWORD` | If proxy enabled | Webshare password |
 | `DATABASE_URL` | For PostgreSQL transcript storage | Pooled application connection URL |
 | `DIRECT_DATABASE_URL` | For migrations | Optional direct/unpooled Alembic connection URL |
+| `DATABASE_POOL_MODE` | Optional locally | `transaction` in Modal; `auto` detects port 6543 |
+| `DATABASE_POOL_SIZE` / `DATABASE_MAX_OVERFLOW` | Optional | Per-container SQLAlchemy connection limits (defaults: 2 + 1) |
 | `TRANSCRIPT_FAILURE_RETRY_HOURS` | Optional | Hours before a failed or unavailable transcript is retried |
 | `TRANSCRIPT_FILE_FALLBACK_ENABLED` | Optional | Read legacy JSON only when PostgreSQL is unavailable during rollout |
 
@@ -226,6 +228,47 @@ uv run alembic check
 uv run python -m src.scripts.import_transcripts --source data/transcripts --dry-run
 uv run python -m src.scripts.import_transcripts --source data/transcripts
 ```
+
+### Production PostgreSQL (Supabase)
+
+Production uses Supabase's transaction pooler for the autoscaling Modal API and
+worker, and the direct connection for migrations. If the migration runtime
+cannot reach the project's IPv6 direct endpoint, use Supabase's session pooler
+on port 5432 for `DIRECT_DATABASE_URL`. Do not use the transaction endpoint on
+port 6543 for migrations.
+
+The Modal runtime explicitly sets:
+
+```dotenv
+ENVIRONMENT=production
+TRANSCRIPT_STORE=postgres
+TRANSCRIPT_FILE_FALLBACK_ENABLED=false
+DATABASE_POOL_MODE=transaction
+```
+
+The database layer requires SSL in production, disables psycopg prepared
+statements for transaction pooling, and bounds every Modal container to two
+pooled connections plus one overflow connection. Missing production URLs,
+file fallback, a non-PostgreSQL URL, or a transaction-pooler migration URL
+fails during configuration loading.
+
+After adding `DATABASE_URL` and `DIRECT_DATABASE_URL` to the server-side Modal
+secret, run the schema gate before deploying:
+
+```bash
+make modal-migrate
+make modal-verify
+make modal-deploy
+```
+
+`modal-migrate` runs `alembic upgrade head`, `alembic current` with a head
+check, and `alembic check`. `modal-verify` confirms the transcript tables,
+indexes, row counts, and revision foreign-key relationships without displaying
+credentials. `/health` returns HTTP 503 in production if `SELECT 1` fails, and
+Modal cold starts also reject an unavailable database.
+
+See [docs/modal-deployment.md](docs/modal-deployment.md) for project creation,
+secret rotation, data classification/import, verification, and rollback.
 
 `--no-synthesis` only skips the final LLM synthesis step. The pipeline still uses `openai-agents` earlier to analyze video transcripts, so full pipeline runs still need provider credentials.
 

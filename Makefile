@@ -13,7 +13,7 @@ EXPERT_NAME ?=
 EXPERT_COUNT ?=
 SYNTHESIS ?= 0
 
-.PHONY: help install install-frontend test lint run-api run-frontend run-cli modal-serve modal-deploy docker-build docker-run docker-down
+.PHONY: help install install-frontend test lint run-api run-frontend run-cli modal-serve modal-migrate modal-verify modal-deploy docker-build docker-run docker-down
 
 help:
 	@printf "Available targets:\n"
@@ -24,6 +24,8 @@ help:
 	@printf "  make run-frontend  Start the Next.js frontend\n"
 	@printf "  make run-cli       Run the weekly pipeline CLI\n"
 	@printf "  make modal-serve   Start an ephemeral Modal development deployment\n"
+	@printf "  make modal-migrate Run production migrations and Alembic checks on Modal\n"
+	@printf "  make modal-verify  Verify production transcript schema and relationships\n"
 	@printf "  make modal-deploy  Deploy the API and background worker to Modal\n"
 	@printf "  make docker-build  Build the backend Docker image\n"
 	@printf "  make docker-run    Start the Docker Compose API service\n"
@@ -62,6 +64,12 @@ run-cli:
 
 modal-serve:
 	$(UV) run modal serve modal_app.py
+
+modal-migrate:
+	$(UV) run modal run modal_app.py::migrate
+
+modal-verify:
+	$(UV) run modal run modal_app.py::verify_database
 
 modal-deploy:
 	$(UV) run modal deploy modal_app.py

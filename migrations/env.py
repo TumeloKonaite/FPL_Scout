@@ -6,7 +6,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from src.app.core.config import get_settings
-from src.app.infrastructure.database import normalize_database_url
+from src.app.infrastructure.database import database_engine_options, normalize_database_url
 from src.app.infrastructure.models import Base
 
 config = context.config
@@ -36,6 +36,7 @@ def run_migrations_online() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        **database_engine_options(settings, migration=True),
     )
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

@@ -1,8 +1,18 @@
 from pathlib import Path
 
+import pytest
+
 from src.adapters.transcript_api import TranscriptFetchError
 from src.services.transcript_service import get_clean_transcript
 from src.utils.text_cleaning import clean_transcript
+
+
+@pytest.fixture(autouse=True)
+def isolate_unit_tests_from_configured_database(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "src.services.transcript_service._default_repository",
+        lambda: None,
+    )
 
 
 def test_clean_transcript_normalizes_whitespace() -> None:

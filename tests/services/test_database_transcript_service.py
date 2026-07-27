@@ -1,6 +1,8 @@
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from src.app.core.config import Settings
 from src.app.infrastructure.models import Base, TranscriptStatus
 from src.app.infrastructure.transcript_repository import TranscriptRepository
 from src.services.transcript_service import get_clean_transcript
@@ -57,3 +59,34 @@ def test_unavailable_database_record_is_reused_before_retry(monkeypatch, tmp_pat
 
     assert payload["status"] == "missing"
     assert payload["failure_code"] == "empty"
+
+
+def test_production_database_failure_does_not_fall_back_to_files(
+    monkeypatch, tmp_path
+) -> None:
+    settings = Settings(
+        ENVIRONMENT="production",
+        DATABASE_URL="postgresql://user:secret@pooler.supabase.com:6543/postgres",
+        DIRECT_DATABASE_URL="postgresql://user:secret@db.project.supabase.co:5432/postgres",
+        DATABASE_POOL_MODE="transaction",
+        TRANSCRIPT_STORE="postgres",
+        TRANSCRIPT_FILE_FALLBACK_ENABLED=False,
+        _env_file=None,
+    )
+
+    class BrokenRepository:
+        def get_by_video_id(self, _video_id):
+            raise ConnectionError("database unavailable")
+
+    monkeypatch.setattr("src.services.transcript_service.get_settings", lambda: settings)
+    monkeypatch.setattr(
+        "src.services.transcript_service.fetch_transcript",
+        lambda *args, **kwargs: pytest.fail("YouTube must not hide a database failure"),
+    )
+
+    with pytest.raises(RuntimeError, match="Production transcript database lookup failed"):
+        get_clean_transcript(
+            "production-video",
+            repository=BrokenRepository(),
+            cache_dir=tmp_path,
+        )

@@ -20,7 +20,11 @@ def test_load_runtime_environment_populates_process_env(tmp_path, monkeypatch) -
     assert os.environ["OPENAI_API_KEY"] == "test-runtime-key"
 
 
-def test_health_endpoint() -> None:
+def test_health_endpoint(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "src.app.api.routes.health.database_is_ready",
+        lambda: True,
+    )
     client = TestClient(app)
 
     response = client.get("/health")

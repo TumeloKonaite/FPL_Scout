@@ -5,11 +5,13 @@ on:
     paths:
       - "src/**"
       - "tests/**"
+      - "migrations/**"
       - "modal_app.py"
       - "pyproject.toml"
       - "uv.lock"
       - "Makefile"
       - "scripts/**"
+      - "docs/modal-deployment.md"
       - ".github/workflows/backend-ci-cd.yml"
   push:
     branches:
@@ -17,11 +19,13 @@ on:
     paths:
       - "src/**"
       - "tests/**"
+      - "migrations/**"
       - "modal_app.py"
       - "pyproject.toml"
       - "uv.lock"
       - "Makefile"
       - "scripts/**"
+      - "docs/modal-deployment.md"
       - ".github/workflows/backend-ci-cd.yml"
   workflow_dispatch:
 
@@ -86,6 +90,12 @@ jobs:
 
       - name: Install locked dependencies
         run: uv sync --frozen --group dev
+
+      - name: Migrate and validate production database
+        run: uv run modal run modal_app.py::migrate
+
+      - name: Verify production database schema
+        run: uv run modal run modal_app.py::verify_database
 
       - name: Deploy fpl-technocrat to Modal
         run: uv run modal deploy modal_app.py

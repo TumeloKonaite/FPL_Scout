@@ -10,6 +10,7 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -151,8 +152,40 @@ class CompletedReportRun(Base):
     __tablename__ = "completed_report_runs"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('processing', 'completed', 'invalid')",
+            "status IN ('processing', 'completed', 'invalid', 'superseded')",
             name="ck_completed_report_runs_status",
+        ),
+        CheckConstraint(
+            "("
+            "status = 'superseded' AND superseded_by_run_id IS NOT NULL "
+            "AND superseded_at IS NOT NULL AND supersession_reason IS NOT NULL"
+            ") OR ("
+            "status != 'superseded' AND superseded_by_run_id IS NULL "
+            "AND superseded_at IS NULL AND supersession_reason IS NULL"
+            ")",
+            name="ck_completed_report_runs_supersession_fields",
+        ),
+        CheckConstraint(
+            "superseded_by_run_id IS NULL OR superseded_by_run_id != run_id",
+            name="ck_completed_report_runs_no_self_supersession",
+        ),
+        UniqueConstraint(
+            "run_id",
+            "season",
+            "gameweek",
+            name="uq_completed_report_runs_identity_target",
+        ),
+        ForeignKeyConstraint(
+            ["superseded_by_run_id", "season", "gameweek"],
+            [
+                "completed_report_runs.run_id",
+                "completed_report_runs.season",
+                "completed_report_runs.gameweek",
+            ],
+            name="fk_completed_report_runs_superseded_by_identity",
+            ondelete="RESTRICT",
+            deferrable=True,
+            initially="DEFERRED",
         ),
         CheckConstraint(
             "gameweek >= 1 AND gameweek <= 38",
@@ -196,5 +229,57 @@ class CompletedReportRun(Base):
         onupdate=_utc_now, nullable=False
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    superseded_by_run_id: Mapped[str | None] = mapped_column(String(64))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    supersession_reason: Mapped[str | None] = mapped_column(Text)
 
     pipeline_run: Mapped[PipelineRun | None] = relationship(back_populates="report")
+
+
+class HistoricalRegenerationAudit(Base):
+    __tablename__ = "historical_regeneration_audits"
+    __table_args__ = (
+        CheckConstraint(
+            "gameweek >= 1 AND gameweek <= 38",
+            name="ck_historical_regeneration_audits_gameweek",
+        ),
+        Index(
+            "ix_historical_regeneration_audits_identity",
+            "season",
+            "gameweek",
+            "generated_at",
+        ),
+        Index(
+            "ix_historical_regeneration_audits_batch",
+            "batch_identifier",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    season: Mapped[str] = mapped_column(String(7), nullable=False)
+    gameweek: Mapped[int] = mapped_column(Integer, nullable=False)
+    previous_run_id: Mapped[str | None] = mapped_column(String(64))
+    replacement_run_id: Mapped[str] = mapped_column(
+        ForeignKey("completed_report_runs.run_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    previous_status: Mapped[str | None] = mapped_column(String(16))
+    replacement_status: Mapped[str] = mapped_column(String(16), nullable=False)
+    historical_deadline: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    selected_video_fingerprint: Mapped[str] = mapped_column(
+        String(64), nullable=False
+    )
+    validation_rule_version: Mapped[str] = mapped_column(
+        String(32), nullable=False
+    )
+    batch_identifier: Mapped[str] = mapped_column(String(128), nullable=False)
+    command: Mapped[str] = mapped_column(Text, nullable=False)
+    audit_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+    )
+    superseded_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )

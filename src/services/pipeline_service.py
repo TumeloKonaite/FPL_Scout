@@ -171,6 +171,8 @@ async def run_pipeline(
         jobs_created=len(loaded_jobs),
         transcript_failures=ingestion.transcript_failures,
         run_id=run_id,
+        gameweek_deadline=gameweek_deadline,
+        validate_provenance=True,
     )
 
     return PipelineRunResult(

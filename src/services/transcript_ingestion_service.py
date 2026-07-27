@@ -10,6 +10,7 @@ from src.config.expert_sources import EXPERT_CHANNELS
 from src.schemas.video_job import VideoAnalysisJob
 from src.services.transcript_service import get_clean_transcript
 from src.services.video_selection_service import assess_video
+from src.services.provenance_validation_service import validate_source
 
 
 @dataclass(slots=True)
@@ -192,16 +193,11 @@ def ingest_youtube_video_jobs(
             )
             continue
 
-        final_evidence = assess_video(
+        final_evidence = validate_source(
             gameweek=gameweek,
-            title=str(video.get("title", "")),
-            description=str(video.get("description", "")),
-            transcript=transcript_text,
-            published_at=str(video.get("published_at", "")),
             season=season,
             gameweek_deadline=gameweek_deadline,
-            window_days_before=resolved_window_days_before,
-            window_days_after=resolved_window_days_after,
+            source={**video, "transcript": transcript_text},
         )
         video.update(final_evidence)
         if not final_evidence["selected"]:

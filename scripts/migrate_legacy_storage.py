@@ -195,7 +195,7 @@ def migrate_legacy_storage(
 
 
 def verify_import() -> dict[str, Any]:
-    with get_session_factory() as session:
+    with get_session_factory()() as session:
         identities = list(
             session.execute(
                 select(

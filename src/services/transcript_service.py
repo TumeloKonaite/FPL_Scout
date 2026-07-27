@@ -16,6 +16,19 @@ from src.utils.text_cleaning import clean_transcript
 logger = logging.getLogger(__name__)
 
 
+def _requires_postgres(settings) -> bool:
+    return (
+        settings.ENVIRONMENT.casefold() == "production"
+        and settings.TRANSCRIPT_STORE.casefold() == "postgres"
+        and not settings.TRANSCRIPT_FILE_FALLBACK_ENABLED
+    )
+
+
+def _raise_if_database_required(settings, operation: str) -> None:
+    if _requires_postgres(settings):
+        raise RuntimeError(f"Production transcript database {operation} failed")
+
+
 def _build_transcript_cache_path(video_id: str, cache_dir: str | Path) -> Path:
     return Path(cache_dir) / f"{video_id}.json"
 
@@ -90,6 +103,7 @@ def get_clean_transcript(
         except Exception:
             database_failed = True
             logger.exception("transcript database initialization failed", extra={"video_id": video_id})
+            _raise_if_database_required(settings, "initialization")
 
     if resolved_repository is not None:
         try:
@@ -108,6 +122,7 @@ def get_clean_transcript(
         except Exception:
             database_failed = True
             logger.exception("transcript database lookup failed", extra={"video_id": video_id})
+            _raise_if_database_required(settings, "lookup")
 
     use_file_fallback = (
         resolved_repository is None or database_failed or database_miss
@@ -154,6 +169,7 @@ def get_clean_transcript(
                 return _payload_from_record(record, resolved_repository)
             except Exception:
                 logger.exception("transcript database persistence failed", extra={"video_id": video_id})
+                _raise_if_database_required(settings, "persistence")
         return {"video_id": video_id, "transcript": "", "status": "error", "error": error}
 
     if not raw_text:
@@ -169,6 +185,7 @@ def get_clean_transcript(
                 return _payload_from_record(record, resolved_repository)
             except Exception:
                 logger.exception("transcript database persistence failed", extra={"video_id": video_id})
+                _raise_if_database_required(settings, "persistence")
         return {"video_id": video_id, "transcript": "", "status": "missing"}
 
     cleaned = clean_transcript(raw_text)
@@ -183,6 +200,7 @@ def get_clean_transcript(
             return _payload_from_record(record, resolved_repository)
         except Exception:
             logger.exception("transcript database persistence failed", extra={"video_id": video_id})
+            _raise_if_database_required(settings, "persistence")
             if settings.TRANSCRIPT_FILE_FALLBACK_ENABLED:
                 _save_cached_transcript(video_id, payload, resolved_cache_dir)
                 return payload

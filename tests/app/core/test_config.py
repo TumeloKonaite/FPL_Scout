@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from src.app.core.config import Settings, bootstrap_data_directories, get_settings
 
 
@@ -69,3 +72,41 @@ def test_get_settings_returns_cached_instance(monkeypatch) -> None:
     assert first is second
     assert first.OPENAI_MODEL == "cached-model"
     get_settings.cache_clear()
+
+
+def test_production_requires_postgres_without_file_fallback() -> None:
+    with pytest.raises(
+        ValidationError, match="production requires TRANSCRIPT_FILE_FALLBACK_ENABLED=false"
+    ):
+        Settings(
+            ENVIRONMENT="production",
+            DATABASE_URL="postgresql://user:secret@pooler.supabase.com:6543/postgres",
+            DIRECT_DATABASE_URL="postgresql://user:secret@db.project.supabase.co:5432/postgres",
+            TRANSCRIPT_STORE="postgres",
+            TRANSCRIPT_FILE_FALLBACK_ENABLED=True,
+            _env_file=None,
+        )
+
+
+def test_production_requires_both_database_urls() -> None:
+    with pytest.raises(ValidationError, match="production requires DIRECT_DATABASE_URL"):
+        Settings(
+            ENVIRONMENT="production",
+            DATABASE_URL="postgresql://user:secret@pooler.supabase.com:6543/postgres",
+            DIRECT_DATABASE_URL="",
+            TRANSCRIPT_STORE="postgres",
+            TRANSCRIPT_FILE_FALLBACK_ENABLED=False,
+            _env_file=None,
+        )
+
+
+def test_production_rejects_transaction_pooler_for_migrations() -> None:
+    with pytest.raises(ValidationError, match="DIRECT_DATABASE_URL cannot use"):
+        Settings(
+            ENVIRONMENT="production",
+            DATABASE_URL="postgresql://user:secret@pooler.supabase.com:6543/postgres",
+            DIRECT_DATABASE_URL="postgresql://user:secret@pooler.supabase.com:6543/postgres",
+            TRANSCRIPT_STORE="postgres",
+            TRANSCRIPT_FILE_FALLBACK_ENABLED=False,
+            _env_file=None,
+        )

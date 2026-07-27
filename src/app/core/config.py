@@ -1,10 +1,11 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import List
+from typing import List, Literal
 
 from pydantic import Field
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
@@ -20,6 +21,14 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = Field(default="")
     DIRECT_DATABASE_URL: str = Field(default="")
+    DATABASE_POOL_MODE: Literal["auto", "direct", "session", "transaction"] = Field(
+        default="auto"
+    )
+    DATABASE_POOL_SIZE: int = Field(default=2, ge=1)
+    DATABASE_MAX_OVERFLOW: int = Field(default=1, ge=0)
+    DATABASE_POOL_TIMEOUT_SECONDS: int = Field(default=10, ge=1)
+    DATABASE_POOL_RECYCLE_SECONDS: int = Field(default=300, ge=1)
+    DATABASE_CONNECT_TIMEOUT_SECONDS: int = Field(default=5, ge=1)
     TRANSCRIPT_STORE: str = Field(default="postgres")
     TRANSCRIPT_FILE_FALLBACK_ENABLED: bool = Field(default=True)
     TRANSCRIPT_FAILURE_RETRY_HOURS: int = Field(default=24, ge=0)
@@ -60,6 +69,40 @@ class Settings(BaseSettings):
             default = type(self).model_fields[field_name].default
             if field_name not in self.model_fields_set or configured == default:
                 setattr(self, field_name, value)
+        return self
+
+    @model_validator(mode="after")
+    def validate_production_database(self) -> "Settings":
+        if self.ENVIRONMENT.casefold() != "production":
+            return self
+
+        if self.TRANSCRIPT_STORE.casefold() != "postgres":
+            raise ValueError("production requires TRANSCRIPT_STORE=postgres")
+        if self.TRANSCRIPT_FILE_FALLBACK_ENABLED:
+            raise ValueError(
+                "production requires TRANSCRIPT_FILE_FALLBACK_ENABLED=false"
+            )
+        for name in ("DATABASE_URL", "DIRECT_DATABASE_URL"):
+            value = getattr(self, name).strip()
+            if not value:
+                raise ValueError(f"production requires {name}")
+            try:
+                url = make_url(value)
+            except Exception as exc:
+                raise ValueError(f"{name} must be a valid PostgreSQL URL") from exc
+            if url.drivername not in {
+                "postgres",
+                "postgresql",
+                "postgresql+psycopg",
+            }:
+                raise ValueError(f"{name} must be a PostgreSQL URL")
+
+        direct_url = make_url(self.DIRECT_DATABASE_URL)
+        if direct_url.port == 6543:
+            raise ValueError(
+                "DIRECT_DATABASE_URL cannot use a transaction pooler; use the "
+                "direct endpoint or session pooler on port 5432"
+            )
         return self
 
     @property

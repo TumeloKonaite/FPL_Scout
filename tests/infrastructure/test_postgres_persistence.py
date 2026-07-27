@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from datetime import datetime, timezone
 
 import pytest
 from sqlalchemy import create_engine
@@ -162,6 +163,61 @@ def test_failed_pipeline_invalidates_unpublished_report_atomically(
     assert runs.get("run-failed")["status"] == "failed"
     assert reports.get("run-failed").status == "invalid"
     assert reports.list_reports() == []
+
+
+def test_replacement_publication_supersedes_previous_report_atomically(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    common = {
+        "season": "2025-26",
+        "gameweek": 30,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"season": "2025-26", "gameweek": 30},
+        "final_report": {"season": "2025-26", "gameweek": 30},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(run_id="legacy", manifest={}, **common)
+    reports.save_snapshot(
+        run_id="replacement",
+        manifest={
+            "provenance_validation": [
+                {"selected": True, "video_id": "abcdefghijk"}
+            ]
+        },
+        initial_status="processing",
+        **common,
+    )
+
+    superseded = reports.publish_replacement(
+        replacement_run_id="replacement",
+        historical_deadline=datetime(2026, 3, 14, 13, 30, tzinfo=timezone.utc),
+        batch_identifier="batch-1",
+        command="regenerate",
+        supersession_reason="contaminated historical sources",
+        validation_rule_version="historical-provenance-v1",
+        selected_video_fingerprint="fingerprint",
+        audit_data={"validated": True},
+    )
+
+    legacy = reports.get("legacy")
+    assert superseded == ["legacy"]
+    assert legacy.status == "superseded"
+    assert legacy.superseded_by_run_id == "replacement"
+    assert legacy.superseded_at is not None
+    assert legacy.supersession_reason == "contaminated historical sources"
+    assert reports.latest_completed("2025-26", 30).run_id == "replacement"
+    assert reports.list_reports()[-1].run_id == "replacement"
+    assert reports.get("legacy").run_id == "legacy"
+    audits = reports.list_regeneration_audits(batch_identifier="batch-1")
+    assert len(audits) == 1
+    assert audits[0].previous_run_id == "legacy"
+    assert audits[0].replacement_run_id == "replacement"
 
 
 def test_transcript_revision_survives_repository_recreation(

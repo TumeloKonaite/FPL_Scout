@@ -9,6 +9,10 @@ from src.app.infrastructure.serialization import to_json_value
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 from src.schemas.report_identity import ReportIdentity
 from src.services.report_formatter_service import format_gameweek_markdown_report
+from src.services.provenance_validation_service import (
+    require_valid_selected_sources,
+    selected_video_fingerprint,
+)
 
 
 class ReportService:
@@ -19,9 +23,11 @@ class ReportService:
         repository: ReportRepository | None = None,
         *,
         pipeline_run_id: str | None = None,
+        defer_publication: bool = False,
     ) -> None:
         self.repository = repository or ReportRepository()
         self.pipeline_run_id = pipeline_run_id
+        self.defer_publication = defer_publication
 
     def persist_run(
         self,
@@ -40,6 +46,9 @@ class ReportService:
         jobs_created: int | None = None,
         transcript_failures: list[Any] | None = None,
         run_id: str | None = None,
+        gameweek_deadline: str | None = None,
+        validate_provenance: bool = False,
+        regeneration_metadata: dict[str, Any] | None = None,
     ) -> str:
         aggregate = AggregatedFPLReport.model_validate(aggregate_report)
         final = FinalGameweekReport.model_validate(final_report)
@@ -62,6 +71,20 @@ class ReportService:
         discovered = to_json_value(discovered_videos or [])
         aggregate_value = to_json_value(aggregate)
         final_value = to_json_value(final)
+        provenance_validation: list[dict[str, Any]] = []
+        fingerprint = ""
+        selected_video_ids: list[str] = []
+        if validate_provenance:
+            provenance_validation = require_valid_selected_sources(
+                gameweek=identity.gameweek,
+                season=identity.season,
+                gameweek_deadline=gameweek_deadline,
+                input_jobs=jobs,
+                discovered_videos=discovered,
+            )
+            fingerprint, selected_video_ids = selected_video_fingerprint(
+                provenance_validation
+            )
         manifest = {
             "run_id": resolved_run_id,
             "created_at": now,
@@ -88,7 +111,13 @@ class ReportService:
             "duplicate_sources": duplicates,
             "failed_jobs": failed,
             "transcript_failures": transcript_failure_values,
+            "gameweek_deadline": gameweek_deadline,
+            "provenance_validation": provenance_validation,
+            "selected_video_fingerprint": fingerprint,
+            "selected_video_ids": selected_video_ids,
         }
+        if regeneration_metadata:
+            manifest["regeneration"] = to_json_value(regeneration_metadata)
         self.repository.save_snapshot(
             run_id=resolved_run_id,
             pipeline_run_id=self.pipeline_run_id,
@@ -105,6 +134,11 @@ class ReportService:
             manifest=to_json_value(manifest),
             rendered_markdown=to_json_value(
                 format_gameweek_markdown_report(aggregate, final)
+            ),
+            initial_status=(
+                "processing"
+                if self.pipeline_run_id is not None or self.defer_publication
+                else "completed"
             ),
         )
         return resolved_run_id

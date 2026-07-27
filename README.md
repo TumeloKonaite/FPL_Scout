@@ -15,8 +15,9 @@ PostgreSQL is the backend's only durable store:
 The API and worker do not recover state from JSON, Markdown, SQLite, local
 directories, process memory, or Modal Volumes. A container can be replaced at
 any point without losing durable state. Completed reports are immutable
-point-in-time snapshots; the newest valid completed row for a season/gameweek
-is public without changing older snapshots.
+point-in-time snapshots. Superseded snapshots retain their lineage for
+administrative audit, while public queries only resolve eligible `completed`
+rows scoped by both season and gameweek.
 
 Pipeline exclusivity is enforced by a PostgreSQL partial unique index, so
 multiple API instances cannot accept overlapping queued/running jobs. A report
@@ -77,6 +78,66 @@ uv run python -m src.app.cli.run_gameweek_report \
 ```
 
 An optional `--run-id` assigns a database identifier. It is not a path.
+Every automated pipeline run independently revalidates selected-source titles,
+descriptions, transcripts, URLs, publication dates, and deadline evidence
+immediately before persistence.
+
+## Historical report regeneration
+
+Apply migrations before using the regeneration command:
+
+```bash
+uv run alembic upgrade head
+```
+
+First produce a machine-readable contamination inventory. This reads completed
+reports and does not change report state:
+
+```bash
+uv run python -m src.app.cli.regenerate_historical_reports \
+  --season 2025-26 \
+  --from-gameweek 30 \
+  --to-gameweek 37 \
+  --deadlines-file data/gameweek_deadlines/2025-26.json \
+  --dry-run \
+  --output /tmp/fpl-gw30-gw37-inventory.json
+```
+
+After reviewing the inventory, run the same command without `--dry-run`:
+
+```bash
+uv run python -m src.app.cli.regenerate_historical_reports \
+  --season 2025-26 \
+  --from-gameweek 30 \
+  --to-gameweek 37 \
+  --deadlines-file data/gameweek_deadlines/2025-26.json \
+  --output /tmp/fpl-gw30-gw37-regeneration.json
+```
+
+Gameweeks are processed sequentially. Each replacement remains `processing`
+until its source evidence passes the independent publication gate. Publishing
+the replacement, superseding every prior completed row for the same
+season/gameweek, recording lineage, and inserting the audit record happen in
+one PostgreSQL transaction. A failure leaves the previous canonical report
+unchanged and stops the batch by default.
+
+The command is safe to rerun: a canonical replacement with the same deadline
+and current validation-rule version is skipped. Identical selected-video
+fingerprints across gameweeks fail closed. The emergency override requires
+both `--allow-identical-fingerprint` and a non-empty
+`--override-justification`; both are recorded in audit metadata.
+
+The JSON summary includes previous-to-replacement run mappings, resolved
+canonical run IDs, deadlines, per-video validation evidence, duplicate
+fingerprints, and high-overlap warnings. The same audit metadata is durable in
+the `historical_regeneration_audits` table.
+
+Verify both the public route and its internally resolved canonical run ID:
+
+```bash
+uv run python -m src.scripts.verify_historical_regeneration \
+  --season 2025-26 --from-gameweek 30 --to-gameweek 37
+```
 
 Public and admin report endpoints resolve entirely from PostgreSQL:
 

@@ -111,9 +111,8 @@ class ReportService:
         ]
 
     def get_report(self, run_id: str) -> ReportBundle:
+        """Load a report by ID for authenticated administrative inspection."""
         row = self.repository.get(run_id)
-        if row.status != "completed":
-            raise ReportNotFoundError(f"Report not found: {run_id}")
         return self._bundle(row)
 
     @staticmethod

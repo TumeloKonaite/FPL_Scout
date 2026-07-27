@@ -60,6 +60,8 @@ class ReportService:
         jobs = to_json_value(input_jobs)
         outputs = to_json_value(expert_outputs)
         discovered = to_json_value(discovered_videos or [])
+        aggregate_value = to_json_value(aggregate)
+        final_value = to_json_value(final)
         manifest = {
             "run_id": resolved_run_id,
             "created_at": now,
@@ -98,10 +100,12 @@ class ReportService:
             failed_jobs=failed,
             duplicate_sources=duplicates,
             transcript_failures=transcript_failure_values,
-            aggregate_report=aggregate.model_dump(mode="json"),
-            final_report=final.model_dump(mode="json"),
-            manifest=manifest,
-            rendered_markdown=format_gameweek_markdown_report(aggregate, final),
+            aggregate_report=aggregate_value,
+            final_report=final_value,
+            manifest=to_json_value(manifest),
+            rendered_markdown=to_json_value(
+                format_gameweek_markdown_report(aggregate, final)
+            ),
         )
         return resolved_run_id
 

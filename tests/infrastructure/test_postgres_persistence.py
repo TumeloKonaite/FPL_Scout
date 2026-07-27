@@ -90,6 +90,49 @@ def test_report_publish_and_terminal_run_update_are_atomic(
     ] == ["run-1"]
 
 
+def test_report_snapshot_removes_postgres_unsupported_null_characters(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+
+    reports.save_snapshot(
+        run_id="run-null-character",
+        season="2025-26",
+        gameweek=1,
+        discovered_videos=[
+            {"title": "14 VALUE Players for Gameweek 1 \x00"}
+        ],
+        input_jobs=[{"video_title": "Title \x00"}],
+        expert_outputs=[{"video_title": "Title \x00"}],
+        failed_jobs=[],
+        duplicate_sources=[],
+        transcript_failures=[],
+        aggregate_report={
+            "season": "2025-26",
+            "gameweek": 1,
+            "nested": {"value": "Aggregate \x00"},
+        },
+        final_report={
+            "season": "2025-26",
+            "gameweek": 1,
+            "overview": "Final \x00",
+        },
+        manifest={"source\x00": "Manifest \x00"},
+        rendered_markdown="# GW1 \x00",
+    )
+
+    stored = reports.get("run-null-character")
+    assert stored.discovered_videos[0]["title"] == (
+        "14 VALUE Players for Gameweek 1 "
+    )
+    assert stored.input_jobs[0]["video_title"] == "Title "
+    assert stored.expert_outputs[0]["video_title"] == "Title "
+    assert stored.aggregate_report["nested"]["value"] == "Aggregate "
+    assert stored.final_report["overview"] == "Final "
+    assert stored.manifest["source"] == "Manifest "
+    assert stored.rendered_markdown == "# GW1 "
+
+
 def test_failed_pipeline_invalidates_unpublished_report_atomically(
     postgres_session_factory,
 ) -> None:

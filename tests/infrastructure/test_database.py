@@ -19,8 +19,6 @@ def _production_settings(**overrides) -> Settings:
             "postgresql://postgres:secret@db.project.supabase.co:5432/postgres"
         ),
         "DATABASE_POOL_MODE": "transaction",
-        "TRANSCRIPT_STORE": "postgres",
-        "TRANSCRIPT_FILE_FALLBACK_ENABLED": False,
         "_env_file": None,
     }
     values.update(overrides)

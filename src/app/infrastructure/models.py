@@ -4,7 +4,21 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, String, Text, UniqueConstraint, func
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -93,3 +107,94 @@ class TranscriptRevision(Base):
     )
 
     transcript: Mapped[Transcript] = relationship(back_populates="revisions")
+
+
+class PipelineRun(Base):
+    __tablename__ = "pipeline_runs"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('queued', 'running', 'completed', 'failed')",
+            name="ck_pipeline_runs_status",
+        ),
+        Index("ix_pipeline_runs_status_updated_at", "status", "updated_at"),
+        Index("ix_pipeline_runs_created_at", "created_at"),
+        # PostgreSQL enforces pipeline exclusivity across every API/worker process.
+        Index(
+            "uq_pipeline_runs_single_active",
+            text("(1)"),
+            unique=True,
+            postgresql_where=text("status IN ('queued', 'running')"),
+        ),
+    )
+
+    run_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    current_stage: Mapped[str | None] = mapped_column(String(128))
+    input_data: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    result: Mapped[dict | None] = mapped_column(JSONB)
+    error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, server_default=func.now(),
+        onupdate=_utc_now, nullable=False
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    duration_seconds: Mapped[float | None] = mapped_column(Float)
+
+    report: Mapped[CompletedReportRun | None] = relationship(back_populates="pipeline_run")
+
+
+class CompletedReportRun(Base):
+    __tablename__ = "completed_report_runs"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('processing', 'completed', 'invalid')",
+            name="ck_completed_report_runs_status",
+        ),
+        CheckConstraint(
+            "gameweek >= 1 AND gameweek <= 38",
+            name="ck_completed_report_runs_gameweek",
+        ),
+        Index(
+            "ix_completed_report_runs_season_gameweek",
+            "season",
+            "gameweek",
+            "updated_at",
+        ),
+        Index(
+            "ix_completed_report_runs_completed_updated",
+            "status",
+            "updated_at",
+        ),
+    )
+
+    run_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    pipeline_run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("pipeline_runs.run_id", ondelete="RESTRICT"), unique=True
+    )
+    season: Mapped[str] = mapped_column(String(7), nullable=False)
+    gameweek: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="completed")
+    discovered_videos: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    input_jobs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    expert_outputs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    failed_jobs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    duplicate_sources: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    transcript_failures: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    aggregate_report: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    final_report: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    manifest: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    rendered_markdown: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utc_now, server_default=func.now(),
+        onupdate=_utc_now, nullable=False
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    pipeline_run: Mapped[PipelineRun | None] = relationship(back_populates="report")

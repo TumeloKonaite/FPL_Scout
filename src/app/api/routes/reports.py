@@ -16,7 +16,6 @@ from src.app.domain.reports.service import (
     ReportNotFoundError,
     ReportService,
 )
-from src.app.infrastructure.storage.runtime_volume import reload_runtime_volume
 
 router = APIRouter(
     prefix="/api/reports",
@@ -29,7 +28,6 @@ router = APIRouter(
 def list_reports(
     service: ReportService = Depends(get_report_service),
 ) -> list[ReportSummary]:
-    reload_runtime_volume()
     try:
         reports = service.list_reports()
     except (EmptyReportDirectoryError, ReportDirectoryNotFoundError):
@@ -44,7 +42,6 @@ def list_reports(
 def get_latest_report(
     service: ReportService = Depends(get_report_service),
 ) -> ReportResponse:
-    reload_runtime_volume()
     try:
         report = service.get_latest_report()
     except (EmptyReportDirectoryError, ReportDirectoryNotFoundError) as exc:
@@ -63,7 +60,6 @@ def get_report(
     run_id: str,
     service: ReportService = Depends(get_report_service),
 ) -> ReportResponse:
-    reload_runtime_volume()
     try:
         report = service.get_report(run_id)
     except ReportNotFoundError as exc:

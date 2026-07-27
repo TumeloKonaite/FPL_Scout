@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from src.app.api.schemas.pipeline_runs import PipelineRunRequest, PipelineRunResponse
 from src.app.core.auth import require_admin
 from src.app.domain.pipeline.service import create_pipeline_run, get_pipeline_status
-from src.app.infrastructure.storage.pipeline_run_store import ActivePipelineRunError
+from src.app.infrastructure.pipeline_run_repository import ActivePipelineRunError
 
 router = APIRouter(
     prefix="/api/pipeline-runs",

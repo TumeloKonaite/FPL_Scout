@@ -67,7 +67,7 @@ Start the FastAPI backend from the repository root:
 make run-api
 ```
 
-Generated report artifacts are loaded from the backend's configured `data/reports/` directory.
+Generated report snapshots are loaded through the backend API from PostgreSQL.
 
 ## Verification
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from src.adapters.transcript_api import WebshareProxySettings
 from src.orchestrators.gameweek_orchestrator import run_gameweek_orchestration
@@ -32,7 +31,7 @@ class PipelineServiceError(Exception):
 
 @dataclass(slots=True)
 class PipelineRunResult:
-    run_path: Path
+    run_path: str
     season: str
     gameweek: int
     discovered_videos: list[dict[str, str]]
@@ -81,7 +80,7 @@ async def run_pipeline(
     *,
     season: str,
     gameweek: int,
-    output_dir: str | Path,
+    run_id: str | None = None,
     per_expert_limit: int = 2,
     archive_limit: int = 200,
     gameweek_deadline: str | None = None,
@@ -171,7 +170,7 @@ async def run_pipeline(
         videos_selected=ingestion.videos_selected,
         jobs_created=len(loaded_jobs),
         transcript_failures=ingestion.transcript_failures,
-        run_dir=output_dir,
+        run_id=run_id,
     )
 
     return PipelineRunResult(
@@ -195,7 +194,7 @@ def run_pipeline_sync(
     *,
     season: str,
     gameweek: int,
-    output_dir: str | Path,
+    run_id: str | None = None,
     per_expert_limit: int = 2,
     archive_limit: int = 200,
     gameweek_deadline: str | None = None,
@@ -209,7 +208,7 @@ def run_pipeline_sync(
         run_pipeline(
             season=season,
             gameweek=gameweek,
-            output_dir=output_dir,
+            run_id=run_id,
             per_expert_limit=per_expert_limit,
             archive_limit=archive_limit,
             gameweek_deadline=gameweek_deadline,

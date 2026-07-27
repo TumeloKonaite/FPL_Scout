@@ -1,13 +1,13 @@
 """Pipeline domain services."""
 
 from src.app.domain.pipeline.service import (
-    PipelineService,
+    create_pipeline_run,
+    execute_pipeline_run,
     get_pipeline_status,
-    run_pipeline,
 )
 
 __all__ = [
-    "PipelineService",
+    "create_pipeline_run",
+    "execute_pipeline_run",
     "get_pipeline_status",
-    "run_pipeline",
 ]

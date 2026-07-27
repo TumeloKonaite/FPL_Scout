@@ -36,6 +36,24 @@ jobs:
   ci:
     name: Lint and test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: fpl_scout_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d fpl_scout_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/fpl_scout_test
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/fpl_scout_test
+      DIRECT_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/fpl_scout_test
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

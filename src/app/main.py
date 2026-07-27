@@ -12,7 +12,6 @@ from src.app.api.routes.health import router as health_router
 from src.app.api.routes.pipeline_runs import router as pipeline_runs_router
 from src.app.api.routes.reports import router as reports_router
 from src.app.api.routes.public import router as public_router
-from src.app.core.config import bootstrap_data_directories
 from src.app.core.dependencies import get_app_settings
 
 
@@ -30,7 +29,6 @@ def load_runtime_environment() -> None:
 def create_app() -> FastAPI:
     load_runtime_environment()
     settings = get_app_settings()
-    bootstrap_data_directories(settings)
     app = FastAPI(title="FPL Technocrat API")
     app.add_middleware(
         CORSMiddleware,

@@ -5,7 +5,12 @@ import json
 from sqlalchemy import func, inspect, select
 
 from src.app.infrastructure.database import get_engine, get_session_factory
-from src.app.infrastructure.models import Transcript, TranscriptRevision
+from src.app.infrastructure.models import (
+    CompletedReportRun,
+    PipelineRun,
+    Transcript,
+    TranscriptRevision,
+)
 
 EXPECTED_INDEXES = {
     "transcripts": {
@@ -15,6 +20,15 @@ EXPECTED_INDEXES = {
         "ix_transcripts_fetched_at",
     },
     "transcript_revisions": {"ix_transcript_revisions_transcript_id"},
+    "pipeline_runs": {
+        "ix_pipeline_runs_status_updated_at",
+        "ix_pipeline_runs_created_at",
+        "uq_pipeline_runs_single_active",
+    },
+    "completed_report_runs": {
+        "ix_completed_report_runs_season_gameweek",
+        "ix_completed_report_runs_completed_updated",
+    },
 }
 
 
@@ -39,6 +53,8 @@ def verify_database_schema() -> dict[str, int]:
     with session_factory() as session:
         transcripts = session.scalar(select(func.count(Transcript.id))) or 0
         revisions = session.scalar(select(func.count(TranscriptRevision.id))) or 0
+        reports = session.scalar(select(func.count(CompletedReportRun.run_id))) or 0
+        pipeline_runs = session.scalar(select(func.count(PipelineRun.run_id))) or 0
         orphan_revisions = (
             session.scalar(
                 select(func.count(TranscriptRevision.id))
@@ -58,6 +74,8 @@ def verify_database_schema() -> dict[str, int]:
         "transcripts": transcripts,
         "transcript_revisions": revisions,
         "orphan_revisions": orphan_revisions,
+        "reports": reports,
+        "pipeline_runs": pipeline_runs,
     }
 
 

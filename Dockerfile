@@ -11,7 +11,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.15 /uv /uvx /bin/
 
 COPY . .
 
-RUN uv sync --frozen --no-dev && mkdir -p data/reports data/raw data/processed data/transcripts
+RUN uv sync --frozen --no-dev
 
 EXPOSE 8000
 

@@ -19,11 +19,10 @@ from src.app.domain.reports.service import (
     ReportNotFoundError,
     ReportService,
 )
-from src.app.infrastructure.storage.pipeline_run_store import (
+from src.app.infrastructure.pipeline_run_repository import (
     ActivePipelineRunError,
-    PipelineRunStore,
+    PipelineRunRepository,
 )
-from src.app.infrastructure.storage.runtime_volume import reload_runtime_volume
 
 router = APIRouter(
     prefix="/api/admin",
@@ -57,8 +56,7 @@ def generate_report(request: PipelineRunRequest, response: Response) -> Pipeline
 
 @router.get("/pipeline/status", response_model=PipelineStatusResponse)
 def pipeline_status() -> PipelineStatusResponse:
-    reload_runtime_volume()
-    latest = PipelineRunStore().get_latest()
+    latest = PipelineRunRepository().get_latest()
     if latest is None:
         return PipelineStatusResponse(status="idle", latest_run=None)
     run = PipelineRunResponse.model_validate(latest)
@@ -67,8 +65,7 @@ def pipeline_status() -> PipelineStatusResponse:
 
 @router.get("/runs/latest", response_model=PipelineRunResponse)
 def latest_run() -> PipelineRunResponse:
-    reload_runtime_volume()
-    latest = PipelineRunStore().get_latest()
+    latest = PipelineRunRepository().get_latest()
     if latest is None:
         raise HTTPException(status_code=404, detail="No pipeline runs found")
     return PipelineRunResponse.model_validate(latest)
@@ -84,7 +81,6 @@ def pipeline_run(run_id: str) -> PipelineRunResponse:
 
 @router.get("/reports", response_model=list[ReportSummary])
 def reports(service: ReportService = Depends(get_report_service)) -> list[ReportSummary]:
-    reload_runtime_volume()
     try:
         return [_summary_response(report) for report in service.list_reports()]
     except (EmptyReportDirectoryError, ReportDirectoryNotFoundError):
@@ -95,7 +91,6 @@ def reports(service: ReportService = Depends(get_report_service)) -> list[Report
 
 @router.get("/reports/{run_id}", response_model=ReportResponse)
 def report(run_id: str, service: ReportService = Depends(get_report_service)) -> ReportResponse:
-    reload_runtime_volume()
     try:
         return _report_response(service.get_report(run_id))
     except ReportNotFoundError as exc:

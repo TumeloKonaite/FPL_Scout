@@ -25,7 +25,6 @@ from src.app.domain.reports.service import (
     ReportDirectoryNotFoundError,
     ReportService,
 )
-from src.app.infrastructure.storage.runtime_volume import reload_runtime_volume
 from src.schemas.report_identity import validate_season
 
 router = APIRouter(prefix="/api", tags=["Public recommendations"])
@@ -38,7 +37,6 @@ def _load_latest(
     season: str | None = None,
     gameweek: int | None = None,
 ) -> ReportBundle:
-    reload_runtime_volume()
     try:
         return (
             service.get_latest_report(season, gameweek)
@@ -58,9 +56,6 @@ def _last_updated(report: ReportBundle) -> str | None:
     public_value = getattr(report.final_report, "lastUpdated", None)
     if public_value:
         return str(public_value)
-    path = getattr(report, "final_report_path", None)
-    if path is not None:
-        return datetime.fromtimestamp(path.stat().st_mtime, tz=UTC).isoformat()
     return None
 
 
@@ -97,7 +92,6 @@ def get_latest_recommendations(
 def list_available_gameweeks(
     service: ReportService = Depends(get_report_service),
 ) -> AvailableGameweeksResponse:
-    reload_runtime_volume()
     try:
         seasons = service.list_available_gameweeks()
     except (EmptyReportDirectoryError, ReportDirectoryNotFoundError):
@@ -126,7 +120,6 @@ def get_recommendations(
     gameweek: Annotated[int, Query(ge=1, le=38)],
     service: ReportService = Depends(get_report_service),
 ) -> PublicRecommendationResponse | JSONResponse:
-    reload_runtime_volume()
     try:
         report = service.get_report_for_gameweek(season, gameweek)
     except GameweekReportNotFoundError:

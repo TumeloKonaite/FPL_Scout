@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
-from pathlib import Path
+from datetime import datetime
 
 from pydantic import ValidationError
 
-from src.app.infrastructure.storage.report_store import (
+from src.app.infrastructure.models import CompletedReportRun
+from src.app.infrastructure.report_repository import (
     EmptyReportDirectoryError,
     InvalidReportFileError,
     ReportDirectoryNotFoundError,
     ReportNotFoundError,
-    ReportRecord,
-    ReportStore,
+    ReportRepository,
 )
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 
@@ -20,11 +19,8 @@ from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
 @dataclass(frozen=True)
 class ReportSummary:
     run_id: str
-    season: str | None
-    gameweek: int | None
-    run_dir: Path
-    final_report_path: Path
-    aggregate_report_path: Path | None
+    season: str
+    gameweek: int
     updated_at: float
     status: str
 
@@ -32,9 +28,6 @@ class ReportSummary:
 @dataclass(frozen=True)
 class ReportBundle:
     run_id: str
-    run_dir: Path
-    final_report_path: Path
-    aggregate_report_path: Path | None
     final_report: FinalGameweekReport
     aggregate_report: AggregatedFPLReport | None
     updated_at: float
@@ -58,168 +51,95 @@ class GameweekReportNotFoundError(LookupError):
         self.season = season
         self.gameweek = gameweek
         super().__init__(
-            f"No completed report is available for season {season}, "
-            f"gameweek {gameweek}."
+            f"No completed report is available for season {season}, gameweek {gameweek}."
         )
 
 
 class ReportService:
-    def __init__(self, store: ReportStore | None = None) -> None:
-        self.store = store or ReportStore()
+    def __init__(self, repository: ReportRepository | None = None) -> None:
+        self.repository = repository or ReportRepository()
 
     def list_reports(self) -> list[ReportSummary]:
-        return [
-            self._summary_from_record(record) for record in self.store.list_reports()
-        ]
+        return [self._summary(row) for row in self.repository.list_reports()]
 
     def get_latest_report(
-        self,
-        season: str | None = None,
-        gameweek: int | None = None,
+        self, season: str | None = None, gameweek: int | None = None
     ) -> ReportBundle:
-        if (season is None) != (gameweek is None):
-            raise ValueError("season and gameweek must be provided together")
-        if season is not None and gameweek is not None:
-            try:
-                return self.get_report_for_gameweek(season, gameweek)
-            except GameweekReportNotFoundError:
-                pass
-        candidates = [
-            record for record in self.store.list_reports() if record.is_canonical
-        ]
-        if candidates:
-            return self._newest_valid_bundle(candidates)
-        # Keep compatibility with storage implementations that hydrate identity
-        # only when the report body is loaded. The filesystem store itself still
-        # rejects non-canonical public reports in get_latest_report().
-        return self._load_record(self.store.get_latest_report())
+        return self._bundle(self.repository.latest_completed(season, gameweek))
 
-    def get_report_for_gameweek(
+    def get_report_for_gameweek(self, season: str, gameweek: int) -> ReportBundle:
+        rows = self.repository.completed_for_gameweek(season, gameweek)
+        for row in reversed(rows):
+            try:
+                return self._bundle(row)
+            except InvalidReportFileError:
+                continue
+        raise GameweekReportNotFoundError(season, gameweek)
+
+    def get_reports_for_gameweek(
         self, season: str, gameweek: int
-    ) -> ReportBundle:
-        try:
-            candidates = [
-                record
-                for record in self.store.get_reports_for_gameweek(season, gameweek)
-                if record.is_canonical
-            ]
-            return self._newest_valid_bundle(candidates)
-        except (EmptyReportDirectoryError, ReportDirectoryNotFoundError) as exc:
-            raise GameweekReportNotFoundError(season, gameweek) from exc
+    ) -> list[ReportSummary]:
+        return [
+            self._summary(row)
+            for row in self.repository.completed_for_gameweek(season, gameweek)
+        ]
 
     def list_available_gameweeks(self) -> list[SeasonGameweekSummary]:
-        records = self.store.list_reports()
-        identities = sorted(
-            {
-                (record.season, record.gameweek)
-                for record in records
-                if record.is_canonical
-            },
-            reverse=True,
-        )
+        rows = self.repository.list_reports(completed_only=True)
+        newest: dict[tuple[str, int], CompletedReportRun] = {}
+        for row in rows:
+            newest[(row.season, row.gameweek)] = row
         grouped: dict[str, list[GameweekReportSummary]] = {}
-        for season, gameweek in identities:
-            candidates = [
-                record
-                for record in records
-                if record.is_canonical
-                and record.season == season
-                and record.gameweek == gameweek
-            ]
+        for (season, gameweek), row in sorted(newest.items(), reverse=True):
             try:
-                bundle = self._newest_valid_bundle(candidates)
-            except EmptyReportDirectoryError:
+                bundle = self._bundle(row)
+            except InvalidReportFileError:
                 continue
             grouped.setdefault(season, []).append(
                 GameweekReportSummary(
                     gameweek=gameweek,
-                    last_updated_at=datetime.fromtimestamp(bundle.updated_at, tz=UTC),
+                    last_updated_at=row.updated_at,
                     has_suggested_team=bundle.final_report.suggested_team is not None,
                 )
             )
         return [
             SeasonGameweekSummary(
                 season=season,
-                gameweeks=sorted(
-                    gameweeks, key=lambda summary: summary.gameweek, reverse=True
-                ),
+                gameweeks=sorted(items, key=lambda item: item.gameweek, reverse=True),
             )
-            for season, gameweeks in sorted(grouped.items(), reverse=True)
+            for season, items in sorted(grouped.items(), reverse=True)
         ]
 
-    def get_reports_for_gameweek(
-        self, season: str, gameweek: int
-    ) -> list[ReportSummary]:
-        return [
-            self._summary_from_record(record)
-            for record in self.store.get_reports_for_gameweek(season, gameweek)
-        ]
-
-    def get_report(self, run_id: str | Path) -> ReportBundle:
-        return self._load_record(self.store.get_report(run_id))
-
-    def _load_record(self, record: ReportRecord) -> ReportBundle:
-        final_report = self._load_final_report(record)
-        aggregate_report = self._load_aggregate_report(record)
-        return ReportBundle(
-            run_id=record.run_id,
-            run_dir=record.run_dir,
-            final_report_path=record.final_report_path,
-            aggregate_report_path=record.aggregate_report_path,
-            final_report=final_report,
-            aggregate_report=aggregate_report,
-            updated_at=record.updated_at,
-        )
-
-    def _newest_valid_bundle(
-        self, candidates: list[ReportRecord]
-    ) -> ReportBundle:
-        for record in sorted(
-            candidates,
-            key=lambda candidate: (candidate.updated_at, candidate.run_id),
-            reverse=True,
-        ):
-            try:
-                return self._load_record(record)
-            except InvalidReportFileError:
-                continue
-        raise EmptyReportDirectoryError("No valid completed reports were found")
-
-    def _load_final_report(self, record: ReportRecord) -> FinalGameweekReport:
-        try:
-            return FinalGameweekReport.model_validate(
-                self.store.read_json(record.final_report_path)
-            )
-        except ValidationError as exc:
-            raise InvalidReportFileError(
-                f"Invalid final report file: {record.final_report_path}"
-            ) from exc
-
-    def _load_aggregate_report(
-        self, record: ReportRecord
-    ) -> AggregatedFPLReport | None:
-        if record.aggregate_report_path is None:
-            return None
-        try:
-            return AggregatedFPLReport.model_validate(
-                self.store.read_json(record.aggregate_report_path)
-            )
-        except ValidationError as exc:
-            raise InvalidReportFileError(
-                f"Invalid aggregate report file: {record.aggregate_report_path}"
-            ) from exc
+    def get_report(self, run_id: str) -> ReportBundle:
+        row = self.repository.get(run_id)
+        if row.status != "completed":
+            raise ReportNotFoundError(f"Report not found: {run_id}")
+        return self._bundle(row)
 
     @staticmethod
-    def _summary_from_record(record: ReportRecord) -> ReportSummary:
+    def _summary(row: CompletedReportRun) -> ReportSummary:
         return ReportSummary(
-            run_id=record.run_id,
-            season=record.season,
-            gameweek=record.gameweek,
-            run_dir=record.run_dir,
-            final_report_path=record.final_report_path,
-            aggregate_report_path=record.aggregate_report_path,
-            updated_at=record.updated_at,
-            status=record.status,
+            run_id=row.run_id,
+            season=row.season,
+            gameweek=row.gameweek,
+            updated_at=row.updated_at.timestamp(),
+            status=row.status,
+        )
+
+    @staticmethod
+    def _bundle(row: CompletedReportRun) -> ReportBundle:
+        try:
+            final = FinalGameweekReport.model_validate(row.final_report)
+            aggregate = AggregatedFPLReport.model_validate(row.aggregate_report)
+        except ValidationError as exc:
+            raise InvalidReportFileError(
+                f"Invalid report snapshot: {row.run_id}"
+            ) from exc
+        return ReportBundle(
+            run_id=row.run_id,
+            final_report=final,
+            aggregate_report=aggregate,
+            updated_at=row.updated_at.timestamp(),
         )
 
 

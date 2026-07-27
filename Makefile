@@ -7,7 +7,7 @@ API_PORT ?= 8000
 FRONTEND_PORT ?= 3000
 GAMEWEEK ?= 32
 SEASON ?=
-OUTPUT_DIR ?= data/reports/gw$(GAMEWEEK)-local
+RUN_ID ?=
 PER_EXPERT_LIMIT ?= 2
 EXPERT_NAME ?=
 EXPERT_COUNT ?=
@@ -54,9 +54,9 @@ run-cli:
 	@args=( \
 		--season "$(SEASON)" \
 		--gameweek "$(GAMEWEEK)" \
-		--output-dir "$(OUTPUT_DIR)" \
 		--per-expert-limit "$(PER_EXPERT_LIMIT)" \
 	); \
+	if [[ -n "$(RUN_ID)" ]]; then args+=(--run-id "$(RUN_ID)"); fi; \
 	if [[ -n "$(EXPERT_NAME)" ]]; then args+=(--expert-name "$(EXPERT_NAME)"); fi; \
 	if [[ -n "$(EXPERT_COUNT)" ]]; then args+=(--expert-count "$(EXPERT_COUNT)"); fi; \
 	if [[ "$(SYNTHESIS)" != "1" && "$(SYNTHESIS)" != "true" && "$(SYNTHESIS)" != "TRUE" && "$(SYNTHESIS)" != "yes" && "$(SYNTHESIS)" != "YES" ]]; then args+=(--no-synthesis); fi; \

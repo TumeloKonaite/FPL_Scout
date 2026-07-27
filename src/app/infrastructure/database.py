@@ -39,7 +39,11 @@ def database_engine_options(
     migration: bool = False,
 ) -> dict[str, Any]:
     """Build bounded, psycopg-compatible connection options."""
-    url = settings.DIRECT_DATABASE_URL if migration else settings.DATABASE_URL
+    url = (
+        (settings.DIRECT_DATABASE_URL or settings.DATABASE_URL)
+        if migration
+        else settings.DATABASE_URL
+    )
     connect_args: dict[str, Any] = {
         "connect_timeout": settings.DATABASE_CONNECT_TIMEOUT_SECONDS,
     }
@@ -66,7 +70,7 @@ def get_engine() -> Engine:
     settings = get_settings()
     database_url = settings.DATABASE_URL.strip()
     if not database_url:
-        raise RuntimeError("DATABASE_URL is required when TRANSCRIPT_STORE=postgres")
+        raise RuntimeError("DATABASE_URL is required")
     return create_engine(
         normalize_database_url(database_url),
         **database_engine_options(settings),

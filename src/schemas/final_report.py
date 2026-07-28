@@ -123,6 +123,7 @@ class SuggestedPlayer(BaseModel):
     viceCaptainSupport: int = Field(default=0, ge=0)
     confidenceSum: float = Field(default=0, ge=0)
     contributingExpertIds: list[str] = Field(default_factory=list)
+    support: "PlayerSupport | None" = None
     consensus: str | None = None
     captain: bool = False
     viceCaptain: bool = False
@@ -135,7 +136,12 @@ class SuggestedTeam(BaseModel):
         "insufficient_evidence"
     )
     failureReason: str | None = None
+    constructionMethod: "ConstructionMethod" = "insufficient_evidence"
+    consensusStrength: "ConsensusStrength" = "insufficient"
+    provenanceAvailable: bool = True
+    provenance: "SuggestedTeamProvenance | None" = None
     eligibleRevealCount: int = Field(default=0, ge=0)
+    eligibleExpertCount: int = Field(default=0, ge=0)
     contributingReveals: list["ContributingReveal"] = Field(default_factory=list)
     formation: str | None = None
     startingXi: list[SuggestedPlayer]
@@ -157,6 +163,72 @@ class ContributingReveal(BaseModel):
     sourceId: str | None = None
     sourceUrl: str | None = None
     confidence: float = Field(ge=0, le=1)
+
+
+ConstructionMethod = Literal[
+    "vote_based_consensus",
+    "single_reveal",
+    "insufficient_evidence",
+    "legacy_snapshot",
+]
+ConsensusStrength = Literal["strong", "moderate", "split", "insufficient"]
+
+
+class PlayerSupport(BaseModel):
+    eligibleExpertCount: int = Field(ge=0)
+    starterSupportCount: int = Field(ge=0)
+    starterSupportPercentage: float = Field(ge=0, le=100)
+    squadSupportCount: int = Field(ge=0)
+    squadSupportPercentage: float = Field(ge=0, le=100)
+    captainSupportCount: int = Field(ge=0)
+    captainSupportPercentage: float = Field(ge=0, le=100)
+    viceCaptainSupportCount: int = Field(ge=0)
+    viceCaptainSupportPercentage: float = Field(ge=0, le=100)
+    contributingExpertIds: list[str] = Field(default_factory=list)
+
+
+class ContributingExpert(BaseModel):
+    expertId: str
+    expertName: str
+    revealIds: list[str] = Field(default_factory=list)
+
+
+class ExcludedReveal(BaseModel):
+    revealId: str | None = None
+    expertId: str | None = None
+    expertName: str | None = None
+    sourceId: str | None = None
+    sourceTitle: str | None = None
+    reasons: list[str] = Field(min_length=1)
+    detail: str | None = None
+
+
+class FormationDerivation(BaseModel):
+    method: str
+    formation: str | None = None
+    positionSource: str
+    authoritativeCataloguePositions: bool
+    fallbackApplied: str | None = None
+
+
+class ConsensusStrengthBasis(BaseModel):
+    metric: Literal["median_starting_xi_support_percentage"]
+    medianSupportPercentage: float | None = Field(default=None, ge=0, le=100)
+    minimumExpertRequirement: int = Field(default=3, ge=1)
+
+
+class SuggestedTeamProvenance(BaseModel):
+    constructionMethod: ConstructionMethod
+    generatedAt: str
+    eligibleRevealCount: int = Field(ge=0)
+    eligibleExpertCount: int = Field(ge=0)
+    contributingRevealCount: int = Field(ge=0)
+    contributingExperts: list[ContributingExpert] = Field(default_factory=list)
+    excludedRevealCount: int = Field(ge=0)
+    excludedReveals: list[ExcludedReveal] = Field(default_factory=list)
+    formationDerivation: FormationDerivation
+    consensusStrength: ConsensusStrength
+    consensusStrengthBasis: ConsensusStrengthBasis
 
 
 class FinalGameweekReport(BaseModel):

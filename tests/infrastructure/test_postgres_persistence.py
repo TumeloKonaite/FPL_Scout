@@ -15,7 +15,10 @@ from src.app.infrastructure.pipeline_run_repository import (
     ActivePipelineRunError,
     PipelineRunRepository,
 )
-from src.app.infrastructure.report_repository import ReportRepository
+from src.app.infrastructure.report_repository import (
+    ImmutableReportSnapshotError,
+    ReportRepository,
+)
 from src.app.infrastructure.transcript_repository import TranscriptRepository
 from src.services import transcript_service
 
@@ -132,6 +135,38 @@ def test_report_snapshot_removes_postgres_unsupported_null_characters(
     assert stored.final_report["overview"] == "Final "
     assert stored.manifest["source"] == "Manifest "
     assert stored.rendered_markdown == "# GW1 "
+
+
+def test_completed_report_snapshot_cannot_be_overwritten(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    values = {
+        "run_id": "immutable-run",
+        "season": "2025-26",
+        "gameweek": 1,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"season": "2025-26", "gameweek": 1},
+        "final_report": {"season": "2025-26", "gameweek": 1},
+        "manifest": {},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(**values)
+
+    with pytest.raises(ImmutableReportSnapshotError, match="immutable-run"):
+        reports.save_snapshot(
+            **{
+                **values,
+                "final_report": {"season": "2025-26", "gameweek": 1, "changed": True},
+            }
+        )
+
+    assert "changed" not in reports.get("immutable-run").final_report
 
 
 def test_failed_pipeline_invalidates_unpublished_report_atomically(

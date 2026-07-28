@@ -1,6 +1,21 @@
 export const SUPPORTED_FORMATIONS = new Set(["3-4-3", "3-5-2", "4-3-3", "4-4-2", "4-5-1", "5-2-3", "5-3-2", "5-4-1"]);
 
 export type PlayerPosition = "GK" | "DEF" | "MID" | "FWD";
+export type ConstructionMethod = "vote_based_consensus" | "single_reveal" | "insufficient_evidence" | "legacy_snapshot";
+export type ConsensusStrength = "strong" | "moderate" | "split" | "insufficient";
+
+export type PlayerSupport = {
+  eligibleExpertCount: number;
+  starterSupportCount: number;
+  starterSupportPercentage: number;
+  squadSupportCount: number;
+  squadSupportPercentage: number;
+  captainSupportCount: number;
+  captainSupportPercentage: number;
+  viceCaptainSupportCount: number;
+  viceCaptainSupportPercentage: number;
+  contributingExpertIds: string[];
+};
 
 export type SuggestedPlayer = {
   playerId: number;
@@ -25,6 +40,7 @@ export type SuggestedPlayer = {
   viceCaptainSupport?: number;
   confidenceSum?: number;
   contributingExpertIds?: string[];
+  support?: PlayerSupport | null;
   consensus?: string | null;
   captain?: boolean;
   viceCaptain?: boolean;
@@ -35,7 +51,24 @@ export type SuggestedPlayer = {
 export type SuggestedTeamInput = {
   constructionStatus?: "consensus" | "insufficient_evidence";
   failureReason?: string | null;
+  constructionMethod?: ConstructionMethod;
+  consensusStrength?: ConsensusStrength;
+  provenanceAvailable?: boolean;
+  provenance?: {
+    constructionMethod: ConstructionMethod;
+    generatedAt: string;
+    eligibleRevealCount: number;
+    eligibleExpertCount: number;
+    contributingRevealCount: number;
+    contributingExperts: { expertId: string; expertName: string; revealIds: string[] }[];
+    excludedRevealCount: number;
+    excludedReveals: { revealId?: string | null; expertId?: string | null; expertName?: string | null; sourceId?: string | null; sourceTitle?: string | null; reasons: string[]; detail?: string | null }[];
+    formationDerivation: { method: string; formation?: string | null; positionSource: string; authoritativeCataloguePositions: boolean; fallbackApplied?: string | null };
+    consensusStrength: ConsensusStrength;
+    consensusStrengthBasis: { metric: string; medianSupportPercentage?: number | null; minimumExpertRequirement: number };
+  } | null;
   eligibleRevealCount?: number;
+  eligibleExpertCount?: number;
   formation?: string | null;
   startingXi?: SuggestedPlayer[];
   starters?: SuggestedPlayer[];
@@ -62,6 +95,10 @@ export type NormalizedSuggestedTeam = {
   viceCaptain: SuggestedPlayer | null;
   warnings: string[];
   completeStartingXi: boolean;
+  constructionMethod: ConstructionMethod;
+  consensusStrength: ConsensusStrength;
+  provenanceAvailable: boolean;
+  provenance: NonNullable<SuggestedTeamInput["provenance"]> | null;
 };
 
 const POSITIONS = new Set<PlayerPosition>(["GK", "DEF", "MID", "FWD"]);
@@ -103,7 +140,16 @@ function uniquePlayers(players: SuggestedPlayer[], warnings: string[]): Suggeste
 }
 
 export function normalizeSuggestedTeam(team?: SuggestedTeamInput | null): NormalizedSuggestedTeam | null {
-  if (!team || team.constructionStatus === "insufficient_evidence") return null;
+  if (!team) return null;
+  const hasStoredLineup = Boolean(team.startingXi?.length || team.starters?.length || team.players?.length);
+  const constructionMethod = team.constructionMethod ?? (
+    team.constructionStatus === "insufficient_evidence"
+      ? "insufficient_evidence"
+      : hasStoredLineup
+        ? "legacy_snapshot"
+        : "insufficient_evidence"
+  );
+  if (constructionMethod === "insufficient_evidence") return null;
   const warnings: string[] = [];
   const explicitStarters = team.startingXi ?? team.starters;
   const sourcePlayers = team.players ?? [];
@@ -140,9 +186,13 @@ export function normalizeSuggestedTeam(team?: SuggestedTeamInput | null): Normal
     captain,
     viceCaptain,
     warnings: [...new Set(warnings)],
-    completeStartingXi: starters.length === 11 && derivedFormation !== null
+    completeStartingXi: starters.length === 11 && derivedFormation !== null,
+    constructionMethod,
+    consensusStrength: team.consensusStrength ?? "insufficient",
+    provenanceAvailable: team.provenanceAvailable ?? constructionMethod !== "legacy_snapshot",
+    provenance: team.provenance ?? null
   };
-  if (team.constructionStatus === "consensus") {
+  if (constructionMethod === "vote_based_consensus" || constructionMethod === "single_reveal") {
     const fullCounts = groupPlayersByPosition(allPlayers);
     const validFullSquad =
       allPlayers.length === 15 &&
@@ -175,6 +225,30 @@ export function playerLabel(player: SuggestedPlayer, captainId?: number, viceCap
   if (player.playerId === captainId || player.captain) return `${player.name} (C)`;
   if (player.playerId === viceCaptainId || player.viceCaptain) return `${player.name} (VC)`;
   return player.name;
+}
+
+export function playerSupportLabel(player: SuggestedPlayer): string {
+  const support = player.support;
+  if (!support) return "Expert support unavailable";
+  return player.isStarter === false
+    ? `Selected by ${support.squadSupportCount} of ${support.eligibleExpertCount} experts`
+    : `Started by ${support.starterSupportCount} of ${support.eligibleExpertCount} experts`;
+}
+
+export function teamTitle(method: ConstructionMethod): string | null {
+  if (method === "vote_based_consensus") return "Consensus XI";
+  if (method === "single_reveal") return "Expert XI";
+  if (method === "legacy_snapshot") return "Suggested XI";
+  return null;
+}
+
+export function agreementLabel(strength: ConsensusStrength): string {
+  return {
+    strong: "Strong agreement",
+    moderate: "Moderate agreement",
+    split: "Split opinion",
+    insufficient: "Insufficient evidence"
+  }[strength];
 }
 
 export function describeLineup(formation: string | null, grouped: GroupedPlayers): string {

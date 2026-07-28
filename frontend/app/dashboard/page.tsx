@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
 import { Icon } from "@/components/Icons";
-import { normalizeSuggestedTeam } from "@/components/suggestedTeam";
+import { agreementLabel, normalizeSuggestedTeam, teamTitle } from "@/components/suggestedTeam";
 import type { KeyRisk } from "@/src/types/report";
 import { RecommendationEvidence } from "@/components/RecommendationEvidence";
 import { useSelectedReport } from "@/components/useSelectedReport";
@@ -91,7 +91,6 @@ export default function DashboardPage() {
 
   const lineup = useMemo(() => {
     const team = report?.suggested_team;
-    if (!team || team.constructionStatus !== "consensus") return null;
     return normalizeSuggestedTeam(team);
   }, [report?.suggested_team]);
 
@@ -185,10 +184,10 @@ export default function DashboardPage() {
           </section>
 
           <section className="dashboard-section consensus-preview" aria-labelledby="consensus-title">
-            <div className="section-heading"><div><span className="eyebrow">Recommended lineup</span><h2 id="consensus-title">{lineup ? `Consensus XI — ${lineup.formation}` : "Consensus lineup unavailable"}</h2></div><SummaryLink href={reportHref("/suggested-team", selection)}>View full suggested team</SummaryLink></div>
+            <div className="section-heading"><div><span className="eyebrow">Recommended lineup</span><h2 id="consensus-title">{lineup ? `${teamTitle(lineup.constructionMethod)} — ${lineup.formation}` : "Suggested team unavailable"}</h2>{lineup ? <p className="muted-copy">{lineup.constructionMethod === "legacy_snapshot" ? "Historical saved lineup · Original provenance unavailable" : lineup.constructionMethod === "single_reveal" ? "Based on one expert reveal · Not a multi-expert consensus" : `${lineup.provenance?.eligibleExpertCount ?? 0} eligible experts · ${agreementLabel(lineup.consensusStrength)}`}</p> : null}</div><SummaryLink href={reportHref("/suggested-team", selection)}>View full suggested team</SummaryLink></div>
             {lineup ? <div className="position-groups">
               {([ ["GK", lineup.groupedPlayers.goalkeeper], ["DEF", lineup.groupedPlayers.defenders], ["MID", lineup.groupedPlayers.midfielders], ["FWD", lineup.groupedPlayers.forwards] ] as const).map(([position, players]) => <div className="position-row" key={position}><strong>{position}</strong><div>{players.map((player) => <span className="preview-player" key={player.playerId}>{player.name}{player.captain ? <abbr title="Captain" aria-label="Captain"> C</abbr> : null}{player.viceCaptain ? <abbr title="Vice-captain" aria-label="Vice-captain"> VC</abbr> : null}</span>)}</div></div>)}
-            </div> : <p className="empty-copy">A valid consensus starting XI is not available for this gameweek.</p>}
+            </div> : <p className="empty-copy">No reliable suggested team is available for this gameweek.</p>}
           </section>
         </div>
       ) : null}

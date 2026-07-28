@@ -1,4 +1,4 @@
-import { describeLineup, playerLabel, type NormalizedSuggestedTeam, type SuggestedPlayer } from "./suggestedTeam";
+import { describeLineup, playerLabel, playerSupportLabel, teamTitle, type NormalizedSuggestedTeam, type SuggestedPlayer } from "./suggestedTeam";
 
 export type SuggestedTeamPitchProps = {
   team: NormalizedSuggestedTeam;
@@ -10,9 +10,10 @@ function PlayerMarker({ player, captain, viceCaptain }: { player: SuggestedPlaye
   const role = player.playerId === captain?.playerId || player.captain ? "captain" : player.playerId === viceCaptain?.playerId || player.viceCaptain ? "vice-captain" : null;
   const shirtNumber = player.shirtNumber ?? player.number;
   return (
-    <div className={`pitch-player${role ? ` ${role}` : ""}`} title={`${label} · ${player.position}`}>
+    <div className={`pitch-player${role ? ` ${role}` : ""}`} title={`${label} · ${player.position} · ${playerSupportLabel(player)}`}>
       <span className="player-shirt" aria-hidden="true">{shirtNumber ?? ""}</span>
       <span className="pitch-player-name">{label}</span>
+      <small className="player-support-badge">{playerSupportLabel(player)}</small>
     </div>
   );
 }
@@ -31,7 +32,8 @@ export function SuggestedTeamPitch({ team, gameweek }: SuggestedTeamPitchProps) 
       <div className="pitch-heading">
         <div>
           <span className="eyebrow">{gameweek ? `Gameweek ${gameweek}` : "Current gameweek"}</span>
-          <h2 id="suggested-formation-title">Consensus XI · {team.formation ?? "Formation unavailable"}</h2>
+          <h2 id="suggested-formation-title">{teamTitle(team.constructionMethod)} · {team.formation ?? "Formation unavailable"}</h2>
+          {team.constructionMethod === "legacy_snapshot" ? <p className="muted-copy">Provenance unavailable</p> : null}
           <p className="captaincy-summary">Captain: {team.captain?.name ?? "Not available"} · Vice-captain: {team.viceCaptain?.name ?? "Not available"}</p>
         </div>
         {team.formation ? <span className="formation-badge">{team.formation}</span> : null}

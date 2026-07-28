@@ -1,4 +1,4 @@
-import { playerLabel, type NormalizedSuggestedTeam } from "./suggestedTeam";
+import { playerLabel, playerSupportLabel, type NormalizedSuggestedTeam } from "./suggestedTeam";
 
 export function SuggestedTeamBench({ team }: { team: NormalizedSuggestedTeam }) {
   if (!team.bench.length) return null;
@@ -9,7 +9,7 @@ export function SuggestedTeamBench({ team }: { team: NormalizedSuggestedTeam }) 
         {team.bench.map((player) => (
           <li key={player.playerId}>
             <span className="bench-order">{player.benchOrder}</span>
-            <span><strong>{playerLabel(player, team.captain?.playerId, team.viceCaptain?.playerId)}</strong><small>{player.position}{player.position === "GK" ? " · Substitute goalkeeper" : ""}</small></span>
+            <span><strong>{playerLabel(player, team.captain?.playerId, team.viceCaptain?.playerId)}</strong><small>{player.position}{player.position === "GK" ? " · Substitute goalkeeper" : ""} · {playerSupportLabel(player)}</small></span>
           </li>
         ))}
       </ol>

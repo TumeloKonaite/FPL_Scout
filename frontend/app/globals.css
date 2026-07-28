@@ -238,6 +238,7 @@ button { color: inherit; }
 .pitch-player { display: grid; justify-items: center; min-width: 0; max-width: 105px; }
 .player-shirt { position: relative; display: grid; width: 31px; height: 35px; place-items: center; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); background: #f7f9f8; color: #17241f; font: 800 10px Manrope,sans-serif; clip-path: polygon(20% 0,38% 8%,62% 8%,80% 0,100% 18%,85% 35%,82% 100%,18% 100%,15% 35%,0 18%); }
 .pitch-player-name { display: block; overflow: hidden; max-width: 100%; margin-top: 4px; border-radius: 4px; background: rgba(12,36,27,.9); color: white; padding: 3px 6px; font: 700 9px Manrope,sans-serif; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.player-support-badge { display: block; overflow: hidden; max-width: 96px; margin-top: 3px; border-radius: 999px; background: rgba(255,255,255,.92); color: #173b2e; padding: 2px 5px; font-size: 7px; font-weight: 700; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .pitch-player.captain .player-shirt { background: #ffe075; box-shadow: 0 0 0 3px rgba(255,224,117,.35); }
 .pitch-player.vice-captain .player-shirt { background: #d8d2ff; box-shadow: 0 0 0 3px rgba(216,210,255,.3); }
 .pitch-state { min-height: 210px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text-muted); padding: 24px; text-align: center; font-size: 13px; box-shadow: var(--shadow); }
@@ -254,6 +255,7 @@ button { color: inherit; }
 .suggested-team-table thead th { background: var(--surface-muted); color: var(--text-muted); font-size: 9px; letter-spacing: .45px; text-transform: uppercase; }
 .suggested-team-table tbody tr:last-child > * { border-bottom: 0; }
 .suggested-team-table tbody th { font-weight: 600; }
+.suggested-team-table td small { display: block; margin-top: 3px; color: var(--text-muted); font-size: 9px; }
 .player-number { display: inline-grid; width: 23px; height: 23px; place-items: center; margin-right: 8px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-dark); font-size: 9px; }
 .bench-card { overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
 .bench-heading { padding: 16px 18px 10px; }
@@ -265,6 +267,14 @@ button { color: inherit; }
 .bench-list strong { font-size: 11px; }.bench-list small { margin-top: 3px; color: var(--text-muted); font-size: 9px; }
 .team-data-warning { border: 1px solid #e8d399; border-radius: 10px; background: #fff9e8; color: #66511c; padding: 13px 16px; font-size: 11px; }
 .team-data-warning ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.55; }
+.provenance-summary { display: grid; gap: 14px; padding: 18px; }
+.provenance-summary h2 { margin: 5px 0 0; font: 700 15px Manrope,sans-serif; }
+.provenance-summary p, .provenance-summary > span { margin: 6px 0 0; color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+.provenance-summary details { border-top: 1px solid var(--border); padding-top: 12px; font-size: 11px; }
+.provenance-summary summary { cursor: pointer; color: var(--accent-dark); font-weight: 700; }
+.provenance-summary .detail-grid { margin-top: 14px; }
+.provenance-summary h3 { margin: 16px 0 6px; font-size: 12px; }
+.provenance-summary ul { margin: 0; padding-left: 18px; line-height: 1.6; }
 .suggested-team-skeleton { min-height: 520px; display: grid; place-items: center; overflow: hidden; border-radius: 12px; background: linear-gradient(105deg,#147955 25%,#20996f 45%,#147955 65%); background-size: 300% 100%; color: white; font-size: 12px; animation: pitch-shimmer 1.4s infinite; }
 .suggested-team-unavailable h2 { margin: 0 0 8px; color: var(--text); font-size: 16px; }.suggested-team-unavailable p { margin: 0; line-height: 1.6; }
 

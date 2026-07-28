@@ -8,6 +8,7 @@ from src.app.domain.reports.suggested_team import (
     PlayerCatalogue,
     construct_consensus_squad,
 )
+from src.app.domain.reports.player_catalogue import CatalogueError
 from src.agents.final_synthesis_agent import run_final_synthesis
 from src.schemas.final_report import (
     AggregatedFPLReport,
@@ -19,6 +20,7 @@ from src.schemas.final_report import (
     RecommendationFreshness,
 )
 from src.services.normalization import normalize_lookup_key
+from src.schemas.player_resolution import normalise_extracted_reference
 
 
 def _freshness(sources, generated_at: str) -> RecommendationFreshness:
@@ -151,7 +153,7 @@ def _build_empty_final_report(report: AggregatedFPLReport) -> FinalGameweekRepor
 
 def build_fallback_final_report(
     report: AggregatedFPLReport,
-    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | CatalogueError | None = None,
 ) -> FinalGameweekReport:
     """Build a safe report when synthesis is unavailable or malformed."""
     if not report.expert_count:
@@ -229,8 +231,16 @@ def build_fallback_final_report(
         FinalExpertTeamReveal(
             expert_name=item.expert_name,
             summary=_build_team_reveal_summary(item),
-            captain=item.captain,
-            vice_captain=item.vice_captain,
+            captain=(
+                normalise_extracted_reference(item.captain).name
+                if item.captain
+                else None
+            ),
+            vice_captain=(
+                normalise_extracted_reference(item.vice_captain).name
+                if item.vice_captain
+                else None
+            ),
             transfers_in=item.transfers_in,
             transfers_out=item.transfers_out,
             confidence=item.confidence,
@@ -272,7 +282,7 @@ def build_fallback_final_report(
 def _attach_suggested_team(
     final_report: FinalGameweekReport,
     aggregate_report: AggregatedFPLReport,
-    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | CatalogueError | None = None,
 ) -> FinalGameweekReport:
     enriched = _attach_recommendation_evidence(final_report, aggregate_report)
     return enriched.model_copy(
@@ -290,6 +300,9 @@ def _attach_suggested_team(
 
 
 def _build_team_reveal_summary(item) -> str:
+    def names(values) -> list[str]:
+        return [normalise_extracted_reference(value).name for value in values]
+
     summary_parts: list[str] = []
     if item.transfers_in or item.transfers_out:
         moves: list[str] = []
@@ -299,22 +312,24 @@ def _build_team_reveal_summary(item) -> str:
             moves.append("out: " + ", ".join(item.transfers_out))
         summary_parts.append("Moves " + "; ".join(moves))
     if item.captain:
-        captain_text = f"Captain {item.captain}"
+        captain_text = f"Captain {normalise_extracted_reference(item.captain).name}"
         if item.vice_captain:
-            captain_text += f", vice {item.vice_captain}"
+            captain_text += (
+                f", vice {normalise_extracted_reference(item.vice_captain).name}"
+            )
         summary_parts.append(captain_text)
     if item.starting_xi:
-        summary_parts.append("Starting XI core: " + ", ".join(item.starting_xi[:5]))
+        summary_parts.append("Starting XI core: " + ", ".join(names(item.starting_xi[:5])))
     elif item.current_team:
-        summary_parts.append("Draft core: " + ", ".join(item.current_team[:5]))
+        summary_parts.append("Draft core: " + ", ".join(names(item.current_team[:5])))
     elif item.bench:
-        summary_parts.append("Bench includes " + ", ".join(item.bench[:3]))
+        summary_parts.append("Bench includes " + ", ".join(names(item.bench[:3])))
     return ". ".join(summary_parts) or "Expert discussed a draft team for the week."
 
 
 async def synthesize_final_report(
     report: AggregatedFPLReport,
-    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | CatalogueError | None = None,
 ) -> FinalGameweekReport:
     """Convert aggregated FPL data into a polished final gameweek report."""
     if report.expert_count == 0:

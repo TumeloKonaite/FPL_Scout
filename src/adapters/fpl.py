@@ -9,6 +9,7 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from src.app.domain.reports.player_catalogue import LiveFplPlayerCatalogueProvider
 
 FPL_BOOTSTRAP_URL = "https://fantasy.premierleague.com/api/bootstrap-static/"
 
@@ -48,9 +49,7 @@ class FplApiClient:
         self._cached_gameweek: CurrentGameweek | None = None
         self._cached_until = 0.0
 
-    def get_upcoming_gameweek(self) -> CurrentGameweek | None:
-        if monotonic() < self._cached_until:
-            return self._cached_gameweek
+    def get_bootstrap_static(self) -> dict[str, Any]:
         request = Request(
             self.url,
             headers={"Accept": "application/json", "User-Agent": "FPL-Scout/1.0"},
@@ -66,10 +65,18 @@ class FplApiClient:
             OSError,
         ) as exc:
             raise FplApiError(
-                "Could not retrieve the official FPL gameweek calendar"
+                "Could not retrieve the official FPL bootstrap data"
             ) from exc
+        if not isinstance(payload, dict):
+            raise FplApiError("The official FPL bootstrap response was invalid")
+        return payload
 
-        events = payload.get("events") if isinstance(payload, dict) else None
+    def get_upcoming_gameweek(self) -> CurrentGameweek | None:
+        if monotonic() < self._cached_until:
+            return self._cached_gameweek
+        payload = self.get_bootstrap_static()
+
+        events = payload.get("events")
         if not isinstance(events, list):
             raise FplApiError("The official FPL gameweek calendar response was invalid")
 
@@ -105,4 +112,17 @@ def get_fpl_api_client() -> FplApiClient:
     return FplApiClient()
 
 
-__all__ = ["CurrentGameweek", "FplApiClient", "FplApiError", "get_fpl_api_client"]
+@lru_cache(maxsize=1)
+def get_player_catalogue_provider() -> LiveFplPlayerCatalogueProvider:
+    return LiveFplPlayerCatalogueProvider(
+        get_fpl_api_client().get_bootstrap_static
+    )
+
+
+__all__ = [
+    "CurrentGameweek",
+    "FplApiClient",
+    "FplApiError",
+    "get_fpl_api_client",
+    "get_player_catalogue_provider",
+]

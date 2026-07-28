@@ -115,6 +115,27 @@ class ReportService:
             "provenance_validation": provenance_validation,
             "selected_video_fingerprint": fingerprint,
             "selected_video_ids": selected_video_ids,
+            "player_resolution": (
+                [
+                    item.model_dump(mode="json")
+                    for item in final.suggested_team.resolutionDiagnostics
+                ]
+                if final.suggested_team is not None
+                else []
+            ),
+            "catalogue_fingerprint": (
+                final.suggested_team.catalogueFingerprint
+                if final.suggested_team is not None
+                else None
+            ),
+            "catalogue": (
+                {
+                    "season": final.suggested_team.catalogueSeason,
+                    "source": final.suggested_team.catalogueSource,
+                }
+                if final.suggested_team is not None
+                else None
+            ),
         }
         if regeneration_metadata:
             manifest["regeneration"] = to_json_value(regeneration_metadata)

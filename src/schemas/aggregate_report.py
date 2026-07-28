@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from src.schemas.player_resolution import ExtractedPlayerInput
 from src.services.consensus import ConsensusLevel
 
 
@@ -93,14 +94,14 @@ class ExpertTeamRevealItem(BaseModel):
     source_url: str | None = None
     season: str | None = None
     gameweek: int | None = Field(default=None, ge=1, le=38)
-    current_team: list[str] = Field(default_factory=list)
-    starting_xi: list[str] = Field(default_factory=list)
-    bench: list[str] = Field(default_factory=list)
+    current_team: list[ExtractedPlayerInput] = Field(default_factory=list)
+    starting_xi: list[ExtractedPlayerInput] = Field(default_factory=list)
+    bench: list[ExtractedPlayerInput] = Field(default_factory=list)
     player_positions: dict[str, Literal["GK", "DEF", "MID", "FWD"]] = Field(
         default_factory=dict
     )
-    captain: str | None = None
-    vice_captain: str | None = None
+    captain: ExtractedPlayerInput | None = None
+    vice_captain: ExtractedPlayerInput | None = None
     transfers_in: list[str] = Field(default_factory=list)
     transfers_out: list[str] = Field(default_factory=list)
     confidence: float | None = Field(default=None, ge=0, le=1)

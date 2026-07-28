@@ -3,9 +3,17 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+import json
 import re
 from typing import Literal
 
+from src.app.domain.reports.player_catalogue import (
+    CatalogueError,
+    CataloguePlayer,
+    PlayerCatalogue,
+    Position,
+)
+from src.app.domain.reports.player_resolution import PlayerResolver
 from src.app.domain.reports.team_of_week import normalize_team_player
 from src.schemas.aggregate_report import ExpertTeamRevealItem
 from src.schemas.final_report import (
@@ -13,9 +21,14 @@ from src.schemas.final_report import (
     SuggestedPlayer,
     SuggestedTeam,
 )
+from src.schemas.player_resolution import (
+    ExtractedPlayerInput,
+    PlayerResolutionEvent,
+    ResolutionSource,
+    normalise_extracted_reference,
+)
 
 
-Position = Literal["GK", "DEF", "MID", "FWD"]
 CaptaincyFallback = Literal["require_evidence", "starter_support"]
 
 # This order is the final tie-break when aggregate formation scores are equal.
@@ -43,45 +56,6 @@ FAILURE_NO_FORMATION = "no_valid_starting_formation"
 FAILURE_NO_SQUAD = "no_valid_full_squad"
 FAILURE_NO_CAPTAINCY = "insufficient_captaincy_evidence"
 POSITION_SUFFIX = re.compile(r"\s+(GK|DEF|MID|FWD)\s*$", re.IGNORECASE)
-
-
-@dataclass(frozen=True, slots=True)
-class CataloguePlayer:
-    official_player_id: int
-    canonical_name: str
-    position: Position
-    club: str | None = None
-    price: float | None = None
-    aliases: tuple[str, ...] = ()
-
-
-class PlayerCatalogue:
-    """Authoritative player lookup with ambiguity-safe name resolution."""
-
-    def __init__(self, players: Iterable[CataloguePlayer]) -> None:
-        self._players: dict[int, CataloguePlayer] = {}
-        candidates: dict[str, set[int]] = {}
-        for player in players:
-            if player.official_player_id <= 0 or player.position not in SQUAD_QUOTAS:
-                continue
-            self._players[player.official_player_id] = player
-            for name in (player.canonical_name, *player.aliases):
-                key = normalize_team_player(name)
-                if key:
-                    candidates.setdefault(key, set()).add(player.official_player_id)
-        self._lookup = {
-            key: next(iter(ids)) for key, ids in candidates.items() if len(ids) == 1
-        }
-
-    def resolve(self, name: str | None) -> CataloguePlayer | None:
-        player_id = self._lookup.get(normalize_team_player(name))
-        return self._players.get(player_id) if player_id is not None else None
-
-    def by_id(self, player_id: int) -> CataloguePlayer | None:
-        return self._players.get(player_id)
-
-    def __bool__(self) -> bool:
-        return bool(self._players)
 
 
 @dataclass(frozen=True, slots=True)
@@ -137,27 +111,45 @@ class _EligibleReveal:
     resolved_squad: frozenset[int]
     captain_id: int | None
     vice_id: int | None
+    resolution_events: tuple[PlayerResolutionEvent, ...]
+    captaincy_validation: tuple[str, ...]
 
 
 def construct_consensus_squad(
     reveals: Sequence[ExpertTeamRevealItem],
-    player_catalogue: PlayerCatalogue | Iterable[CataloguePlayer] | None,
+    player_catalogue: PlayerCatalogue | Iterable[CataloguePlayer] | CatalogueError | None,
     policy: ConsensusPolicy | None = None,
 ) -> SuggestedTeam:
     """Construct a deterministic 15-player squad from distinct-expert votes."""
     policy = policy or ConsensusPolicy()
+    if isinstance(player_catalogue, CatalogueError):
+        return _failure(player_catalogue.reason)
     catalogue = _coerce_catalogue(player_catalogue)
     if catalogue is None or not catalogue:
         return _failure(FAILURE_MISSING_CATALOGUE)
 
-    eligible = _eligible_reveals(reveals, catalogue, policy)
+    resolved_reveals = _eligible_reveals(reveals, catalogue, policy)
+    eligible = [item for item in resolved_reveals if item.resolved_squad]
     expert_ids = {item.expert_id for item in eligible}
     provenance = _provenance(eligible)
+    diagnostics = [
+        event for item in resolved_reveals for event in item.resolution_events
+    ]
+    captaincy_validation = sorted(
+        {
+            outcome
+            for item in resolved_reveals
+            for outcome in item.captaincy_validation
+        }
+    )
     if len(expert_ids) < policy.minimum_experts:
         return _failure(
             FAILURE_TOO_FEW_EXPERTS,
             eligible_count=len(eligible),
             provenance=provenance,
+            diagnostics=diagnostics,
+            catalogue=catalogue,
+            captaincy_validation=captaincy_validation,
         )
 
     votes = _aggregate_votes(eligible, catalogue)
@@ -167,6 +159,9 @@ def construct_consensus_squad(
             FAILURE_INSUFFICIENT_PLAYERS,
             eligible_count=len(eligible),
             provenance=provenance,
+            diagnostics=diagnostics,
+            catalogue=catalogue,
+            captaincy_validation=captaincy_validation,
         )
 
     candidates: list[
@@ -197,7 +192,14 @@ def construct_consensus_squad(
             )
             else FAILURE_NO_SQUAD
         )
-        return _failure(reason, eligible_count=len(eligible), provenance=provenance)
+        return _failure(
+            reason,
+            eligible_count=len(eligible),
+            provenance=provenance,
+            diagnostics=diagnostics,
+            catalogue=catalogue,
+            captaincy_validation=captaincy_validation,
+        )
 
     _, _, formation, starters, bench = max(
         candidates, key=lambda item: (item[0], item[1])
@@ -208,6 +210,9 @@ def construct_consensus_squad(
             FAILURE_NO_CAPTAINCY,
             eligible_count=len(eligible),
             provenance=provenance,
+            diagnostics=diagnostics,
+            catalogue=catalogue,
+            captaincy_validation=captaincy_validation,
         )
     vice = min(
         (item for item in starters if item is not captain),
@@ -239,12 +244,27 @@ def construct_consensus_squad(
         players=[*starter_players, *bench_players],
         captainPlayerId=captain_id,
         viceCaptainPlayerId=vice_id,
+        catalogueSeason=catalogue.season,
+        catalogueSource=catalogue.source,
+        catalogueFingerprint=catalogue.fingerprint,
+        warnings=sorted(
+            {
+                warning
+                for event in diagnostics
+                for warning in event.warnings
+            }
+        ),
+        captaincyValidation=captaincy_validation,
+        resolutionDiagnostics=diagnostics,
     )
     if not validate_consensus_squad(result):
         return _failure(
             FAILURE_NO_SQUAD,
             eligible_count=len(eligible),
             provenance=provenance,
+            diagnostics=diagnostics,
+            catalogue=catalogue,
+            captaincy_validation=captaincy_validation,
         )
     return result
 
@@ -267,9 +287,12 @@ def build_explicit_position_catalog(
     for reveal in reveals:
         entries = list(reveal.player_positions.items())
         entries.extend(
-            (name[: match.start()].strip(), match.group(1).upper())
-            for name in reveal.current_team
-            if (match := POSITION_SUFFIX.search(name)) is not None
+            (reference.name[: match.start()].strip(), match.group(1).upper())
+            for value in reveal.current_team
+            if (
+                reference := normalise_extracted_reference(value)
+            ) is not None
+            and (match := POSITION_SUFFIX.search(reference.name)) is not None
         )
         for raw_name, position in entries:
             name = normalize_team_player(raw_name)
@@ -327,9 +350,10 @@ def _eligible_reveals(
             item.expert_id or "",
             item.source_id or item.source_url or item.video_title,
             -(item.confidence or 0.0),
-            _resolved_reveal_signature(item, catalogue),
+            json.dumps(item.model_dump(mode="json"), sort_keys=True),
         ),
     )
+    resolver = PlayerResolver(catalogue)
     for reveal in ordered:
         expert_id = (reveal.expert_id or "").strip()
         if not expert_id:
@@ -344,15 +368,41 @@ def _eligible_reveals(
             continue
         seen_sources.add(source_key)
 
-        starters = _resolve_slot(reveal.starting_xi, reveal, catalogue)
-        bench = _resolve_slot(reveal.bench, reveal, catalogue)
-        squad = starters | bench | _resolve_slot(
-            reveal.current_team, reveal, catalogue
+        starters, starter_events = _resolve_slot(
+            reveal.starting_xi, reveal, resolver, "starter"
         )
-        if not squad:
-            continue
-        captain = _resolve_single(reveal.captain, reveal, catalogue)
-        vice = _resolve_single(reveal.vice_captain, reveal, catalogue)
+        bench, bench_events = _resolve_slot(
+            reveal.bench, reveal, resolver, "bench", already_seen=starters
+        )
+        current, current_events = _resolve_slot(
+            reveal.current_team,
+            reveal,
+            resolver,
+            "current_team",
+            already_seen=starters | bench,
+        )
+        squad = starters | bench | current
+        captain, captain_events = _resolve_single(
+            reveal.captain, reveal, resolver, "captain"
+        )
+        vice, vice_events = _resolve_single(
+            reveal.vice_captain, reveal, resolver, "vice_captain"
+        )
+        captaincy_validation: list[str] = []
+        if reveal.captain is not None and captain is None:
+            captaincy_validation.append("unresolved_captain")
+        if reveal.vice_captain is not None and vice is None:
+            captaincy_validation.append("unresolved_vice_captain")
+        if captain is not None and captain not in starters:
+            captaincy_validation.append("captain_not_in_starting_xi")
+            captain = None
+        if vice is not None and vice not in starters:
+            captaincy_validation.append("vice_captain_not_in_starting_xi")
+            vice = None
+        if captain is not None and captain == vice:
+            captaincy_validation.append("duplicate_captain_and_vice")
+            captain = None
+            vice = None
         eligible.append(
             _EligibleReveal(
                 reveal=reveal,
@@ -362,54 +412,86 @@ def _eligible_reveals(
                 resolved_squad=frozenset(squad),
                 captain_id=captain,
                 vice_id=vice,
+                resolution_events=tuple(
+                    [
+                        *starter_events,
+                        *bench_events,
+                        *current_events,
+                        *captain_events,
+                        *vice_events,
+                    ]
+                ),
+                captaincy_validation=tuple(captaincy_validation),
             )
         )
     return eligible
 
 
-def _resolved_reveal_signature(
-    reveal: ExpertTeamRevealItem,
-    catalogue: PlayerCatalogue,
-) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...], int, int]:
-    starters = _resolve_slot(reveal.starting_xi, reveal, catalogue)
-    bench = _resolve_slot(reveal.bench, reveal, catalogue)
-    squad = starters | bench | _resolve_slot(reveal.current_team, reveal, catalogue)
-    return (
-        tuple(sorted(starters)),
-        tuple(sorted(bench)),
-        tuple(sorted(squad)),
-        _resolve_single(reveal.captain, reveal, catalogue) or 0,
-        _resolve_single(reveal.vice_captain, reveal, catalogue) or 0,
-    )
-
-
 def _resolve_slot(
-    names: Iterable[str],
+    values: Iterable[ExtractedPlayerInput],
     reveal: ExpertTeamRevealItem,
-    catalogue: PlayerCatalogue,
-) -> set[int]:
+    resolver: PlayerResolver,
+    role: Literal["starter", "bench", "current_team"],
+    *,
+    already_seen: set[int] | None = None,
+) -> tuple[set[int], list[PlayerResolutionEvent]]:
     resolved: set[int] = set()
+    events: list[PlayerResolutionEvent] = []
+    seen = set(already_seen or ())
     annotations = {
         normalize_team_player(name): position
         for name, position in reveal.player_positions.items()
     }
-    for name in names:
-        player = catalogue.resolve(name)
-        if player is None:
-            continue
-        annotation = annotations.get(normalize_team_player(name))
-        if annotation is not None and annotation != player.position:
-            continue
-        resolved.add(player.official_player_id)
-    return resolved
+    for value in values:
+        reference = normalise_extracted_reference(value)
+        annotation = annotations.get(normalize_team_player(reference.name))
+        result = resolver.resolve(
+            reference,
+            source=ResolutionSource(
+                expertId=reveal.expert_id,
+                videoId=reveal.source_id or reveal.source_url or reveal.video_title,
+                squadRole=role,
+            ),
+            extracted_position=annotation,
+        )
+        event = result.event
+        if result.player is not None:
+            player_id = result.player.official_player_id
+            if player_id in seen or player_id in resolved:
+                event = event.model_copy(
+                    update={
+                        "status": "duplicate",
+                        "duplicateOfPlayerId": player_id,
+                    }
+                )
+            else:
+                resolved.add(player_id)
+        events.append(event)
+    return resolved, events
 
 
 def _resolve_single(
-    name: str | None,
+    value: ExtractedPlayerInput | None,
     reveal: ExpertTeamRevealItem,
-    catalogue: PlayerCatalogue,
-) -> int | None:
-    return next(iter(_resolve_slot([name], reveal, catalogue)), None) if name else None
+    resolver: PlayerResolver,
+    role: Literal["captain", "vice_captain"],
+) -> tuple[int | None, list[PlayerResolutionEvent]]:
+    if value is None:
+        return None, []
+    reference = normalise_extracted_reference(value)
+    result = resolver.resolve(
+        reference,
+        source=ResolutionSource(
+            expertId=reveal.expert_id,
+            videoId=reveal.source_id or reveal.source_url or reveal.video_title,
+            squadRole=role,
+        ),
+        extracted_position=reveal.player_positions.get(reference.name),
+    )
+    return (
+        result.player.official_player_id if result.player is not None else None,
+        [result.event],
+    )
 
 
 def _aggregate_votes(
@@ -539,6 +621,7 @@ def _output_player(item: _Votes, *, is_starter: bool, order: int) -> SuggestedPl
         officialPlayerId=player.official_player_id,
         name=player.canonical_name,
         canonicalName=player.canonical_name,
+        displayName=player.display_name,
         number=order if is_starter else None,
         position=player.position,
         club=player.club,
@@ -575,6 +658,9 @@ def _failure(
     *,
     eligible_count: int = 0,
     provenance: list[ContributingReveal] | None = None,
+    diagnostics: list[PlayerResolutionEvent] | None = None,
+    catalogue: PlayerCatalogue | None = None,
+    captaincy_validation: list[str] | None = None,
 ) -> SuggestedTeam:
     return SuggestedTeam(
         constructionStatus="insufficient_evidence",
@@ -585,6 +671,18 @@ def _failure(
         startingXi=[],
         bench=[],
         players=[],
+        catalogueSeason=catalogue.season if catalogue else None,
+        catalogueSource=catalogue.source if catalogue else None,
+        catalogueFingerprint=catalogue.fingerprint if catalogue else None,
+        warnings=sorted(
+            {
+                warning
+                for event in diagnostics or []
+                for warning in event.warnings
+            }
+        ),
+        captaincyValidation=captaincy_validation or [],
+        resolutionDiagnostics=diagnostics or [],
     )
 
 

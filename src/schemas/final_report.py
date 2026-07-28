@@ -17,6 +17,7 @@ from src.schemas.aggregate_report import (
     CompetingRecommendation,
 )
 from src.services.consensus import ConsensusLevel
+from src.schemas.player_resolution import PlayerResolutionEvent
 
 
 class AggregatedFPLReport(BaseModel):
@@ -101,6 +102,7 @@ class SuggestedPlayer(BaseModel):
     officialPlayerId: int | None = Field(default=None, gt=0)
     name: str = Field(min_length=1)
     canonicalName: str | None = None
+    displayName: str | None = None
     number: int | None = Field(default=None, ge=1, le=99)
     shirtNumber: int | None = Field(default=None, ge=1, le=99)
     position: Literal["GK", "DEF", "MID", "FWD"]
@@ -138,6 +140,12 @@ class SuggestedTeam(BaseModel):
     players: list[SuggestedPlayer] | None = None
     captainPlayerId: int | None = Field(default=None, gt=0)
     viceCaptainPlayerId: int | None = Field(default=None, gt=0)
+    catalogueSeason: str | None = None
+    catalogueSource: str | None = None
+    catalogueFingerprint: str | None = None
+    warnings: list[str] = Field(default_factory=list)
+    captaincyValidation: list[str] = Field(default_factory=list)
+    resolutionDiagnostics: list[PlayerResolutionEvent] = Field(default_factory=list)
 
 
 class ContributingReveal(BaseModel):

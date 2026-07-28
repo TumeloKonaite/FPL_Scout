@@ -9,6 +9,10 @@ from src.schemas.aggregate_report import (
     RecommendationSource,
 )
 from src.schemas.expert_analysis import ExpertVideoAnalysis
+from src.schemas.player_resolution import (
+    ExtractedPlayerInput,
+    normalise_extracted_reference,
+)
 from src.schemas.final_report import AggregatedFPLReport
 from src.services.disagreement_service import (
     build_disagreement_report,
@@ -114,23 +118,45 @@ def _unique_normalized_text(items: list[str]) -> set[str]:
     return {normalize_text_label(item) for item in items if normalize_text_label(item)}
 
 
-def _canonicalize_player_like_list(items: list[str]) -> list[str]:
+def _canonicalize_player_like_list(
+    items: list[ExtractedPlayerInput],
+) -> list[ExtractedPlayerInput]:
     seen: set[str] = set()
-    output: list[str] = []
+    output: list[ExtractedPlayerInput] = []
     for item in items:
-        normalized_player = normalize_player_name(item)
+        reference = normalise_extracted_reference(item)
+        normalized_player = normalize_player_name(reference.name)
         if normalized_player:
             display = canonical_player_display(normalized_player)
         else:
-            display = titleize_normalized(normalize_text_label(item))
+            display = titleize_normalized(normalize_text_label(reference.name))
         if not display:
             continue
-        key = normalize_lookup_key(display)
+        key = (
+            f"id:{reference.playerId}"
+            if reference.playerId is not None
+            else normalize_lookup_key(display)
+        )
         if key in seen:
             continue
         seen.add(key)
-        output.append(display)
+        if isinstance(item, str):
+            output.append(display)
+        else:
+            output.append(reference.model_copy(update={"name": display}))
     return output
+
+
+def _canonicalize_reference(
+    value: ExtractedPlayerInput | None,
+) -> ExtractedPlayerInput | None:
+    if value is None:
+        return None
+    reference = normalise_extracted_reference(value)
+    display = canonical_player_display(reference.name)
+    if isinstance(value, str):
+        return display
+    return reference.model_copy(update={"name": display})
 
 
 def _canonicalize_player_positions(
@@ -163,14 +189,8 @@ def aggregate_expert_team_reveals(
         player_positions = _canonicalize_player_positions(analysis.player_positions)
         transfers_in = _canonicalize_player_like_list(analysis.transfers_in)
         transfers_out = _canonicalize_player_like_list(analysis.transfers_out)
-        captain = (
-            canonical_player_display(analysis.captain) if analysis.captain else None
-        )
-        vice_captain = (
-            canonical_player_display(analysis.vice_captain)
-            if analysis.vice_captain
-            else None
-        )
+        captain = _canonicalize_reference(analysis.captain)
+        vice_captain = _canonicalize_reference(analysis.vice_captain)
 
         if not any(
             [

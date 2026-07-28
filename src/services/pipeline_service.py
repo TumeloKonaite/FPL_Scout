@@ -4,7 +4,12 @@ import asyncio
 from dataclasses import dataclass, field
 
 from src.adapters.transcript_api import WebshareProxySettings
-from src.app.domain.reports.suggested_team import CataloguePlayer, PlayerCatalogue
+from src.app.domain.reports.player_catalogue import (
+    CatalogueError,
+    CataloguePlayer,
+    PlayerCatalogue,
+    PlayerCatalogueProvider,
+)
 from src.orchestrators.gameweek_orchestrator import run_gameweek_orchestration
 from src.schemas.expert_analysis import ExpertVideoAnalysis
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
@@ -91,6 +96,7 @@ async def run_pipeline(
     report_service: ReportService | None = None,
     proxy_settings: WebshareProxySettings | None = None,
     player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+    player_catalogue_provider: PlayerCatalogueProvider | None = None,
 ) -> PipelineRunResult:
     identity = ReportIdentity(season, gameweek)
     season = identity.season
@@ -145,10 +151,24 @@ async def run_pipeline(
     aggregate_report = build_aggregated_fpl_report(
         expert_outputs, season=season, gameweek=gameweek
     )
+    resolved_catalogue: (
+        PlayerCatalogue | list[CataloguePlayer] | CatalogueError | None
+    ) = player_catalogue
+    if (
+        resolved_catalogue is None
+        and player_catalogue_provider is not None
+        and gameweek_deadline is None
+    ):
+        try:
+            resolved_catalogue = player_catalogue_provider.get_current_catalogue(
+                season
+            )
+        except CatalogueError as exc:
+            resolved_catalogue = exc
     final_report = (
-        await synthesize_final_report(aggregate_report, player_catalogue)
+        await synthesize_final_report(aggregate_report, resolved_catalogue)
         if synthesis_enabled
-        else build_fallback_final_report(aggregate_report, player_catalogue)
+        else build_fallback_final_report(aggregate_report, resolved_catalogue)
     )
 
     run_path = (report_service or ReportService()).persist_run(
@@ -207,6 +227,8 @@ def run_pipeline_sync(
     synthesis_enabled: bool = True,
     report_service: ReportService | None = None,
     proxy_settings: WebshareProxySettings | None = None,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+    player_catalogue_provider: PlayerCatalogueProvider | None = None,
 ) -> PipelineRunResult:
     return asyncio.run(
         run_pipeline(
@@ -221,5 +243,7 @@ def run_pipeline_sync(
             synthesis_enabled=synthesis_enabled,
             report_service=report_service,
             proxy_settings=proxy_settings,
+            player_catalogue=player_catalogue,
+            player_catalogue_provider=player_catalogue_provider,
         )
     )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -123,6 +123,7 @@ class SuggestedPlayer(BaseModel):
     viceCaptainSupport: int = Field(default=0, ge=0)
     confidenceSum: float = Field(default=0, ge=0)
     contributingExpertIds: list[str] = Field(default_factory=list)
+    contributingRevealIds: list[str] = Field(default_factory=list)
     support: "PlayerSupport | None" = None
     consensus: str | None = None
     captain: bool = False
@@ -142,6 +143,8 @@ class SuggestedTeam(BaseModel):
     provenance: "SuggestedTeamProvenance | None" = None
     eligibleRevealCount: int = Field(default=0, ge=0)
     eligibleExpertCount: int = Field(default=0, ge=0)
+    contributingRevealCount: int = Field(default=0, ge=0)
+    contributingExpertCount: int = Field(default=0, ge=0)
     contributingReveals: list["ContributingReveal"] = Field(default_factory=list)
     formation: str | None = None
     startingXi: list[SuggestedPlayer]
@@ -152,6 +155,8 @@ class SuggestedTeam(BaseModel):
     catalogueSeason: str | None = None
     catalogueSource: str | None = None
     catalogueFingerprint: str | None = None
+    catalogueSnapshotIdentifier: str | None = None
+    synthesisDiagnostics: dict[str, Any] = Field(default_factory=dict)
     warnings: list[str] = Field(default_factory=list)
     captaincyValidation: list[str] = Field(default_factory=list)
     resolutionDiagnostics: list[PlayerResolutionEvent] = Field(default_factory=list)
@@ -185,6 +190,7 @@ class PlayerSupport(BaseModel):
     viceCaptainSupportCount: int = Field(ge=0)
     viceCaptainSupportPercentage: float = Field(ge=0, le=100)
     contributingExpertIds: list[str] = Field(default_factory=list)
+    contributingRevealIds: list[str] = Field(default_factory=list)
 
 
 class ContributingExpert(BaseModel):
@@ -214,7 +220,7 @@ class FormationDerivation(BaseModel):
 class ConsensusStrengthBasis(BaseModel):
     metric: Literal["median_starting_xi_support_percentage"]
     medianSupportPercentage: float | None = Field(default=None, ge=0, le=100)
-    minimumExpertRequirement: int = Field(default=3, ge=1)
+    minimumExpertRequirement: int = Field(default=2, ge=1)
 
 
 class SuggestedTeamProvenance(BaseModel):
@@ -223,6 +229,7 @@ class SuggestedTeamProvenance(BaseModel):
     eligibleRevealCount: int = Field(ge=0)
     eligibleExpertCount: int = Field(ge=0)
     contributingRevealCount: int = Field(ge=0)
+    contributingExpertCount: int = Field(default=0, ge=0)
     contributingExperts: list[ContributingExpert] = Field(default_factory=list)
     excludedRevealCount: int = Field(ge=0)
     excludedReveals: list[ExcludedReveal] = Field(default_factory=list)

@@ -195,6 +195,7 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
             "viceCaptainSupport": 0,
             "confidenceSum": 0,
             "contributingExpertIds": [],
+            "contributingRevealIds": [],
             "support": None,
             "consensus": None,
         "captain": False,

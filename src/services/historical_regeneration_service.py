@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
+from src.adapters.fpl import get_player_catalogue_provider
+from src.app.domain.reports.player_catalogue import PlayerCatalogueProvider
 from src.app.infrastructure.report_repository import (
     ReportNotFoundError,
     ReportRepository,
@@ -122,9 +124,13 @@ class HistoricalRegenerationService:
         repository: ReportRepository | None = None,
         *,
         pipeline_runner: PipelineRunner = run_pipeline_sync,
+        player_catalogue_provider: PlayerCatalogueProvider | None = None,
     ) -> None:
         self.repository = repository or ReportRepository()
         self.pipeline_runner = pipeline_runner
+        self.player_catalogue_provider = (
+            player_catalogue_provider or get_player_catalogue_provider()
+        )
 
     def regenerate(
         self,
@@ -219,6 +225,7 @@ class HistoricalRegenerationService:
                     run_id=run_id,
                     gameweek_deadline=deadline_value,
                     report_service=report_service,
+                    player_catalogue_provider=self.player_catalogue_provider,
                     **options,
                 )
                 replacement = self.repository.get(run_id)

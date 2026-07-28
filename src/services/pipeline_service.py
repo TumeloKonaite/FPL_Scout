@@ -154,15 +154,14 @@ async def run_pipeline(
     resolved_catalogue: (
         PlayerCatalogue | list[CataloguePlayer] | CatalogueError | None
     ) = player_catalogue
-    if (
-        resolved_catalogue is None
-        and player_catalogue_provider is not None
-        and gameweek_deadline is None
-    ):
+    if resolved_catalogue is None and player_catalogue_provider is None:
+        # Keep direct/local pipeline callers on the same production dependency.
+        from src.adapters.fpl import get_player_catalogue_provider
+
+        player_catalogue_provider = get_player_catalogue_provider()
+    if resolved_catalogue is None and player_catalogue_provider is not None:
         try:
-            resolved_catalogue = player_catalogue_provider.get_current_catalogue(
-                season
-            )
+            resolved_catalogue = player_catalogue_provider.get_catalogue(season)
         except CatalogueError as exc:
             resolved_catalogue = exc
     final_report = (

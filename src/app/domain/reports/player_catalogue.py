@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
+from datetime import date, datetime, timezone
 from enum import StrEnum
 from hashlib import sha256
 import json
@@ -36,15 +37,15 @@ FPL_POSITION_TO_DOMAIN = {
 
 
 class CatalogueError(RuntimeError):
-    reason = "catalogue_unavailable"
+    reason = "authoritative_player_catalogue_unavailable"
 
 
 class CatalogueUnavailable(CatalogueError):
-    reason = "catalogue_unavailable"
+    reason = "authoritative_player_catalogue_unavailable"
 
 
 class CatalogueSeasonMismatch(CatalogueError):
-    reason = "catalogue_season_mismatch"
+    reason = "player_catalogue_season_mismatch"
 
 
 class InvalidCatalogue(CatalogueError):
@@ -127,10 +128,16 @@ class PlayerCatalogue:
         season: str | None = None,
         aliases: AliasConfiguration | Mapping[int, Iterable[str]] | None = None,
         source: str = "explicit",
+        snapshot_id: str | None = None,
+        retrieved_at: str | None = None,
+        schema_version: int | None = None,
     ) -> None:
         materialized = list(players)
         self.season = season
         self.source = source
+        self.snapshot_id = snapshot_id
+        self.retrieved_at = retrieved_at
+        self.schema_version = schema_version
         if isinstance(aliases, AliasConfiguration):
             if season is None or aliases.season != season:
                 raise InvalidAliasConfiguration("alias_season_mismatch")
@@ -262,7 +269,7 @@ class PlayerCatalogue:
 
 
 class PlayerCatalogueProvider(Protocol):
-    def get_current_catalogue(self, requested_season: str) -> PlayerCatalogue: ...
+    def get_catalogue(self, requested_season: str) -> PlayerCatalogue: ...
 
 
 class LiveFplPlayerCatalogueProvider:
@@ -275,7 +282,7 @@ class LiveFplPlayerCatalogueProvider:
         self._bootstrap_loader = bootstrap_loader
         self._aliases = aliases
 
-    def get_current_catalogue(self, requested_season: str) -> PlayerCatalogue:
+    def get_catalogue(self, requested_season: str) -> PlayerCatalogue:
         try:
             payload = self._bootstrap_loader()
         except CatalogueError:
@@ -292,6 +299,137 @@ class LiveFplPlayerCatalogueProvider:
         return catalogue_from_bootstrap(
             payload, season=season, aliases=self._aliases
         )
+
+    def get_current_catalogue(self, requested_season: str) -> PlayerCatalogue:
+        """Backward-compatible alias for the former live-only contract."""
+        return self.get_catalogue(requested_season)
+
+
+SNAPSHOT_SCHEMA_VERSION = 1
+
+
+def load_catalogue_snapshot(path: str | Path) -> PlayerCatalogue:
+    """Load and validate one immutable, season-bound catalogue snapshot."""
+    snapshot_path = Path(path)
+    try:
+        raw = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CatalogueUnavailable(
+            f"catalogue_snapshot_unavailable:{snapshot_path}"
+        ) from exc
+    if not isinstance(raw, Mapping):
+        raise InvalidCatalogue("invalid_catalogue_snapshot")
+    if raw.get("schemaVersion") != SNAPSHOT_SCHEMA_VERSION:
+        raise InvalidCatalogue("unsupported_catalogue_snapshot_schema")
+    season = raw.get("season")
+    source = raw.get("source")
+    snapshot_id = raw.get("snapshotId")
+    retrieved_at = raw.get("retrievedAt")
+    players = raw.get("players")
+    if not all(
+        isinstance(value, str) and value.strip()
+        for value in (season, source, snapshot_id, retrieved_at)
+    ) or not isinstance(players, list):
+        raise InvalidCatalogue("invalid_catalogue_snapshot_metadata")
+    try:
+        datetime.fromisoformat(str(retrieved_at).replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise InvalidCatalogue("invalid_catalogue_snapshot_retrieval_time") from exc
+
+    materialized: list[CataloguePlayer] = []
+    aliases: dict[int, tuple[str, ...]] = {}
+    try:
+        for raw_player in players:
+            if not isinstance(raw_player, Mapping):
+                raise ValueError
+            player_id = raw_player["playerId"]
+            raw_aliases = raw_player.get("aliases", [])
+            if (
+                isinstance(player_id, bool)
+                or not isinstance(player_id, int)
+                or not isinstance(raw_aliases, list)
+                or not all(isinstance(alias, str) for alias in raw_aliases)
+            ):
+                raise ValueError
+            materialized.append(
+                CataloguePlayer(
+                    official_player_id=player_id,
+                    canonical_name=str(raw_player["canonicalName"]),
+                    display_name=(
+                        str(raw_player["displayName"])
+                        if raw_player.get("displayName")
+                        else None
+                    ),
+                    club=str(raw_player["team"]) if raw_player.get("team") else None,
+                    position=str(raw_player["position"]),
+                    price=(
+                        float(raw_player["price"])
+                        if raw_player.get("price") is not None
+                        else None
+                    ),
+                )
+            )
+            aliases[player_id] = tuple(raw_aliases)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise InvalidCatalogue("invalid_catalogue_snapshot_player") from exc
+    return PlayerCatalogue(
+        materialized,
+        season=str(season),
+        aliases=aliases,
+        source=str(source),
+        snapshot_id=str(snapshot_id),
+        retrieved_at=str(retrieved_at),
+        schema_version=SNAPSHOT_SCHEMA_VERSION,
+    )
+
+
+class PersistedPlayerCatalogueProvider:
+    def __init__(self, snapshot_directory: str | Path) -> None:
+        self.snapshot_directory = Path(snapshot_directory)
+
+    def get_catalogue(self, requested_season: str) -> PlayerCatalogue:
+        catalogue = load_catalogue_snapshot(
+            self.snapshot_directory / f"{requested_season}.json"
+        )
+        if catalogue.season != requested_season:
+            raise CatalogueSeasonMismatch(
+                f"requested {requested_season}, loaded {catalogue.season}"
+            )
+        return catalogue
+
+
+def season_for_date(value: date | None = None) -> str:
+    current = value or datetime.now(timezone.utc).date()
+    start_year = current.year if current.month >= 7 else current.year - 1
+    return f"{start_year:04d}-{(start_year + 1) % 100:02d}"
+
+
+class SeasonAwarePlayerCatalogueProvider:
+    """Route only the active season to FPL and historical seasons to snapshots."""
+
+    def __init__(
+        self,
+        live_provider: PlayerCatalogueProvider,
+        persisted_provider: PlayerCatalogueProvider,
+        *,
+        current_season: str | None = None,
+    ) -> None:
+        self.live_provider = live_provider
+        self.persisted_provider = persisted_provider
+        self.current_season = current_season or season_for_date()
+
+    def get_catalogue(self, requested_season: str) -> PlayerCatalogue:
+        provider = (
+            self.live_provider
+            if requested_season == self.current_season
+            else self.persisted_provider
+        )
+        catalogue = provider.get_catalogue(requested_season)
+        if catalogue.season != requested_season:
+            raise CatalogueSeasonMismatch(
+                f"requested {requested_season}, loaded {catalogue.season}"
+            )
+        return catalogue
 
 
 def _season_from_bootstrap(payload: Mapping[str, Any]) -> str | None:
@@ -383,9 +521,14 @@ __all__ = [
     "MIN_FUZZY_SCORE",
     "PlayerCatalogue",
     "PlayerCatalogueProvider",
+    "PersistedPlayerCatalogueProvider",
     "Position",
+    "SNAPSHOT_SCHEMA_VERSION",
+    "SeasonAwarePlayerCatalogueProvider",
     "UnknownFplPositionType",
     "catalogue_from_bootstrap",
+    "load_catalogue_snapshot",
     "load_alias_configuration",
     "normalise_player_name",
+    "season_for_date",
 ]

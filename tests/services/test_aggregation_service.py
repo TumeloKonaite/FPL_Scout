@@ -145,6 +145,32 @@ def test_aggregated_report_is_schema_valid_for_empty_input() -> None:
     assert validated.wait_for_news == []
 
 
+def test_blank_extracted_player_values_do_not_fail_aggregation() -> None:
+    base = _build_analysis("Expert A")
+    analysis = ExpertVideoAnalysis.model_validate(
+        {
+            **base.model_dump(),
+            "current_team": ["", "  ", " Bukayo Saka "],
+            "starting_xi": [{"name": ""}, {"name": " Mohamed Salah "}],
+            "bench": ["   "],
+            "captain": "",
+            "vice_captain": {"name": "  "},
+        }
+    )
+
+    report = build_aggregated_fpl_report(
+        [analysis], season="2025-26", gameweek=5
+    )
+
+    reveal = report.expert_team_reveals[0]
+    assert reveal.current_team == ["Bukayo Saka"]
+    assert len(reveal.starting_xi) == 1
+    assert reveal.starting_xi[0].name == "Mohamed Salah"  # type: ignore[union-attr]
+    assert reveal.bench == []
+    assert reveal.captain is None
+    assert reveal.vice_captain is None
+
+
 def test_transfer_and_fixture_aggregation_are_deterministic() -> None:
     analyses = [
         _build_analysis(

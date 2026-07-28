@@ -102,7 +102,10 @@ class SuggestedPlayer(BaseModel):
     officialPlayerId: int | None = Field(default=None, gt=0)
     name: str = Field(min_length=1)
     canonicalName: str | None = None
-    displayName: str | None = None
+    displayName: str | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )
     number: int | None = Field(default=None, ge=1, le=99)
     shirtNumber: int | None = Field(default=None, ge=1, le=99)
     position: Literal["GK", "DEF", "MID", "FWD"]

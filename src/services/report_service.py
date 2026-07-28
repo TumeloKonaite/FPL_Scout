@@ -132,6 +132,10 @@ class ReportService:
                 {
                     "season": final.suggested_team.catalogueSeason,
                     "source": final.suggested_team.catalogueSource,
+                    "snapshot_identifier": (
+                        final.suggested_team.catalogueSnapshotIdentifier
+                    ),
+                    "fingerprint": final.suggested_team.catalogueFingerprint,
                 }
                 if final.suggested_team is not None
                 else None

@@ -15,8 +15,11 @@ from src.schemas.final_report import PlayerSupport, SuggestedPlayer
 def _catalogue() -> PlayerCatalogue:
     positions = ["GK"] * 2 + ["DEF"] * 5 + ["MID"] * 5 + ["FWD"] * 3
     return PlayerCatalogue(
-        CataloguePlayer(index, f"Player {index}", position)
-        for index, position in enumerate(positions, start=1)
+        (
+            CataloguePlayer(index, f"Player {index}", position)
+            for index, position in enumerate(positions, start=1)
+        ),
+        season="2025-26",
     )
 
 
@@ -97,10 +100,13 @@ def test_repeated_and_multi_reveal_votes_are_deduplicated_by_expert() -> None:
     assert player.support.captainSupportCount == 2
     assert player.support.viceCaptainSupportCount == 0
     assert team.provenance is not None
-    assert team.provenance.contributingRevealCount == 2
-    assert team.provenance.excludedRevealCount == 1
-    assert team.provenance.excludedReveals[0].reasons == [
-        "duplicate_expert_reveal"
+    assert team.provenance.contributingRevealCount == 3
+    assert team.provenance.contributingExpertCount == 2
+    assert team.provenance.excludedRevealCount == 0
+    assert player.contributingRevealIds == [
+        "alpha-second",
+        "alpha-source",
+        "bravo-source",
     ]
 
 
@@ -113,10 +119,81 @@ def test_requires_authoritative_catalogue_and_classifies_one_expert_safely() -> 
     )
 
     assert missing.failureReason == "authoritative_player_catalogue_unavailable"
-    assert one_expert.failureReason is None
-    assert one_expert.constructionMethod == "single_reveal"
+    assert one_expert.failureReason == "insufficient_contributing_experts"
+    assert one_expert.constructionMethod == "insufficient_evidence"
     assert one_expert.consensusStrength == "insufficient"
     assert one_expert.eligibleExpertCount == 1
+    assert one_expert.synthesisDiagnostics["requiredExpertCount"] == 2
+    assert one_expert.synthesisDiagnostics["actualContributingExpertCount"] == 1
+
+
+def test_partial_reveals_merge_and_dedupe_votes_per_expert_player() -> None:
+    alpha_first = _reveal("alpha", (3, 4, 3)).model_copy(
+        update={
+            "source_id": "alpha-first",
+            "current_team": [f"Player {index}" for index in range(1, 9)],
+            "starting_xi": [f"Player {index}" for index in range(1, 9)],
+            "bench": [],
+            "captain": "Player 8",
+            "vice_captain": None,
+        }
+    )
+    alpha_second = _reveal("alpha", (3, 4, 3)).model_copy(
+        update={
+            "source_id": "alpha-second",
+            "current_team": [f"Player {index}" for index in range(8, 16)],
+            "starting_xi": [f"Player {index}" for index in range(8, 16)],
+            "bench": [],
+            "captain": "Player 13",
+            "vice_captain": "Player 8",
+        }
+    )
+
+    team = construct_consensus_squad(
+        [alpha_first, alpha_second, _reveal("bravo", (3, 4, 3))],
+        _catalogue(),
+        ConsensusPolicy(season="2025-26", gameweek=31),
+    )
+
+    assert team.constructionStatus == "consensus"
+    assert team.eligibleRevealCount == 3
+    assert team.contributingRevealCount == 3
+    assert team.contributingExpertCount == 2
+    overlapping = next(player for player in team.players or [] if player.playerId == 8)
+    later_only = next(player for player in team.players or [] if player.playerId == 15)
+    assert overlapping.expertSupportCount == 2
+    assert later_only.expertSupportCount == 2
+    assert overlapping.contributingRevealIds == [
+        "alpha-first",
+        "alpha-second",
+        "bravo-source",
+    ]
+
+
+def test_one_player_partial_reveal_is_eligible() -> None:
+    partial = _reveal("alpha", (3, 4, 3)).model_copy(
+        update={
+            "current_team": ["Player 1", "Unknown Player"],
+            "starting_xi": [],
+            "bench": [],
+            "captain": None,
+            "vice_captain": None,
+        }
+    )
+
+    team = construct_consensus_squad(
+        [partial],
+        _catalogue(),
+        ConsensusPolicy(season="2025-26", gameweek=31),
+    )
+
+    assert team.failureReason == "insufficient_contributing_experts"
+    assert team.eligibleRevealCount == 1
+    assert team.eligibleExpertCount == 1
+    assert any(
+        event.status in {"unresolved", "ambiguous", "rejected"}
+        for event in team.resolutionDiagnostics
+    )
 
 
 def test_missing_captaincy_uses_only_the_configured_fallback() -> None:

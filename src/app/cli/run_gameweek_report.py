@@ -6,6 +6,7 @@ from collections.abc import Sequence
 
 from dotenv import load_dotenv
 
+from src.adapters.fpl import get_player_catalogue_provider
 from src.adapters.transcript_api import load_webshare_proxy_settings
 from src.services.pipeline_service import PipelineServiceError, run_pipeline_sync
 from src.schemas.report_identity import validate_gameweek, validate_season
@@ -84,6 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             expert_count=args.expert_count,
             synthesis_enabled=not args.no_synthesis,
             proxy_settings=proxy_settings,
+            player_catalogue_provider=get_player_catalogue_provider(),
         )
     except PipelineServiceError as exc:
         print(f"Error: {exc}", file=sys.stderr)

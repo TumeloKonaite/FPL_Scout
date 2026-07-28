@@ -4,12 +4,18 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from functools import lru_cache
+from pathlib import Path
 from time import monotonic
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from src.app.domain.reports.player_catalogue import LiveFplPlayerCatalogueProvider
+from src.app.domain.reports.player_catalogue import (
+    LiveFplPlayerCatalogueProvider,
+    PersistedPlayerCatalogueProvider,
+    PlayerCatalogueProvider,
+    SeasonAwarePlayerCatalogueProvider,
+)
 
 FPL_BOOTSTRAP_URL = "https://fantasy.premierleague.com/api/bootstrap-static/"
 
@@ -113,9 +119,13 @@ def get_fpl_api_client() -> FplApiClient:
 
 
 @lru_cache(maxsize=1)
-def get_player_catalogue_provider() -> LiveFplPlayerCatalogueProvider:
-    return LiveFplPlayerCatalogueProvider(
-        get_fpl_api_client().get_bootstrap_static
+def get_player_catalogue_provider() -> PlayerCatalogueProvider:
+    snapshots = Path(__file__).resolve().parents[1] / "config" / "player_catalogues"
+    return SeasonAwarePlayerCatalogueProvider(
+        LiveFplPlayerCatalogueProvider(
+            get_fpl_api_client().get_bootstrap_static
+        ),
+        PersistedPlayerCatalogueProvider(snapshots),
     )
 
 

@@ -1,0 +1,7578 @@
+{
+  "schemaVersion": 1,
+  "snapshotId": "2025-26:af7e0368010c0f1c9e595c90b7b0126addca7afe4192ef784e33fb9e18c89440",
+  "season": "2025-26",
+  "source": "https://github.com/vaastav/Fantasy-Premier-League/tree/master/data/2025-26",
+  "retrievedAt": "2026-07-28T00:00:00Z",
+  "players": [
+    {
+      "playerId": 1,
+      "canonicalName": "David Raya Martín",
+      "displayName": "Raya",
+      "team": "Arsenal",
+      "position": "GK",
+      "price": 6.2,
+      "aliases": []
+    },
+    {
+      "playerId": 2,
+      "canonicalName": "Kepa Arrizabalaga Revuelta",
+      "displayName": "Arrizabalaga",
+      "team": "Arsenal",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 3,
+      "canonicalName": "Karl Hein",
+      "displayName": "Hein",
+      "team": "Arsenal",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 4,
+      "canonicalName": "Tommy Setford",
+      "displayName": "Setford",
+      "team": "Arsenal",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 5,
+      "canonicalName": "Gabriel dos Santos Magalhães",
+      "displayName": "Gabriel",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 7.3,
+      "aliases": []
+    },
+    {
+      "playerId": 6,
+      "canonicalName": "William Saliba",
+      "displayName": "Saliba",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 7,
+      "canonicalName": "Riccardo Calafiori",
+      "displayName": "Calafiori",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 8,
+      "canonicalName": "Jurriën Timber",
+      "displayName": "J.Timber",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 6.0,
+      "aliases": []
+    },
+    {
+      "playerId": 9,
+      "canonicalName": "Jakub Kiwior",
+      "displayName": "Kiwior",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 10,
+      "canonicalName": "Myles Lewis-Skelly",
+      "displayName": "Lewis-Skelly",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 11,
+      "canonicalName": "Benjamin White",
+      "displayName": "White",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 12,
+      "canonicalName": "Oleksandr Zinchenko",
+      "displayName": "Zinchenko",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 13,
+      "canonicalName": "Brayden Clarke",
+      "displayName": "Clarke",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 14,
+      "canonicalName": "Maldini Kacurri",
+      "displayName": "Kacurri",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 15,
+      "canonicalName": "Josh Nichols",
+      "displayName": "Nichols",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 16,
+      "canonicalName": "Bukayo Saka",
+      "displayName": "Saka",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 10.0,
+      "aliases": []
+    },
+    {
+      "playerId": 17,
+      "canonicalName": "Martin Ødegaard",
+      "displayName": "Ødegaard",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 7.8,
+      "aliases": []
+    },
+    {
+      "playerId": 18,
+      "canonicalName": "Noni Madueke",
+      "displayName": "Madueke",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 6.8,
+      "aliases": []
+    },
+    {
+      "playerId": 19,
+      "canonicalName": "Gabriel Martinelli Silva",
+      "displayName": "Martinelli",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 6.8,
+      "aliases": []
+    },
+    {
+      "playerId": 20,
+      "canonicalName": "Leandro Trossard",
+      "displayName": "Trossard",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 6.6,
+      "aliases": []
+    },
+    {
+      "playerId": 21,
+      "canonicalName": "Declan Rice",
+      "displayName": "Rice",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 7.2,
+      "aliases": []
+    },
+    {
+      "playerId": 22,
+      "canonicalName": "Mikel Merino Zazón",
+      "displayName": "Merino",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 23,
+      "canonicalName": "Fábio Ferreira Vieira",
+      "displayName": "Fábio Vieira",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 24,
+      "canonicalName": "Christian Nørgaard",
+      "displayName": "Nørgaard",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 25,
+      "canonicalName": "Ethan Nwaneri",
+      "displayName": "Nwaneri",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 26,
+      "canonicalName": "Martín Zubimendi Ibáñez",
+      "displayName": "Zubimendi",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 27,
+      "canonicalName": "Reiss Nelson",
+      "displayName": "Nelson",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 28,
+      "canonicalName": "Ismeal Kabia",
+      "displayName": "Kabia",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 29,
+      "canonicalName": "Albert Sambi Lokonga",
+      "displayName": "Sambi",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 30,
+      "canonicalName": "Kai Havertz",
+      "displayName": "Havertz",
+      "team": "Arsenal",
+      "position": "FWD",
+      "price": 7.3,
+      "aliases": []
+    },
+    {
+      "playerId": 31,
+      "canonicalName": "Gabriel Fernando de Jesus",
+      "displayName": "G.Jesus",
+      "team": "Arsenal",
+      "position": "FWD",
+      "price": 6.4,
+      "aliases": []
+    },
+    {
+      "playerId": 32,
+      "canonicalName": "Emiliano Martínez Romero",
+      "displayName": "Martinez",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 33,
+      "canonicalName": "Marco Bizot",
+      "displayName": "M.Bizot",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 34,
+      "canonicalName": "Joe Gauci",
+      "displayName": "Gauci",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 35,
+      "canonicalName": "Filip Marschall",
+      "displayName": "Marschall",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 36,
+      "canonicalName": "Matty Cash",
+      "displayName": "Cash",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 37,
+      "canonicalName": "Lucas Digne",
+      "displayName": "Digne",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 38,
+      "canonicalName": "Ezri Konsa Ngoyo",
+      "displayName": "Konsa",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 39,
+      "canonicalName": "Ian Maatsen",
+      "displayName": "Maatsen",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 40,
+      "canonicalName": "Tyrone Mings",
+      "displayName": "Mings",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 41,
+      "canonicalName": "Pau Torres",
+      "displayName": "Pau",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 42,
+      "canonicalName": "Andrés García",
+      "displayName": "A.García",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 43,
+      "canonicalName": "Álex Moreno Lopera",
+      "displayName": "Alex Moreno",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 44,
+      "canonicalName": "Lamare Bogarde",
+      "displayName": "Bogarde",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 45,
+      "canonicalName": "Lino da Cruz Sousa",
+      "displayName": "Sousa",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 46,
+      "canonicalName": "Yasin Özcan",
+      "displayName": "Yasin",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 47,
+      "canonicalName": "Morgan Rogers",
+      "displayName": "Rogers",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 7.3,
+      "aliases": []
+    },
+    {
+      "playerId": 48,
+      "canonicalName": "Youri Tielemans",
+      "displayName": "Tielemans",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 49,
+      "canonicalName": "Leon Bailey",
+      "displayName": "Bailey",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 50,
+      "canonicalName": "Emiliano Buendía Stati",
+      "displayName": "Buendía",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 51,
+      "canonicalName": "Samuel Iling-Junior",
+      "displayName": "Iling Jr",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 52,
+      "canonicalName": "Jacob Ramsey",
+      "displayName": "J.Ramsey",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 53,
+      "canonicalName": "Donyell Malen",
+      "displayName": "Malen",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 54,
+      "canonicalName": "John McGinn",
+      "displayName": "McGinn",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 55,
+      "canonicalName": "Ross Barkley",
+      "displayName": "Barkley",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 56,
+      "canonicalName": "Enzo Barrenechea",
+      "displayName": "Barrenechea",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 57,
+      "canonicalName": "Lewis Dobbin",
+      "displayName": "Dobbin",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 58,
+      "canonicalName": "Boubacar Kamara",
+      "displayName": "Kamara",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 59,
+      "canonicalName": "Amadou Onana",
+      "displayName": "Onana",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 60,
+      "canonicalName": "Ben Broggio",
+      "displayName": "Broggio",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 61,
+      "canonicalName": "Leander Dendoncker",
+      "displayName": "Dendoncker",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 62,
+      "canonicalName": "Jamaldeen Jimoh-Aloba",
+      "displayName": "Jimoh-Aloba",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 63,
+      "canonicalName": "Kadan Young",
+      "displayName": "Young",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 64,
+      "canonicalName": "Ollie Watkins",
+      "displayName": "Watkins",
+      "team": "Aston Villa",
+      "position": "FWD",
+      "price": 8.7,
+      "aliases": []
+    },
+    {
+      "playerId": 65,
+      "canonicalName": "Zépiqueno Redmond",
+      "displayName": "Redmond",
+      "team": "Aston Villa",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 66,
+      "canonicalName": "Norberto Murara Neto",
+      "displayName": "Neto",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 67,
+      "canonicalName": "Đorđe Petrović",
+      "displayName": "Petrović",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 68,
+      "canonicalName": "Will Dennis",
+      "displayName": "Dennis",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 69,
+      "canonicalName": "Callan McKenna",
+      "displayName": "McKenna",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 70,
+      "canonicalName": "Alex Paulsen",
+      "displayName": "Paulsen",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 71,
+      "canonicalName": "Illia Zabarnyi",
+      "displayName": "Zabarnyi",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 72,
+      "canonicalName": "Marcos Senesi Barón",
+      "displayName": "Senesi",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 73,
+      "canonicalName": "Adam Smith",
+      "displayName": "Smith",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 74,
+      "canonicalName": "Adrien Truffert",
+      "displayName": "Truffert",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 75,
+      "canonicalName": "Matai Akinmboni",
+      "displayName": "Akinmboni",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 76,
+      "canonicalName": "Owen Bevan",
+      "displayName": "Bevan",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 77,
+      "canonicalName": "James Hill",
+      "displayName": "Hill",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 78,
+      "canonicalName": "Julián Araujo Zúñiga",
+      "displayName": "J.Araujo",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 79,
+      "canonicalName": "Chris Mepham",
+      "displayName": "Mepham",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 80,
+      "canonicalName": "Julio Soler Barreto",
+      "displayName": "Soler",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 81,
+      "canonicalName": "Justin Kluivert",
+      "displayName": "Kluivert",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 6.9,
+      "aliases": []
+    },
+    {
+      "playerId": 82,
+      "canonicalName": "Antoine Semenyo",
+      "displayName": "Semenyo",
+      "team": "Man City",
+      "position": "MID",
+      "price": 8.0,
+      "aliases": []
+    },
+    {
+      "playerId": 83,
+      "canonicalName": "Dango Ouattara",
+      "displayName": "O.Dango",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 84,
+      "canonicalName": "Marcus Tavernier",
+      "displayName": "Tavernier",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 85,
+      "canonicalName": "Tyler Adams",
+      "displayName": "Adams",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 86,
+      "canonicalName": "David Brooks",
+      "displayName": "Brooks",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 87,
+      "canonicalName": "Ryan Christie",
+      "displayName": "Christie",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 88,
+      "canonicalName": "Lewis Cook",
+      "displayName": "Cook",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 89,
+      "canonicalName": "Philip Billing",
+      "displayName": "Philip",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 90,
+      "canonicalName": "Alex Scott",
+      "displayName": "Scott",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 91,
+      "canonicalName": "Luis Sinisterra Lucumí",
+      "displayName": "Sinisterra",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 92,
+      "canonicalName": "Romain Faivre",
+      "displayName": "Faivre",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 93,
+      "canonicalName": "Hamed Traorè",
+      "displayName": "H.Traorè",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 94,
+      "canonicalName": "Dominic Sadi",
+      "displayName": "Sadi",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 95,
+      "canonicalName": "Zain Silcott-Duberry",
+      "displayName": "Silcott-Duberry",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 96,
+      "canonicalName": "Ben Winterburn",
+      "displayName": "Winterburn",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 97,
+      "canonicalName": "Francisco Evanilson de Lima Barbosa",
+      "displayName": "Evanilson",
+      "team": "Bournemouth",
+      "position": "FWD",
+      "price": 6.6,
+      "aliases": []
+    },
+    {
+      "playerId": 98,
+      "canonicalName": "Enes Ünal",
+      "displayName": "Enes Ünal",
+      "team": "Bournemouth",
+      "position": "FWD",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 99,
+      "canonicalName": "Daniel Adu-Adjei",
+      "displayName": "Adu-Adjei",
+      "team": "Bournemouth",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 100,
+      "canonicalName": "Junior Kroupi",
+      "displayName": "Kroupi.Jr",
+      "team": "Bournemouth",
+      "position": "FWD",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 101,
+      "canonicalName": "Caoimhín Kelleher",
+      "displayName": "Kelleher",
+      "team": "Brentford",
+      "position": "GK",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 102,
+      "canonicalName": "Ellery Balcombe",
+      "displayName": "Balcombe",
+      "team": "Brentford",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 103,
+      "canonicalName": "Matthew Cox",
+      "displayName": "Cox",
+      "team": "Brentford",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 104,
+      "canonicalName": "Julian Eyestone",
+      "displayName": "Eyestone",
+      "team": "Brentford",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 105,
+      "canonicalName": "Hákon Rafn Valdimarsson",
+      "displayName": "Valdimarsson",
+      "team": "Brentford",
+      "position": "GK",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 106,
+      "canonicalName": "Nathan Collins",
+      "displayName": "Collins",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 107,
+      "canonicalName": "Keane Lewis-Potter",
+      "displayName": "Lewis-Potter",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 108,
+      "canonicalName": "Kristoffer Ajer",
+      "displayName": "Ajer",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 109,
+      "canonicalName": "Rico Henry",
+      "displayName": "Henry",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 110,
+      "canonicalName": "Michael Kayode",
+      "displayName": "Kayode",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 111,
+      "canonicalName": "Ethan Pinnock",
+      "displayName": "Pinnock",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 112,
+      "canonicalName": "Mads Roerslev Rasmussen",
+      "displayName": "Roerslev",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 113,
+      "canonicalName": "Sepp van den Berg",
+      "displayName": "Van den Berg",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 114,
+      "canonicalName": "Benjamin Arthur",
+      "displayName": "Arthur",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 115,
+      "canonicalName": "Benjamin Fredrick",
+      "displayName": "Fredrick",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 116,
+      "canonicalName": "Aaron Hickey",
+      "displayName": "Hickey",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 117,
+      "canonicalName": "Kim Ji-soo",
+      "displayName": "Ji-soo",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 118,
+      "canonicalName": "Jayden Meghoma",
+      "displayName": "Meghoma",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 119,
+      "canonicalName": "Bryan Mbeumo",
+      "displayName": "Mbeumo",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 8.3,
+      "aliases": []
+    },
+    {
+      "playerId": 120,
+      "canonicalName": "Kevin Schade",
+      "displayName": "Schade",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 6.8,
+      "aliases": []
+    },
+    {
+      "playerId": 121,
+      "canonicalName": "Mikkel Damsgaard",
+      "displayName": "Damsgaard",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 122,
+      "canonicalName": "Antoni Milambo",
+      "displayName": "Milambo",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 123,
+      "canonicalName": "Fábio Freitas Gouveia Carvalho",
+      "displayName": "Carvalho",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 124,
+      "canonicalName": "Jordan Henderson",
+      "displayName": "Henderson",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 125,
+      "canonicalName": "Vitaly Janelt",
+      "displayName": "Janelt",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 126,
+      "canonicalName": "Mathias Jensen",
+      "displayName": "Jensen",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 127,
+      "canonicalName": "Gustavo Nunes Fernandes Gomes",
+      "displayName": "Nunes",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 128,
+      "canonicalName": "Frank Onyeka",
+      "displayName": "Onyeka",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 129,
+      "canonicalName": "Yehor Yarmoliuk",
+      "displayName": "Yarmoliuk",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 130,
+      "canonicalName": "Romelle Donovan",
+      "displayName": "Donovan",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 131,
+      "canonicalName": "Yunus Emre Konak",
+      "displayName": "Konak",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 132,
+      "canonicalName": "Paris Maghoma",
+      "displayName": "Maghoma",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 133,
+      "canonicalName": "Myles Peart-Harris",
+      "displayName": "Peart-Harris",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 134,
+      "canonicalName": "Ryan Trevitt",
+      "displayName": "Trevitt",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 135,
+      "canonicalName": "Yoane Wissa",
+      "displayName": "Wissa",
+      "team": "Newcastle",
+      "position": "FWD",
+      "price": 7.3,
+      "aliases": []
+    },
+    {
+      "playerId": 136,
+      "canonicalName": "Igor Thiago Nascimento Rodrigues",
+      "displayName": "Thiago",
+      "team": "Brentford",
+      "position": "FWD",
+      "price": 7.2,
+      "aliases": []
+    },
+    {
+      "playerId": 137,
+      "canonicalName": "Iwan Morgan",
+      "displayName": "Morgan",
+      "team": "Brentford",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 138,
+      "canonicalName": "Jason Steele",
+      "displayName": "Steele",
+      "team": "Brighton",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 139,
+      "canonicalName": "Bart Verbruggen",
+      "displayName": "Verbruggen",
+      "team": "Brighton",
+      "position": "GK",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 140,
+      "canonicalName": "Tom McGill",
+      "displayName": "McGill",
+      "team": "Brighton",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 141,
+      "canonicalName": "Carl Rushworth",
+      "displayName": "Rushworth",
+      "team": "Brighton",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 142,
+      "canonicalName": "Kjell Scherpen",
+      "displayName": "Scherpen",
+      "team": "Brighton",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 143,
+      "canonicalName": "Olivier Boscagli",
+      "displayName": "Boscagli",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 144,
+      "canonicalName": "Diego Coppola",
+      "displayName": "Coppola",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 145,
+      "canonicalName": "Maxim De Cuyper",
+      "displayName": "De Cuyper",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 146,
+      "canonicalName": "Lewis Dunk",
+      "displayName": "Dunk",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 147,
+      "canonicalName": "Pervis Estupiñán Tenorio",
+      "displayName": "Estupiñan",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 148,
+      "canonicalName": "Ferdi Kadıoğlu",
+      "displayName": "F.Kadıoğlu",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 149,
+      "canonicalName": "Igor Julio dos Santos de Paulo",
+      "displayName": "Igor",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 150,
+      "canonicalName": "Tariq Lamptey",
+      "displayName": "Lamptey",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 151,
+      "canonicalName": "Jan Paul van Hecke",
+      "displayName": "Van Hecke",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 152,
+      "canonicalName": "Joël Veltman",
+      "displayName": "Veltman",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 153,
+      "canonicalName": "Adam Webster",
+      "displayName": "Webster",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 154,
+      "canonicalName": "Eiran Cashin",
+      "displayName": "Cashin",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 155,
+      "canonicalName": "Jacob Slater",
+      "displayName": "Slater",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 156,
+      "canonicalName": "Charlie Tasker",
+      "displayName": "Tasker",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 157,
+      "canonicalName": "Mitoma Kaoru",
+      "displayName": "Mitoma",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 6.1,
+      "aliases": []
+    },
+    {
+      "playerId": 158,
+      "canonicalName": "Georginio Rutter",
+      "displayName": "Georginio",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 159,
+      "canonicalName": "Solly March",
+      "displayName": "March",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 160,
+      "canonicalName": "Yankuba Minteh",
+      "displayName": "Minteh",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 161,
+      "canonicalName": "Julio Enciso Espínola",
+      "displayName": "Enciso",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 162,
+      "canonicalName": "Brajan Gruda",
+      "displayName": "Gruda",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 163,
+      "canonicalName": "Jack Hinshelwood",
+      "displayName": "Hinshelwood",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 164,
+      "canonicalName": "Matt O'Riley",
+      "displayName": "O'Riley",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 165,
+      "canonicalName": "Abdallah Sima",
+      "displayName": "Sima",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 166,
+      "canonicalName": "Yasin Ayari",
+      "displayName": "Ayari",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 167,
+      "canonicalName": "Carlos Baleba",
+      "displayName": "Baleba",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 168,
+      "canonicalName": "Facundo Buonanotte",
+      "displayName": "Buonanotte",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 169,
+      "canonicalName": "Diego Gómez Amarilla",
+      "displayName": "Gomez",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 170,
+      "canonicalName": "James Milner",
+      "displayName": "Milner",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 171,
+      "canonicalName": "Jeremy Sarmiento Morante",
+      "displayName": "Sarmiento",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 172,
+      "canonicalName": "Tom Watson",
+      "displayName": "Watson",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 173,
+      "canonicalName": "Mats Wieffer",
+      "displayName": "Wieffer",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 174,
+      "canonicalName": "Malick Yalcouyé",
+      "displayName": "Yalcouye",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 175,
+      "canonicalName": "Joe Knight",
+      "displayName": "Knight",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 176,
+      "canonicalName": "Adrian Mazilu",
+      "displayName": "Mazilu",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 177,
+      "canonicalName": "Andrew Moran",
+      "displayName": "Moran",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 178,
+      "canonicalName": "Danny Welbeck",
+      "displayName": "Welbeck",
+      "team": "Brighton",
+      "position": "FWD",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 179,
+      "canonicalName": "Evan Ferguson",
+      "displayName": "Ferguson",
+      "team": "Brighton",
+      "position": "FWD",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 180,
+      "canonicalName": "Stefanos Tzimas",
+      "displayName": "Tzimas",
+      "team": "Brighton",
+      "position": "FWD",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 181,
+      "canonicalName": "Charalampos Kostoulas",
+      "displayName": "Kostoulas",
+      "team": "Brighton",
+      "position": "FWD",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 182,
+      "canonicalName": "James Trafford",
+      "displayName": "Trafford",
+      "team": "Man City",
+      "position": "GK",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 183,
+      "canonicalName": "Max Weiß",
+      "displayName": "Weiss",
+      "team": "Burnley",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 184,
+      "canonicalName": "Etienne Green",
+      "displayName": "Green",
+      "team": "Burnley",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 185,
+      "canonicalName": "Václav Hladký",
+      "displayName": "Hladký",
+      "team": "Burnley",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 186,
+      "canonicalName": "Connor Roberts",
+      "displayName": "Roberts",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 187,
+      "canonicalName": "Kyle Walker",
+      "displayName": "Walker",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 188,
+      "canonicalName": "Hannes Delcroix",
+      "displayName": "Delcroix",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 189,
+      "canonicalName": "Owen Dodgson",
+      "displayName": "Dodgson",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 190,
+      "canonicalName": "Hjalmar Ekdal",
+      "displayName": "Ekdal",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 191,
+      "canonicalName": "Maxime Estève",
+      "displayName": "Estève",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 192,
+      "canonicalName": "Quilindschy Hartman",
+      "displayName": "Hartman",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 193,
+      "canonicalName": "Bashir Humphreys",
+      "displayName": "Humphreys",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 194,
+      "canonicalName": "Jordan Beyer",
+      "displayName": "Jordan",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 195,
+      "canonicalName": "Lucas Pires Silva",
+      "displayName": "Lucas Pires",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 196,
+      "canonicalName": "Shurandy Sambo",
+      "displayName": "Sambo",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 197,
+      "canonicalName": "Oliver Sonne",
+      "displayName": "Sonne",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 198,
+      "canonicalName": "Axel Tuanzebe",
+      "displayName": "Tuanzebe",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 199,
+      "canonicalName": "Joe Worrall",
+      "displayName": "Worrall",
+      "team": "Burnley",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 200,
+      "canonicalName": "Jaidon Anthony",
+      "displayName": "Anthony",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 201,
+      "canonicalName": "Manuel Benson Hedilazio",
+      "displayName": "Benson",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 202,
+      "canonicalName": "Jacob Bruun Larsen",
+      "displayName": "Bruun Larsen",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 203,
+      "canonicalName": "Enock Agyei",
+      "displayName": "Boateng",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 204,
+      "canonicalName": "Darko Churlinov",
+      "displayName": "Churlinov",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 205,
+      "canonicalName": "Josh Cullen",
+      "displayName": "Cullen",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 206,
+      "canonicalName": "Marcus Edwards",
+      "displayName": "Edwards",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 207,
+      "canonicalName": "Hannibal Mejbri",
+      "displayName": "Hannibal",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 208,
+      "canonicalName": "Luca Koleosho",
+      "displayName": "Koleosho",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 209,
+      "canonicalName": "Josh Laurent",
+      "displayName": "Laurent",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 210,
+      "canonicalName": "Loum Tchaouna",
+      "displayName": "Tchaouna",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 211,
+      "canonicalName": "Aaron Ramsey",
+      "displayName": "A.Ramsey",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 212,
+      "canonicalName": "Oluwaseun Adewumi",
+      "displayName": "Adewumi",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 213,
+      "canonicalName": "Jaydon Banel",
+      "displayName": "Banel",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 214,
+      "canonicalName": "Mike Trésor Ndayishimiye",
+      "displayName": "Trésor",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 215,
+      "canonicalName": "Zian Flemming",
+      "displayName": "Flemming",
+      "team": "Burnley",
+      "position": "FWD",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 216,
+      "canonicalName": "Zeki Amdouni",
+      "displayName": "Amdouni",
+      "team": "Burnley",
+      "position": "FWD",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 217,
+      "canonicalName": "Lyle Foster",
+      "displayName": "Foster",
+      "team": "Burnley",
+      "position": "FWD",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 218,
+      "canonicalName": "Ashley Barnes",
+      "displayName": "Barnes",
+      "team": "Burnley",
+      "position": "FWD",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 219,
+      "canonicalName": "Michael Obafemi",
+      "displayName": "Obafemi",
+      "team": "Burnley",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 220,
+      "canonicalName": "Robert Lynch Sánchez",
+      "displayName": "Sánchez",
+      "team": "Chelsea",
+      "position": "GK",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 221,
+      "canonicalName": "Filip Jörgensen",
+      "displayName": "Jörgensen",
+      "team": "Chelsea",
+      "position": "GK",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 222,
+      "canonicalName": "Mike Penders",
+      "displayName": "Penders",
+      "team": "Chelsea",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 223,
+      "canonicalName": "Gabriel Słonina",
+      "displayName": "Slonina",
+      "team": "Chelsea",
+      "position": "GK",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 224,
+      "canonicalName": "Marc Cucurella Saseta",
+      "displayName": "Cucurella",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 6.1,
+      "aliases": []
+    },
+    {
+      "playerId": 225,
+      "canonicalName": "Reece James",
+      "displayName": "James",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 226,
+      "canonicalName": "Trevoh Chalobah",
+      "displayName": "Chalobah",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 227,
+      "canonicalName": "Levi Samuels Colwill",
+      "displayName": "Colwill",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 228,
+      "canonicalName": "Malo Gusto",
+      "displayName": "Gusto",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 229,
+      "canonicalName": "Benoît Badiashile Mukinayi",
+      "displayName": "B.Badiashile",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 230,
+      "canonicalName": "Wesley Fofana",
+      "displayName": "Fofana",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 231,
+      "canonicalName": "Mamadou Sarr",
+      "displayName": "M.Sarr",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 232,
+      "canonicalName": "Tosin Adarabioyo",
+      "displayName": "Tosin",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 233,
+      "canonicalName": "Josh Acheampong",
+      "displayName": "Acheampong",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 234,
+      "canonicalName": "Aarón Anselmino",
+      "displayName": "Anselmino",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 235,
+      "canonicalName": "Cole Palmer",
+      "displayName": "Palmer",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 10.3,
+      "aliases": []
+    },
+    {
+      "playerId": 236,
+      "canonicalName": "Pedro Lomba Neto",
+      "displayName": "Neto",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 7.0,
+      "aliases": []
+    },
+    {
+      "playerId": 237,
+      "canonicalName": "Enzo Fernández",
+      "displayName": "Enzo",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 238,
+      "canonicalName": "Estêvão Almeida de Oliveira Gonçalves",
+      "displayName": "Estêvão",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 6.4,
+      "aliases": []
+    },
+    {
+      "playerId": 239,
+      "canonicalName": "Jamie Bynoe-Gittens",
+      "displayName": "Gittens",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 6.0,
+      "aliases": []
+    },
+    {
+      "playerId": 240,
+      "canonicalName": "Christopher Nkunku",
+      "displayName": "Nkunku",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 241,
+      "canonicalName": "Moisés Caicedo Corozo",
+      "displayName": "Caicedo",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 242,
+      "canonicalName": "Kiernan Dewsbury-Hall",
+      "displayName": "Dewsbury-Hall",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 243,
+      "canonicalName": "Tyrique George",
+      "displayName": "George",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 244,
+      "canonicalName": "Roméo Lavia",
+      "displayName": "Lavia",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 245,
+      "canonicalName": "Mykhailo Mudryk",
+      "displayName": "Mudryk",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 246,
+      "canonicalName": "Andrey Nascimento dos Santos",
+      "displayName": "Andrey Santos",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 247,
+      "canonicalName": "Dário Luís Essugo",
+      "displayName": "D.Essugo",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 248,
+      "canonicalName": "Kendry Páez Andrade",
+      "displayName": "Paez",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 249,
+      "canonicalName": "João Pedro Junqueira de Jesus",
+      "displayName": "João Pedro",
+      "team": "Chelsea",
+      "position": "FWD",
+      "price": 7.4,
+      "aliases": []
+    },
+    {
+      "playerId": 250,
+      "canonicalName": "Liam Delap",
+      "displayName": "Delap",
+      "team": "Chelsea",
+      "position": "FWD",
+      "price": 6.2,
+      "aliases": []
+    },
+    {
+      "playerId": 251,
+      "canonicalName": "Nicolas Jackson",
+      "displayName": "N.Jackson",
+      "team": "Chelsea",
+      "position": "FWD",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 252,
+      "canonicalName": "Marc Guiu Paz",
+      "displayName": "Marc Guiu",
+      "team": "Chelsea",
+      "position": "FWD",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 253,
+      "canonicalName": "Dean Henderson",
+      "displayName": "Henderson",
+      "team": "Crystal Palace",
+      "position": "GK",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 254,
+      "canonicalName": "Walter Benítez",
+      "displayName": "Benitez",
+      "team": "Crystal Palace",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 255,
+      "canonicalName": "Remi Matthews",
+      "displayName": "Matthews",
+      "team": "Crystal Palace",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 256,
+      "canonicalName": "Daniel Muñoz Mejía",
+      "displayName": "Muñoz",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 257,
+      "canonicalName": "Maxence Lacroix",
+      "displayName": "Lacroix",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 258,
+      "canonicalName": "Tyrick Mitchell",
+      "displayName": "Mitchell",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 259,
+      "canonicalName": "Borna Sosa",
+      "displayName": "Sosa",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 260,
+      "canonicalName": "Marc Guéhi",
+      "displayName": "Guéhi",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 261,
+      "canonicalName": "Chris Richards",
+      "displayName": "Richards",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 262,
+      "canonicalName": "Chadi Riad Dnanou",
+      "displayName": "Chadi Riad",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 263,
+      "canonicalName": "Nathaniel Clyne",
+      "displayName": "Clyne",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 264,
+      "canonicalName": "Rob Holding",
+      "displayName": "Holding",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 265,
+      "canonicalName": "Caleb Kporha",
+      "displayName": "Kporha",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 266,
+      "canonicalName": "Eberechi Eze",
+      "displayName": "Eze",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 7.3,
+      "aliases": []
+    },
+    {
+      "playerId": 267,
+      "canonicalName": "Ismaïla Sarr",
+      "displayName": "Sarr",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 6.4,
+      "aliases": []
+    },
+    {
+      "playerId": 268,
+      "canonicalName": "Cheick Doucouré",
+      "displayName": "Doucouré",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 269,
+      "canonicalName": "Romain Esse",
+      "displayName": "Esse",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 270,
+      "canonicalName": "Will Hughes",
+      "displayName": "Hughes",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 271,
+      "canonicalName": "Daichi Kamada",
+      "displayName": "Kamada",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 272,
+      "canonicalName": "Jefferson Lerma Solís",
+      "displayName": "Lerma",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 273,
+      "canonicalName": "Adam Wharton",
+      "displayName": "Wharton",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 274,
+      "canonicalName": "Asher Agbinone",
+      "displayName": "Agbinone",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 275,
+      "canonicalName": "Naouirou Ahamada",
+      "displayName": "Ahamada",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 276,
+      "canonicalName": "Justin Devenny",
+      "displayName": "Devenny",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 277,
+      "canonicalName": "Malcolm Ebiowei",
+      "displayName": "Ebiowei",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 278,
+      "canonicalName": "Jesurun Rak-Sakyi",
+      "displayName": "J.Rak-Sakyi",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 279,
+      "canonicalName": "Matheus França de Oliveira",
+      "displayName": "M.França",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 280,
+      "canonicalName": "David Ozoh",
+      "displayName": "Ozoh",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 281,
+      "canonicalName": "Kaden Rodney",
+      "displayName": "Rodney",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 282,
+      "canonicalName": "Franco Umeh-Chibueze",
+      "displayName": "Umeh",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 283,
+      "canonicalName": "Jean-Philippe Mateta",
+      "displayName": "Mateta",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 7.6,
+      "aliases": []
+    },
+    {
+      "playerId": 284,
+      "canonicalName": "Eddie Nketiah",
+      "displayName": "Nketiah",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 285,
+      "canonicalName": "Odsonne Édouard",
+      "displayName": "Édouard",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 286,
+      "canonicalName": "Zach Marsh",
+      "displayName": "Marsh",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 287,
+      "canonicalName": "Jordan Pickford",
+      "displayName": "Pickford",
+      "team": "Everton",
+      "position": "GK",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 288,
+      "canonicalName": "Mark Travers",
+      "displayName": "Travers",
+      "team": "Everton",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 289,
+      "canonicalName": "Harry Tyrer",
+      "displayName": "Tyrer",
+      "team": "Everton",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 290,
+      "canonicalName": "Jarrad Branthwaite",
+      "displayName": "Branthwaite",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 291,
+      "canonicalName": "James Tarkowski",
+      "displayName": "Tarkowski",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 292,
+      "canonicalName": "Vitalii Mykolenko",
+      "displayName": "Mykolenko",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 293,
+      "canonicalName": "Jake O'Brien",
+      "displayName": "O'Brien",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 294,
+      "canonicalName": "Séamus Coleman",
+      "displayName": "Coleman",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 295,
+      "canonicalName": "Michael Keane",
+      "displayName": "Keane",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 296,
+      "canonicalName": "Nathan Patterson",
+      "displayName": "Patterson",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 297,
+      "canonicalName": "Roman Dixon",
+      "displayName": "Dixon",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 298,
+      "canonicalName": "Reece Welch",
+      "displayName": "Welch",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 299,
+      "canonicalName": "Iliman Ndiaye",
+      "displayName": "Ndiaye",
+      "team": "Everton",
+      "position": "MID",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 300,
+      "canonicalName": "Dwight McNeil",
+      "displayName": "McNeil",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 301,
+      "canonicalName": "Carlos Alcaraz Durán",
+      "displayName": "Alcaraz",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 302,
+      "canonicalName": "Idrissa Gana Gueye",
+      "displayName": "Gana",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 303,
+      "canonicalName": "James Garner",
+      "displayName": "Garner",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 304,
+      "canonicalName": "Tim Iroegbunam",
+      "displayName": "Iroegbunam",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 305,
+      "canonicalName": "Harrison Armstrong",
+      "displayName": "Armstrong",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 306,
+      "canonicalName": "Callum Bates",
+      "displayName": "Bates",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 307,
+      "canonicalName": "Coby Ebere",
+      "displayName": "Ebere",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 308,
+      "canonicalName": "Isaac Heath",
+      "displayName": "Heath",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 309,
+      "canonicalName": "Jenson Metcalfe",
+      "displayName": "Metcalfe",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 310,
+      "canonicalName": "Thierno Barry",
+      "displayName": "Barry",
+      "team": "Everton",
+      "position": "FWD",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 311,
+      "canonicalName": "Norberto Bercique Gomes Betuncal",
+      "displayName": "Beto",
+      "team": "Everton",
+      "position": "FWD",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 312,
+      "canonicalName": "Youssef Ramalho Chermiti",
+      "displayName": "Y.Chermiti",
+      "team": "Everton",
+      "position": "FWD",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 313,
+      "canonicalName": "Martin Sherif",
+      "displayName": "Sherif",
+      "team": "Everton",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 314,
+      "canonicalName": "Bernd Leno",
+      "displayName": "Leno",
+      "team": "Fulham",
+      "position": "GK",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 315,
+      "canonicalName": "Steven Benda",
+      "displayName": "Benda",
+      "team": "Fulham",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 316,
+      "canonicalName": "Antonee Robinson",
+      "displayName": "Robinson",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 317,
+      "canonicalName": "Joachim Andersen",
+      "displayName": "Andersen",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 318,
+      "canonicalName": "Calvin Bassey",
+      "displayName": "Bassey",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 319,
+      "canonicalName": "Timothy Castagne",
+      "displayName": "Castagne",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 320,
+      "canonicalName": "Issa Diop",
+      "displayName": "Diop",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 321,
+      "canonicalName": "Jorge Cuenca Barreno",
+      "displayName": "J.Cuenca",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 322,
+      "canonicalName": "Kenny Tete",
+      "displayName": "Tete",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 323,
+      "canonicalName": "Samuel Amissah",
+      "displayName": "Amissah",
+      "team": "Fulham",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 324,
+      "canonicalName": "Alex Iwobi",
+      "displayName": "Iwobi",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 6.1,
+      "aliases": []
+    },
+    {
+      "playerId": 325,
+      "canonicalName": "Emile Smith Rowe",
+      "displayName": "Smith Rowe",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 326,
+      "canonicalName": "Adama Traoré Diarra",
+      "displayName": "Adama",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 327,
+      "canonicalName": "Andreas Hoelgebaum Pereira",
+      "displayName": "Andreas",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 328,
+      "canonicalName": "Ryan Sessegnon",
+      "displayName": "Sessegnon",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 329,
+      "canonicalName": "Harry Wilson",
+      "displayName": "Wilson",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 330,
+      "canonicalName": "Sander Berge",
+      "displayName": "Berge",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 331,
+      "canonicalName": "Tom Cairney",
+      "displayName": "Cairney",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 332,
+      "canonicalName": "Saša Lukić",
+      "displayName": "Lukić",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 333,
+      "canonicalName": "Martial Godo",
+      "displayName": "Godo",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 334,
+      "canonicalName": "Luke Harris",
+      "displayName": "Harris",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 335,
+      "canonicalName": "Josh King",
+      "displayName": "King",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 336,
+      "canonicalName": "Harrison Reed",
+      "displayName": "Reed",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 337,
+      "canonicalName": "Raúl Jiménez Rodríguez",
+      "displayName": "Raúl",
+      "team": "Fulham",
+      "position": "FWD",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 338,
+      "canonicalName": "Rodrigo Muniz Carvalho",
+      "displayName": "Muniz",
+      "team": "Fulham",
+      "position": "FWD",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 339,
+      "canonicalName": "Illan Meslier",
+      "displayName": "Meslier",
+      "team": "Leeds",
+      "position": "GK",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 340,
+      "canonicalName": "Alex Cairns",
+      "displayName": "Cairns",
+      "team": "Leeds",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 341,
+      "canonicalName": "Karl Darlow",
+      "displayName": "Darlow",
+      "team": "Leeds",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 342,
+      "canonicalName": "Jayden Bogle",
+      "displayName": "Bogle",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 343,
+      "canonicalName": "Pascal Struijk",
+      "displayName": "Struijk",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 344,
+      "canonicalName": "Jaka Bijol",
+      "displayName": "Bijol",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 345,
+      "canonicalName": "Sebastiaan Bornauw",
+      "displayName": "Bornauw",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 346,
+      "canonicalName": "Sam Byram",
+      "displayName": "Byram",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 347,
+      "canonicalName": "Gabriel Gudmundsson",
+      "displayName": "Gudmundsson",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 348,
+      "canonicalName": "Joe Rodon",
+      "displayName": "Rodon",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 349,
+      "canonicalName": "Isaac Schmidt",
+      "displayName": "Schmidt",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 350,
+      "canonicalName": "Brenden Aaronson",
+      "displayName": "Aaronson",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 351,
+      "canonicalName": "Wilfried Gnonto",
+      "displayName": "Gnonto",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 352,
+      "canonicalName": "Jack Harrison",
+      "displayName": "Harrison",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 353,
+      "canonicalName": "Daniel James",
+      "displayName": "James",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 354,
+      "canonicalName": "Ethan Ampadu",
+      "displayName": "Ampadu",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 355,
+      "canonicalName": "Sam Greenwood",
+      "displayName": "Greenwood",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 356,
+      "canonicalName": "Ilia Gruev",
+      "displayName": "Gruev",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 357,
+      "canonicalName": "Largie Ramazani",
+      "displayName": "Ramazani",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 358,
+      "canonicalName": "Tanaka Ao",
+      "displayName": "Tanaka",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 359,
+      "canonicalName": "Charlie Crew",
+      "displayName": "Crew",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 360,
+      "canonicalName": "Joe Gelhardt",
+      "displayName": "Gelhardt",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 361,
+      "canonicalName": "Darko Gyabi",
+      "displayName": "Gyabi",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 362,
+      "canonicalName": "Joël Piroe",
+      "displayName": "Piroe",
+      "team": "Leeds",
+      "position": "FWD",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 363,
+      "canonicalName": "Patrick Bamford",
+      "displayName": "Bamford",
+      "team": "Leeds",
+      "position": "FWD",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 364,
+      "canonicalName": "Mateo Joseph Fernández-Regatillo",
+      "displayName": "Mateo Joseph",
+      "team": "Leeds",
+      "position": "FWD",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 365,
+      "canonicalName": "Lukas Nmecha",
+      "displayName": "Nmecha",
+      "team": "Leeds",
+      "position": "FWD",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 366,
+      "canonicalName": "Alisson Becker",
+      "displayName": "A.Becker",
+      "team": "Liverpool",
+      "position": "GK",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 367,
+      "canonicalName": "Giorgi Mamardashvili",
+      "displayName": "Mamardashvili",
+      "team": "Liverpool",
+      "position": "GK",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 368,
+      "canonicalName": "Ármin Pécsi",
+      "displayName": "Pécsi",
+      "team": "Liverpool",
+      "position": "GK",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 369,
+      "canonicalName": "Freddie Woodman",
+      "displayName": "Woodman",
+      "team": "Liverpool",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 370,
+      "canonicalName": "Jeremie Frimpong",
+      "displayName": "Frimpong",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 371,
+      "canonicalName": "Milos Kerkez",
+      "displayName": "Kerkez",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 372,
+      "canonicalName": "Andrew Robertson",
+      "displayName": "Robertson",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 373,
+      "canonicalName": "Virgil van Dijk",
+      "displayName": "Virgil",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 6.1,
+      "aliases": []
+    },
+    {
+      "playerId": 374,
+      "canonicalName": "Ibrahima Konaté",
+      "displayName": "Konaté",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 375,
+      "canonicalName": "Conor Bradley",
+      "displayName": "Bradley",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 376,
+      "canonicalName": "Joe Gomez",
+      "displayName": "Gomez",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 377,
+      "canonicalName": "Konstantinos Tsimikas",
+      "displayName": "Tsimikas",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 378,
+      "canonicalName": "Amara Nallo",
+      "displayName": "Nallo",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 379,
+      "canonicalName": "Rhys Williams",
+      "displayName": "R.Williams",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 380,
+      "canonicalName": "Calvin Ramsay",
+      "displayName": "Ramsay",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 381,
+      "canonicalName": "Mohamed Salah",
+      "displayName": "M.Salah",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 14.0,
+      "aliases": []
+    },
+    {
+      "playerId": 382,
+      "canonicalName": "Florian Wirtz",
+      "displayName": "Wirtz",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 8.3,
+      "aliases": []
+    },
+    {
+      "playerId": 383,
+      "canonicalName": "Luis Díaz Marulanda",
+      "displayName": "Luis Díaz",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 8.0,
+      "aliases": []
+    },
+    {
+      "playerId": 384,
+      "canonicalName": "Cody Gakpo",
+      "displayName": "Gakpo",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 7.3,
+      "aliases": []
+    },
+    {
+      "playerId": 385,
+      "canonicalName": "Federico Chiesa",
+      "displayName": "Chiesa",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 386,
+      "canonicalName": "Alexis Mac Allister",
+      "displayName": "Mac Allister",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 6.1,
+      "aliases": []
+    },
+    {
+      "playerId": 387,
+      "canonicalName": "Dominik Szoboszlai",
+      "displayName": "Szoboszlai",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 7.1,
+      "aliases": []
+    },
+    {
+      "playerId": 388,
+      "canonicalName": "Curtis Jones",
+      "displayName": "C.Jones",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 389,
+      "canonicalName": "Harvey Elliott",
+      "displayName": "Elliott",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 390,
+      "canonicalName": "Ryan Gravenberch",
+      "displayName": "Gravenberch",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 391,
+      "canonicalName": "Ben Gannon-Doak",
+      "displayName": "Gannon-Doak",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 392,
+      "canonicalName": "Endo Wataru",
+      "displayName": "Endo",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 393,
+      "canonicalName": "Stefan Bajčetić Maquieira",
+      "displayName": "Bajcetic",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 394,
+      "canonicalName": "James McConnell",
+      "displayName": "McConnell",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 395,
+      "canonicalName": "Tyler Morton",
+      "displayName": "Morton",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 396,
+      "canonicalName": "Trey Nyoni",
+      "displayName": "Nyoni",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 397,
+      "canonicalName": "Darwin Núñez Ribeiro",
+      "displayName": "Darwin",
+      "team": "Liverpool",
+      "position": "FWD",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 398,
+      "canonicalName": "Jayden Danns",
+      "displayName": "Danns",
+      "team": "Liverpool",
+      "position": "FWD",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 399,
+      "canonicalName": "Ederson Santana de Moraes",
+      "displayName": "Ederson M.",
+      "team": "Man City",
+      "position": "GK",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 400,
+      "canonicalName": "Stefan Ortega Moreno",
+      "displayName": "Ortega Moreno",
+      "team": "Nott'm Forest",
+      "position": "GK",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 401,
+      "canonicalName": "Marcus Bettinelli",
+      "displayName": "Bettinelli",
+      "team": "Man City",
+      "position": "GK",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 402,
+      "canonicalName": "Rayan Aït-Nouri",
+      "displayName": "Aït-Nouri",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 403,
+      "canonicalName": "Joško Gvardiol",
+      "displayName": "Gvardiol",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 404,
+      "canonicalName": "Manuel Akanji",
+      "displayName": "Akanji",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 405,
+      "canonicalName": "Nathan Aké",
+      "displayName": "Aké",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 406,
+      "canonicalName": "Abdukodir Khusanov",
+      "displayName": "Khusanov",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 407,
+      "canonicalName": "Matheus Nunes",
+      "displayName": "Matheus N.",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 408,
+      "canonicalName": "Rúben dos Santos Gato Alves Dias",
+      "displayName": "Rúben",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 409,
+      "canonicalName": "John Stones",
+      "displayName": "Stones",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 410,
+      "canonicalName": "Rico Lewis",
+      "displayName": "Lewis",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 411,
+      "canonicalName": "Nico O'Reilly",
+      "displayName": "O'Reilly",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 412,
+      "canonicalName": "Vitor de Oliveira Nunes dos Reis",
+      "displayName": "Vitor Reis",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 413,
+      "canonicalName": "Omar Marmoush",
+      "displayName": "Marmoush",
+      "team": "Man City",
+      "position": "MID",
+      "price": 8.3,
+      "aliases": []
+    },
+    {
+      "playerId": 414,
+      "canonicalName": "Phil Foden",
+      "displayName": "Foden",
+      "team": "Man City",
+      "position": "MID",
+      "price": 8.0,
+      "aliases": []
+    },
+    {
+      "playerId": 415,
+      "canonicalName": "Sávio Moreira de Oliveira",
+      "displayName": "Savinho",
+      "team": "Man City",
+      "position": "MID",
+      "price": 6.9,
+      "aliases": []
+    },
+    {
+      "playerId": 416,
+      "canonicalName": "Bernardo Mota Veiga de Carvalho e Silva",
+      "displayName": "Bernardo",
+      "team": "Man City",
+      "position": "MID",
+      "price": 6.2,
+      "aliases": []
+    },
+    {
+      "playerId": 417,
+      "canonicalName": "Rayan Cherki",
+      "displayName": "Cherki",
+      "team": "Man City",
+      "position": "MID",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 418,
+      "canonicalName": "Jérémy Doku",
+      "displayName": "Doku",
+      "team": "Man City",
+      "position": "MID",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 419,
+      "canonicalName": "Jack Grealish",
+      "displayName": "Grealish",
+      "team": "Everton",
+      "position": "MID",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 420,
+      "canonicalName": "İlkay Gündoğan",
+      "displayName": "Gündoğan",
+      "team": "Man City",
+      "position": "MID",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 421,
+      "canonicalName": "Rodrigo 'Rodri' Hernandez Cascante",
+      "displayName": "Rodrigo",
+      "team": "Man City",
+      "position": "MID",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 422,
+      "canonicalName": "Mateo Kovačić",
+      "displayName": "Kovačić",
+      "team": "Man City",
+      "position": "MID",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 423,
+      "canonicalName": "Nico González Iglesias",
+      "displayName": "N.Gonzalez",
+      "team": "Man City",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 424,
+      "canonicalName": "Oscar Bobb",
+      "displayName": "Bobb",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 425,
+      "canonicalName": "Claudio Echeverri",
+      "displayName": "Echeverri",
+      "team": "Man City",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 426,
+      "canonicalName": "James McAtee",
+      "displayName": "McAtee",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 427,
+      "canonicalName": "Tijjani Reijnders",
+      "displayName": "Reijnders",
+      "team": "Man City",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 428,
+      "canonicalName": "Sverre Nypan",
+      "displayName": "Nypan",
+      "team": "Man City",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 429,
+      "canonicalName": "Kalvin Phillips",
+      "displayName": "Phillips",
+      "team": "Man City",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 430,
+      "canonicalName": "Erling Haaland",
+      "displayName": "Haaland",
+      "team": "Man City",
+      "position": "FWD",
+      "price": 14.7,
+      "aliases": []
+    },
+    {
+      "playerId": 431,
+      "canonicalName": "Altay Bayındır",
+      "displayName": "Bayindir",
+      "team": "Man Utd",
+      "position": "GK",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 432,
+      "canonicalName": "André Onana",
+      "displayName": "Onana",
+      "team": "Man Utd",
+      "position": "GK",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 433,
+      "canonicalName": "Elyh Harrison",
+      "displayName": "Harrison",
+      "team": "Man Utd",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 434,
+      "canonicalName": "Tom Heaton",
+      "displayName": "Heaton",
+      "team": "Man Utd",
+      "position": "GK",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 435,
+      "canonicalName": "Dermot Mee",
+      "displayName": "Mee",
+      "team": "Man Utd",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 436,
+      "canonicalName": "Matthijs de Ligt",
+      "displayName": "De Ligt",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 437,
+      "canonicalName": "Lisandro Martínez",
+      "displayName": "Martinez",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 438,
+      "canonicalName": "Noussair Mazraoui",
+      "displayName": "Mazraoui",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 439,
+      "canonicalName": "Diego León Blanco",
+      "displayName": "D.Leon",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 440,
+      "canonicalName": "Diogo Dalot Teixeira",
+      "displayName": "Dalot",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 441,
+      "canonicalName": "Patrick Dorgu",
+      "displayName": "Dorgu",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 442,
+      "canonicalName": "Harry Maguire",
+      "displayName": "Maguire",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 443,
+      "canonicalName": "Luke Shaw",
+      "displayName": "Shaw",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 444,
+      "canonicalName": "Leny Yoro",
+      "displayName": "Yoro",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 445,
+      "canonicalName": "Harry Amass",
+      "displayName": "Amass",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 446,
+      "canonicalName": "Tyler Fredricson",
+      "displayName": "Fredricson",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 447,
+      "canonicalName": "Ayden Heaven",
+      "displayName": "Heaven",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 448,
+      "canonicalName": "Tyrell Malacia",
+      "displayName": "Malacia",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 3.7,
+      "aliases": []
+    },
+    {
+      "playerId": 449,
+      "canonicalName": "Bruno Borges Fernandes",
+      "displayName": "B.Fernandes",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 10.4,
+      "aliases": []
+    },
+    {
+      "playerId": 450,
+      "canonicalName": "Matheus Santos Carneiro da Cunha",
+      "displayName": "Cunha",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 8.1,
+      "aliases": []
+    },
+    {
+      "playerId": 451,
+      "canonicalName": "Marcus Rashford",
+      "displayName": "Rashford",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 7.0,
+      "aliases": []
+    },
+    {
+      "playerId": 452,
+      "canonicalName": "Amad Diallo",
+      "displayName": "Amad",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 6.2,
+      "aliases": []
+    },
+    {
+      "playerId": 453,
+      "canonicalName": "Alejandro Garnacho Ferreyra",
+      "displayName": "Garnacho",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 6.4,
+      "aliases": []
+    },
+    {
+      "playerId": 454,
+      "canonicalName": "Antony dos Santos",
+      "displayName": "Antony",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 455,
+      "canonicalName": "Mason Mount",
+      "displayName": "Mount",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 456,
+      "canonicalName": "Jadon Sancho",
+      "displayName": "Sancho",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 457,
+      "canonicalName": "Carlos Henrique Casimiro",
+      "displayName": "Casemiro",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 458,
+      "canonicalName": "Kobbie Mainoo",
+      "displayName": "Mainoo",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 459,
+      "canonicalName": "Manuel Ugarte Ribeiro",
+      "displayName": "Ugarte",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 460,
+      "canonicalName": "Toby Collyer",
+      "displayName": "Collyer",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 461,
+      "canonicalName": "Jayce Fitzgerald",
+      "displayName": "Fitzgerald",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 462,
+      "canonicalName": "Jack Fletcher",
+      "displayName": "J.Fletcher",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 463,
+      "canonicalName": "Sékou Koné",
+      "displayName": "Kone",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 464,
+      "canonicalName": "Jack Moorhouse",
+      "displayName": "Moorhouse",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 465,
+      "canonicalName": "Rasmus Højlund",
+      "displayName": "Højlund",
+      "team": "Man Utd",
+      "position": "FWD",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 466,
+      "canonicalName": "Joshua Zirkzee",
+      "displayName": "Zirkzee",
+      "team": "Man Utd",
+      "position": "FWD",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 467,
+      "canonicalName": "Chido Obi",
+      "displayName": "Obi",
+      "team": "Man Utd",
+      "position": "FWD",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 468,
+      "canonicalName": "Ethan Wheatley",
+      "displayName": "Wheatley",
+      "team": "Man Utd",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 469,
+      "canonicalName": "Nick Pope",
+      "displayName": "Pope",
+      "team": "Newcastle",
+      "position": "GK",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 470,
+      "canonicalName": "Martin Dúbravka",
+      "displayName": "Dúbravka",
+      "team": "Burnley",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 471,
+      "canonicalName": "Mark Gillespie",
+      "displayName": "Gillespie",
+      "team": "Newcastle",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 472,
+      "canonicalName": "Odysseas Vlachodimos",
+      "displayName": "Odysseas",
+      "team": "Newcastle",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 473,
+      "canonicalName": "Lewis Hall",
+      "displayName": "Hall",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 474,
+      "canonicalName": "Fabian Schär",
+      "displayName": "Schär",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 475,
+      "canonicalName": "Sven Botman",
+      "displayName": "Botman",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 476,
+      "canonicalName": "Dan Burn",
+      "displayName": "Burn",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 477,
+      "canonicalName": "Tino Livramento",
+      "displayName": "Livramento",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 478,
+      "canonicalName": "Kieran Trippier",
+      "displayName": "Trippier",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 479,
+      "canonicalName": "Emil Krafth",
+      "displayName": "Krafth",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 480,
+      "canonicalName": "Jamaal Lascelles",
+      "displayName": "Lascelles",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 481,
+      "canonicalName": "Alex Murphy",
+      "displayName": "A.Murphy",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 482,
+      "canonicalName": "Harrison Ashby",
+      "displayName": "Ashby",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 483,
+      "canonicalName": "Miodrag Pivaš",
+      "displayName": "Pivas",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 484,
+      "canonicalName": "Matt Targett",
+      "displayName": "Targett",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 485,
+      "canonicalName": "Anthony Gordon",
+      "displayName": "Gordon",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 7.2,
+      "aliases": []
+    },
+    {
+      "playerId": 486,
+      "canonicalName": "Anthony Elanga",
+      "displayName": "Elanga",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 487,
+      "canonicalName": "Harvey Barnes",
+      "displayName": "Barnes",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 6.1,
+      "aliases": []
+    },
+    {
+      "playerId": 488,
+      "canonicalName": "Bruno Guimarães Rodriguez Moura",
+      "displayName": "Bruno G.",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 6.9,
+      "aliases": []
+    },
+    {
+      "playerId": 489,
+      "canonicalName": "Jacob Murphy",
+      "displayName": "J.Murphy",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 490,
+      "canonicalName": "Joelinton Cássio Apolinário de Lira",
+      "displayName": "Joelinton",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 491,
+      "canonicalName": "Sandro Tonali",
+      "displayName": "Tonali",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 492,
+      "canonicalName": "Antoñito Cordero Campillo",
+      "displayName": "Antoñito C.",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 493,
+      "canonicalName": "Sean Longstaff",
+      "displayName": "Longstaff",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 494,
+      "canonicalName": "Joe Willock",
+      "displayName": "Willock",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 495,
+      "canonicalName": "Isaac Hayden",
+      "displayName": "Hayden",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 496,
+      "canonicalName": "Garang Kuol",
+      "displayName": "Kuol",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 497,
+      "canonicalName": "Lewis Miley",
+      "displayName": "L.Miley",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 498,
+      "canonicalName": "Joe White",
+      "displayName": "White",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 499,
+      "canonicalName": "Alexander Isak",
+      "displayName": "Isak",
+      "team": "Liverpool",
+      "position": "FWD",
+      "price": 10.3,
+      "aliases": []
+    },
+    {
+      "playerId": 500,
+      "canonicalName": "William Osula",
+      "displayName": "Osula",
+      "team": "Newcastle",
+      "position": "FWD",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 501,
+      "canonicalName": "Sean Neave",
+      "displayName": "Neave",
+      "team": "Newcastle",
+      "position": "FWD",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 502,
+      "canonicalName": "Matz Sels",
+      "displayName": "Sels",
+      "team": "Nott'm Forest",
+      "position": "GK",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 503,
+      "canonicalName": "Carlos Miguel dos Santos Pereira",
+      "displayName": "C.Miguel",
+      "team": "Nott'm Forest",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 504,
+      "canonicalName": "Matt Turner",
+      "displayName": "Turner",
+      "team": "Nott'm Forest",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 505,
+      "canonicalName": "Nikola Milenković",
+      "displayName": "Milenković",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 506,
+      "canonicalName": "Murillo Costa dos Santos",
+      "displayName": "Murillo",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 507,
+      "canonicalName": "Ola Aina",
+      "displayName": "Aina",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 508,
+      "canonicalName": "Neco Williams",
+      "displayName": "N.Williams",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 509,
+      "canonicalName": "David Mota Veiga Teixeira do Carmo",
+      "displayName": "David Carmo",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 510,
+      "canonicalName": "Jair Paula da Cunha Filho",
+      "displayName": "Jair Cunha",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 511,
+      "canonicalName": "Felipe Rodrigues da Silva",
+      "displayName": "Morato",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 512,
+      "canonicalName": "Omar Richards",
+      "displayName": "O.Richards",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 513,
+      "canonicalName": "Zach Abbott",
+      "displayName": "Abbott",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 514,
+      "canonicalName": "Willy Boly",
+      "displayName": "Boly",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 515,
+      "canonicalName": "Morgan Gibbs-White",
+      "displayName": "Gibbs-White",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 7.6,
+      "aliases": []
+    },
+    {
+      "playerId": 516,
+      "canonicalName": "Callum Hudson-Odoi",
+      "displayName": "Hudson-Odoi",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 517,
+      "canonicalName": "Elliot Anderson",
+      "displayName": "Anderson",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 518,
+      "canonicalName": "João Pedro Ferreira da Silva",
+      "displayName": "Jota",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 519,
+      "canonicalName": "Nicolás Domínguez",
+      "displayName": "Dominguez",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 520,
+      "canonicalName": "Lewis O'Brien",
+      "displayName": "O'Brien",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 521,
+      "canonicalName": "Ibrahim Sangaré",
+      "displayName": "Sangaré",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 522,
+      "canonicalName": "Ryan Yates",
+      "displayName": "Yates",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 523,
+      "canonicalName": "Eric da Silva Moreira",
+      "displayName": "Da Silva Moreira",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 524,
+      "canonicalName": "Marko Stamenić",
+      "displayName": "Stamenic",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 525,
+      "canonicalName": "Chris Wood",
+      "displayName": "Wood",
+      "team": "Nott'm Forest",
+      "position": "FWD",
+      "price": 7.1,
+      "aliases": []
+    },
+    {
+      "playerId": 526,
+      "canonicalName": "Igor Jesus Maciel da Cruz",
+      "displayName": "Igor Jesus",
+      "team": "Nott'm Forest",
+      "position": "FWD",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 527,
+      "canonicalName": "Taiwo Awoniyi",
+      "displayName": "Awoniyi",
+      "team": "Nott'm Forest",
+      "position": "FWD",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 528,
+      "canonicalName": "Anthony Patterson",
+      "displayName": "Patterson",
+      "team": "Sunderland",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 529,
+      "canonicalName": "Simon Moore",
+      "displayName": "Moore",
+      "team": "Sunderland",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 530,
+      "canonicalName": "Blondy Nna Noukeu",
+      "displayName": "Nna Noukeu",
+      "team": "Sunderland",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 531,
+      "canonicalName": "Daniel Ballard",
+      "displayName": "Ballard",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 532,
+      "canonicalName": "Trai Hume",
+      "displayName": "Hume",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 533,
+      "canonicalName": "Aji Alese",
+      "displayName": "Alese",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 534,
+      "canonicalName": "Joe Anderson",
+      "displayName": "Anderson",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 535,
+      "canonicalName": "Dennis Cirkin",
+      "displayName": "Cirkin",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 536,
+      "canonicalName": "Leo Fuhr Hjelde",
+      "displayName": "Hjelde",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 537,
+      "canonicalName": "Niall Huggins",
+      "displayName": "Huggins",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 538,
+      "canonicalName": "Zak Johnson",
+      "displayName": "Johnson",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 539,
+      "canonicalName": "Luke O'Nien",
+      "displayName": "O'Nien",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 540,
+      "canonicalName": "Timothée Pembélé",
+      "displayName": "Pembele",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 541,
+      "canonicalName": "Reinildo Mandava",
+      "displayName": "Reinildo",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 542,
+      "canonicalName": "Jenson Seelt",
+      "displayName": "Seelt",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 543,
+      "canonicalName": "Simon Adingra",
+      "displayName": "Adingra",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 544,
+      "canonicalName": "Habib Diarra",
+      "displayName": "Diarra",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 545,
+      "canonicalName": "Patrick Roberts",
+      "displayName": "Roberts",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 546,
+      "canonicalName": "Milan Aleksić",
+      "displayName": "Aleksić",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 547,
+      "canonicalName": "Enzo Le Fée",
+      "displayName": "E.Le Fée",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 548,
+      "canonicalName": "Romaine Mundle",
+      "displayName": "Mundle",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 549,
+      "canonicalName": "Dan Neil",
+      "displayName": "Neil",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 550,
+      "canonicalName": "Ian Poveda-Ocampo",
+      "displayName": "Poveda",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 551,
+      "canonicalName": "Chris Rigg",
+      "displayName": "Rigg",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 552,
+      "canonicalName": "Noah Sadiki",
+      "displayName": "Sadiki",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 553,
+      "canonicalName": "Chemsdine Talbi",
+      "displayName": "Talbi",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 554,
+      "canonicalName": "Abdoullah Ba",
+      "displayName": "Ba",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 555,
+      "canonicalName": "Alan Browne",
+      "displayName": "Browne",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 556,
+      "canonicalName": "Pierre Ekwah Elimby",
+      "displayName": "Ekwah",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 557,
+      "canonicalName": "Harrison Jones",
+      "displayName": "H.Jones",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 558,
+      "canonicalName": "Jay Matete",
+      "displayName": "Matete",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 559,
+      "canonicalName": "Nectarios Triantis",
+      "displayName": "Triantis",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 560,
+      "canonicalName": "Wilson Isidor",
+      "displayName": "Isidor",
+      "team": "Sunderland",
+      "position": "FWD",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 561,
+      "canonicalName": "Eliezer Mayenda Dossou",
+      "displayName": "Mayenda",
+      "team": "Sunderland",
+      "position": "FWD",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 562,
+      "canonicalName": "Ahmed Abdullahi",
+      "displayName": "Abdullahi",
+      "team": "Sunderland",
+      "position": "FWD",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 563,
+      "canonicalName": "Luís Hemir Silva Semedo",
+      "displayName": "Luís Hemir",
+      "team": "Sunderland",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 564,
+      "canonicalName": "Nazarii Rusyn",
+      "displayName": "Rusyn",
+      "team": "Sunderland",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 565,
+      "canonicalName": "Guglielmo Vicario",
+      "displayName": "Vicario",
+      "team": "Spurs",
+      "position": "GK",
+      "price": 4.7,
+      "aliases": []
+    },
+    {
+      "playerId": 566,
+      "canonicalName": "Brandon Austin",
+      "displayName": "Austin",
+      "team": "Spurs",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 567,
+      "canonicalName": "Antonín Kinský",
+      "displayName": "Kinsky",
+      "team": "Spurs",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 568,
+      "canonicalName": "Pedro Porro Sauceda",
+      "displayName": "Pedro Porro",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 569,
+      "canonicalName": "Cristian Romero",
+      "displayName": "Romero",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 570,
+      "canonicalName": "Kevin Danso",
+      "displayName": "Danso",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 571,
+      "canonicalName": "Ben Davies",
+      "displayName": "Davies",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 572,
+      "canonicalName": "Radu Drăgușin",
+      "displayName": "Dragusin",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 573,
+      "canonicalName": "Djed Spence",
+      "displayName": "Spence",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 574,
+      "canonicalName": "Destiny Udogie",
+      "displayName": "Udogie",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 575,
+      "canonicalName": "Micky van de Ven",
+      "displayName": "Van de Ven",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 576,
+      "canonicalName": "Ashley Phillips",
+      "displayName": "Phillips",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 577,
+      "canonicalName": "Takai Kōta",
+      "displayName": "Takai",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 578,
+      "canonicalName": "Luka Vušković",
+      "displayName": "Vuskovic",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 579,
+      "canonicalName": "Son Heung-min",
+      "displayName": "Son",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 8.5,
+      "aliases": []
+    },
+    {
+      "playerId": 580,
+      "canonicalName": "Brennan Johnson",
+      "displayName": "Johnson",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 581,
+      "canonicalName": "James Maddison",
+      "displayName": "Maddison",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 6.8,
+      "aliases": []
+    },
+    {
+      "playerId": 582,
+      "canonicalName": "Mohammed Kudus",
+      "displayName": "Kudus",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 6.4,
+      "aliases": []
+    },
+    {
+      "playerId": 583,
+      "canonicalName": "Dejan Kulusevski",
+      "displayName": "Kulusevski",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 6.4,
+      "aliases": []
+    },
+    {
+      "playerId": 584,
+      "canonicalName": "Mathys Tel",
+      "displayName": "Tel",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 6.2,
+      "aliases": []
+    },
+    {
+      "playerId": 585,
+      "canonicalName": "Rodrigo Bentancur",
+      "displayName": "Bentancur",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 586,
+      "canonicalName": "Lucas Bergvall",
+      "displayName": "Bergvall",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 587,
+      "canonicalName": "Yves Bissouma",
+      "displayName": "Bissouma",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 588,
+      "canonicalName": "Wilson Odobert",
+      "displayName": "Odobert",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 589,
+      "canonicalName": "Manor Solomon",
+      "displayName": "Solomon",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 590,
+      "canonicalName": "Bryan Gil Salvatierra",
+      "displayName": "Bryan",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 591,
+      "canonicalName": "Archie Gray",
+      "displayName": "Gray",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 592,
+      "canonicalName": "Mikey Moore",
+      "displayName": "Moore",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 593,
+      "canonicalName": "Pape Matar Sarr",
+      "displayName": "P.M.Sarr",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 594,
+      "canonicalName": "Yang Min-hyeok",
+      "displayName": "Min-hyeok",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 595,
+      "canonicalName": "Callum Olusesi",
+      "displayName": "Olusesi",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 596,
+      "canonicalName": "Dominic Solanke-Mitchell",
+      "displayName": "Solanke",
+      "team": "Spurs",
+      "position": "FWD",
+      "price": 7.1,
+      "aliases": []
+    },
+    {
+      "playerId": 597,
+      "canonicalName": "Richarlison de Andrade",
+      "displayName": "Richarlison",
+      "team": "Spurs",
+      "position": "FWD",
+      "price": 6.5,
+      "aliases": []
+    },
+    {
+      "playerId": 598,
+      "canonicalName": "Will Lankshear",
+      "displayName": "Lankshear",
+      "team": "Spurs",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 599,
+      "canonicalName": "Dane Scarlett",
+      "displayName": "Scarlett",
+      "team": "Spurs",
+      "position": "FWD",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 600,
+      "canonicalName": "Alphonse Areola",
+      "displayName": "Areola",
+      "team": "West Ham",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 601,
+      "canonicalName": "Wes Foderingham",
+      "displayName": "Foderingham",
+      "team": "West Ham",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 602,
+      "canonicalName": "Krisztián Hegyi",
+      "displayName": "Hegyi",
+      "team": "West Ham",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 603,
+      "canonicalName": "El Hadji Malick Diouf",
+      "displayName": "Diouf",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 604,
+      "canonicalName": "Emerson Palmieri dos Santos",
+      "displayName": "Emerson",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 605,
+      "canonicalName": "Maximilian Kilman",
+      "displayName": "Kilman",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 606,
+      "canonicalName": "Konstantinos Mavropanos",
+      "displayName": "Mavropanos",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 607,
+      "canonicalName": "Nayef Aguerd",
+      "displayName": "N.Aguerd",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 608,
+      "canonicalName": "Ollie Scarles",
+      "displayName": "Scarles",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 609,
+      "canonicalName": "Jean-Clair Todibo",
+      "displayName": "Todibo",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 610,
+      "canonicalName": "Aaron Wan-Bissaka",
+      "displayName": "Wan-Bissaka",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 611,
+      "canonicalName": "Kaelan Casey",
+      "displayName": "Casey",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 612,
+      "canonicalName": "Lucas Tolentino Coelho de Lima",
+      "displayName": "L.Paquetá",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 613,
+      "canonicalName": "Tomáš Souček",
+      "displayName": "Souček",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 614,
+      "canonicalName": "James Ward-Prowse",
+      "displayName": "Ward-Prowse",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 615,
+      "canonicalName": "Crysencio Summerville",
+      "displayName": "Summerville",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 616,
+      "canonicalName": "Edson Álvarez Velázquez",
+      "displayName": "Álvarez",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 617,
+      "canonicalName": "Maxwel Cornet",
+      "displayName": "Cornet",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 618,
+      "canonicalName": "Guido Rodríguez",
+      "displayName": "G.Rodriguez",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 619,
+      "canonicalName": "Luis Guilherme Lira dos Santos",
+      "displayName": "L.Guilherme",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 620,
+      "canonicalName": "George Earthy",
+      "displayName": "Earthy",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 621,
+      "canonicalName": "Andy Irving",
+      "displayName": "Irving",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 622,
+      "canonicalName": "Lewis Orford",
+      "displayName": "Orford",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 623,
+      "canonicalName": "Freddie Potts",
+      "displayName": "Potts",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 624,
+      "canonicalName": "Jarrod Bowen",
+      "displayName": "Bowen",
+      "team": "West Ham",
+      "position": "FWD",
+      "price": 7.8,
+      "aliases": []
+    },
+    {
+      "playerId": 625,
+      "canonicalName": "Niclas Füllkrug",
+      "displayName": "Füllkrug",
+      "team": "West Ham",
+      "position": "FWD",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 626,
+      "canonicalName": "Callum Marshall",
+      "displayName": "Marshall",
+      "team": "West Ham",
+      "position": "FWD",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 627,
+      "canonicalName": "Sam Johnstone",
+      "displayName": "Johnstone",
+      "team": "Wolves",
+      "position": "GK",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 628,
+      "canonicalName": "José Malheiro de Sá",
+      "displayName": "José Sá",
+      "team": "Wolves",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 629,
+      "canonicalName": "Daniel Bentley",
+      "displayName": "Bentley",
+      "team": "Wolves",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 630,
+      "canonicalName": "Tom King",
+      "displayName": "King",
+      "team": "Everton",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 631,
+      "canonicalName": "Emmanuel Agbadou",
+      "displayName": "Agbadou",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 632,
+      "canonicalName": "Matt Doherty",
+      "displayName": "Doherty",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 633,
+      "canonicalName": "Hugo Bueno López",
+      "displayName": "H.Bueno",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 634,
+      "canonicalName": "Yerson Mosquera Valdelamar",
+      "displayName": "Mosquera",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 635,
+      "canonicalName": "Rodrigo Martins Gomes",
+      "displayName": "R.Gomes",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 636,
+      "canonicalName": "Santiago Ignacio Bueno",
+      "displayName": "S.Bueno",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 637,
+      "canonicalName": "Toti Gomes",
+      "displayName": "Toti",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 638,
+      "canonicalName": "Ki-Jana Hoever",
+      "displayName": "Hoever",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 3.8,
+      "aliases": []
+    },
+    {
+      "playerId": 639,
+      "canonicalName": "Bastien Meupiyou Menadjou",
+      "displayName": "Meupiyou",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 640,
+      "canonicalName": "Pedro Cardoso de Lima",
+      "displayName": "Pedro Lima",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 641,
+      "canonicalName": "Alfie Pond",
+      "displayName": "Pond",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 642,
+      "canonicalName": "Hwang Hee-chan",
+      "displayName": "Hee Chan",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 643,
+      "canonicalName": "André Trindade da Costa Neto",
+      "displayName": "André",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 644,
+      "canonicalName": "Jean-Ricner Bellegarde",
+      "displayName": "Bellegarde",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 645,
+      "canonicalName": "Fer López González",
+      "displayName": "Fer López",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 646,
+      "canonicalName": "João Victor Gomes da Silva",
+      "displayName": "J.Gomes",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 647,
+      "canonicalName": "Gonçalo Manuel Ganchinho Guedes",
+      "displayName": "Guedes",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 648,
+      "canonicalName": "Marshall Munetsi",
+      "displayName": "Munetsi",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 649,
+      "canonicalName": "Boubacar Traoré",
+      "displayName": "B.Traore",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 650,
+      "canonicalName": "Tawanda Chirewa",
+      "displayName": "Chirewa",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 651,
+      "canonicalName": "Tom Edozie",
+      "displayName": "Edozie",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 652,
+      "canonicalName": "Enso González Medina",
+      "displayName": "Gonzalez",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 653,
+      "canonicalName": "Joe Hodge",
+      "displayName": "Hodge",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 654,
+      "canonicalName": "Jørgen Strand Larsen",
+      "displayName": "Strand Larsen",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 655,
+      "canonicalName": "Fábio Soares Silva",
+      "displayName": "Fábio Silva",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 656,
+      "canonicalName": "Saša Kalajdžić",
+      "displayName": "Kalajdžić",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 657,
+      "canonicalName": "Leon Chiwome",
+      "displayName": "Chiwome",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 658,
+      "canonicalName": "Nathan Fraser",
+      "displayName": "Fraser",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 659,
+      "canonicalName": "Kyle Walker-Peters",
+      "displayName": "Walker-Peters",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 660,
+      "canonicalName": "Anton Stach",
+      "displayName": "Stach",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 661,
+      "canonicalName": "Hugo Ekitiké",
+      "displayName": "Ekitiké",
+      "team": "Liverpool",
+      "position": "FWD",
+      "price": 9.0,
+      "aliases": []
+    },
+    {
+      "playerId": 662,
+      "canonicalName": "Cristhian Mosquera",
+      "displayName": "Mosquera",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 663,
+      "canonicalName": "Jhon Arias",
+      "displayName": "J.Arias",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 664,
+      "canonicalName": "Benjamin Lecomte",
+      "displayName": "Lecomte",
+      "team": "Fulham",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 665,
+      "canonicalName": "Lucas Estella Perri",
+      "displayName": "Perri",
+      "team": "Leeds",
+      "position": "GK",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 666,
+      "canonicalName": "Viktor Gyökeres",
+      "displayName": "Gyökeres",
+      "team": "Arsenal",
+      "position": "FWD",
+      "price": 9.1,
+      "aliases": []
+    },
+    {
+      "playerId": 667,
+      "canonicalName": "Adam Aznou",
+      "displayName": "Aznou",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 668,
+      "canonicalName": "Granit Xhaka",
+      "displayName": "Xhaka",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 669,
+      "canonicalName": "Dan Ndoye",
+      "displayName": "Ndoye",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 670,
+      "canonicalName": "Robin Roefs",
+      "displayName": "Roefs",
+      "team": "Sunderland",
+      "position": "GK",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 671,
+      "canonicalName": "Callum Wilson",
+      "displayName": "Wilson",
+      "team": "West Ham",
+      "position": "FWD",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 672,
+      "canonicalName": "Jorrel Hato",
+      "displayName": "Hato",
+      "team": "Chelsea",
+      "position": "DEF",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 673,
+      "canonicalName": "João Maria Lobo Alves Palhares Costa Palhinha Gonçalves",
+      "displayName": "J.Palhinha",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 674,
+      "canonicalName": "Aaron Ramsdale",
+      "displayName": "Ramsdale",
+      "team": "Newcastle",
+      "position": "GK",
+      "price": 4.8,
+      "aliases": []
+    },
+    {
+      "playerId": 675,
+      "canonicalName": "Angus Gunn",
+      "displayName": "Gunn",
+      "team": "Nott'm Forest",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 676,
+      "canonicalName": "Lesley Ugochukwu",
+      "displayName": "Ugochukwu",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 677,
+      "canonicalName": "Evann Guessand",
+      "displayName": "Guessand",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 6.2,
+      "aliases": []
+    },
+    {
+      "playerId": 678,
+      "canonicalName": "Arthur Masuaku",
+      "displayName": "Masuaku",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 679,
+      "canonicalName": "Mads Hermansen",
+      "displayName": "Hermansen",
+      "team": "West Ham",
+      "position": "GK",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 680,
+      "canonicalName": "Armando Broja",
+      "displayName": "Broja",
+      "team": "Burnley",
+      "position": "FWD",
+      "price": 5.2,
+      "aliases": []
+    },
+    {
+      "playerId": 681,
+      "canonicalName": "Benjamin Sesko",
+      "displayName": "Šeško",
+      "team": "Man Utd",
+      "position": "FWD",
+      "price": 7.2,
+      "aliases": []
+    },
+    {
+      "playerId": 682,
+      "canonicalName": "David Møller Wolfe",
+      "displayName": "Møller Wolfe",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 683,
+      "canonicalName": "Omar Alderete",
+      "displayName": "Alderete",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 684,
+      "canonicalName": "Malick Thiaw",
+      "displayName": "Thiaw",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 685,
+      "canonicalName": "Bafodé Diakité",
+      "displayName": "Diakité",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.1,
+      "aliases": []
+    },
+    {
+      "playerId": 686,
+      "canonicalName": "Rio Ngumoha",
+      "displayName": "Ngumoha",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 687,
+      "canonicalName": "Remy Rees-Dottin",
+      "displayName": "Rees-Dottin",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 688,
+      "canonicalName": "James Wright",
+      "displayName": "Wright",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 689,
+      "canonicalName": "Seung-Soo Park",
+      "displayName": "Seung soo",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 690,
+      "canonicalName": "Rio Cardines",
+      "displayName": "Cardines",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 691,
+      "canonicalName": "Dominic Calvert-Lewin",
+      "displayName": "Calvert-Lewin",
+      "team": "Leeds",
+      "position": "FWD",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 692,
+      "canonicalName": "Giovanni Leoni",
+      "displayName": "Leoni",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 693,
+      "canonicalName": "Omari Hutchinson",
+      "displayName": "Hutchinson",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 694,
+      "canonicalName": "Nordi Mukiele",
+      "displayName": "Mukiele",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 695,
+      "canonicalName": "Jackson Tchatchoua",
+      "displayName": "Tchatchoua",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 696,
+      "canonicalName": "Arnaud Kalimuendo",
+      "displayName": "Kalimuendo",
+      "team": "Nott'm Forest",
+      "position": "FWD",
+      "price": 6.0,
+      "aliases": []
+    },
+    {
+      "playerId": 697,
+      "canonicalName": "Amine Adli",
+      "displayName": "Adli",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 698,
+      "canonicalName": "Noah Okafor",
+      "displayName": "Okafor",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 699,
+      "canonicalName": "Douglas Luiz Soares de Paulo",
+      "displayName": "Douglas Luiz",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 700,
+      "canonicalName": "Max Dowman",
+      "displayName": "Dowman",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 701,
+      "canonicalName": "Triston Rowe",
+      "displayName": "Rowe",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 702,
+      "canonicalName": "Bradley Burrowes",
+      "displayName": "Burrowes",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.3,
+      "aliases": []
+    },
+    {
+      "playerId": 703,
+      "canonicalName": "Sam Proctor",
+      "displayName": "Proctor",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 704,
+      "canonicalName": "Tyler Onyango",
+      "displayName": "Onyango",
+      "team": "Everton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 705,
+      "canonicalName": "Elijah Campbell",
+      "displayName": "Campbell",
+      "team": "Everton",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 706,
+      "canonicalName": "James Justin",
+      "displayName": "Justin",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 707,
+      "canonicalName": "Tyler Dibling",
+      "displayName": "Dibling",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 708,
+      "canonicalName": "Mateus Gonçalo Espanha Fernandes",
+      "displayName": "M.Fernandes",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 709,
+      "canonicalName": "Ladislav Krejcí",
+      "displayName": "Krejčí",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 710,
+      "canonicalName": "Travis Patterson",
+      "displayName": "Patterson",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 711,
+      "canonicalName": "Andre Harriman-Annous",
+      "displayName": "Harriman-Annous",
+      "team": "Arsenal",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 712,
+      "canonicalName": "Yéremy Pino Santos",
+      "displayName": "Yeremy",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 5.8,
+      "aliases": []
+    },
+    {
+      "playerId": 713,
+      "canonicalName": "Álex Jiménez Sánchez",
+      "displayName": "A.Jimenez",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 714,
+      "canonicalName": "Nick Woltemade",
+      "displayName": "Woltemade",
+      "team": "Newcastle",
+      "position": "FWD",
+      "price": 6.7,
+      "aliases": []
+    },
+    {
+      "playerId": 715,
+      "canonicalName": "John Victor Maciel Furtado",
+      "displayName": "John",
+      "team": "Nott'm Forest",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 716,
+      "canonicalName": "Nicolò Savona",
+      "displayName": "Savona",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 717,
+      "canonicalName": "Xavi Simons",
+      "displayName": "Xavi",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 6.3,
+      "aliases": []
+    },
+    {
+      "playerId": 718,
+      "canonicalName": "Soungoutou Magassa",
+      "displayName": "S.Magassa",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 719,
+      "canonicalName": "Victor Lindelöf",
+      "displayName": "Lindelöf",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 720,
+      "canonicalName": "Tolu Arokodare",
+      "displayName": "Tolu",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 721,
+      "canonicalName": "Veljko Milosavljevic",
+      "displayName": "Milosavljević",
+      "team": "Bournemouth",
+      "position": "DEF",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 722,
+      "canonicalName": "Florentino Ibrain Morris Luís",
+      "displayName": "Florentino",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 723,
+      "canonicalName": "Jaydee Canvot",
+      "displayName": "Canvot",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 724,
+      "canonicalName": "Lutsharel Geertruida",
+      "displayName": "Geertruida",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 725,
+      "canonicalName": "Piero Hincapié",
+      "displayName": "Hincapie",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 726,
+      "canonicalName": "Randal Kolo Muani",
+      "displayName": "Kolo Muani",
+      "team": "Spurs",
+      "position": "FWD",
+      "price": 6.9,
+      "aliases": []
+    },
+    {
+      "playerId": 727,
+      "canonicalName": "Samuel Chukwueze",
+      "displayName": "Chukwueze",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 728,
+      "canonicalName": "Merlin Röhl",
+      "displayName": "Röhl",
+      "team": "Everton",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 729,
+      "canonicalName": "Luis Eduardo Soares da Silva",
+      "displayName": "Cuiabano",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 730,
+      "canonicalName": "Brian Brobbey",
+      "displayName": "Brobbey",
+      "team": "Sunderland",
+      "position": "FWD",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 731,
+      "canonicalName": "Kevin Santos Lopes de Macedo",
+      "displayName": "Kevin",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 732,
+      "canonicalName": "Christantus Uche",
+      "displayName": "Uche",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 733,
+      "canonicalName": "Senne Lammens",
+      "displayName": "Lammens",
+      "team": "Man Utd",
+      "position": "GK",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 734,
+      "canonicalName": "Dilane Bakwa",
+      "displayName": "Bakwa",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 5.9,
+      "aliases": []
+    },
+    {
+      "playerId": 735,
+      "canonicalName": "Bertrand Traoré",
+      "displayName": "Traoré",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 736,
+      "canonicalName": "Gianluigi Donnarumma",
+      "displayName": "Donnarumma",
+      "team": "Man City",
+      "position": "GK",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 737,
+      "canonicalName": "Jonah Kusi-Asare",
+      "displayName": "Kusi-Asare",
+      "team": "Fulham",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 738,
+      "canonicalName": "Lukasz Fabianski",
+      "displayName": "Fabianski",
+      "team": "West Ham",
+      "position": "GK",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 739,
+      "canonicalName": "Divine Mukasa",
+      "displayName": "Mukasa",
+      "team": "Man City",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 740,
+      "canonicalName": "Stephen Mfuni",
+      "displayName": "Mfuni",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 741,
+      "canonicalName": "Harry Gray",
+      "displayName": "Gray",
+      "team": "Leeds",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 742,
+      "canonicalName": "Ryan McAidoo",
+      "displayName": "McAidoo",
+      "team": "Man City",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 743,
+      "canonicalName": "Landon Emenalo",
+      "displayName": "Emenalo",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 744,
+      "canonicalName": "Nehemiah Oriola",
+      "displayName": "Oriola",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 745,
+      "canonicalName": "Jun'ai Byfield",
+      "displayName": "Byfield",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 746,
+      "canonicalName": "Kieran Morrison",
+      "displayName": "Morrison",
+      "team": "Liverpool",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 747,
+      "canonicalName": "Ezra Mayers",
+      "displayName": "Mayers",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 748,
+      "canonicalName": "Josh Dasilva",
+      "displayName": "Dasilva",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 749,
+      "canonicalName": "Mateus Mané",
+      "displayName": "Mané",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 4.2,
+      "aliases": []
+    },
+    {
+      "playerId": 750,
+      "canonicalName": "James Rowswell",
+      "displayName": "Rowswell",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 751,
+      "canonicalName": "Yusuf Akhamrich",
+      "displayName": "Akhamrich",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 752,
+      "canonicalName": "Airidas Golambeckis",
+      "displayName": "Golambeckis",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 753,
+      "canonicalName": "John Ruddy",
+      "displayName": "Ruddy",
+      "team": "Newcastle",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 754,
+      "canonicalName": "George Hemmings",
+      "displayName": "George Hemmings",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 755,
+      "canonicalName": "Shea Lacey",
+      "displayName": "Lacey",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 756,
+      "canonicalName": "Malcom DaCosta",
+      "displayName": "DaCosta",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 757,
+      "canonicalName": "Ronnie Hollingshead",
+      "displayName": "Hollingshead",
+      "team": "Aston Villa",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 758,
+      "canonicalName": "Mohamadou Kanté",
+      "displayName": "Mohamadou Kanté",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 759,
+      "canonicalName": "Marli Salmon",
+      "displayName": "Salmon",
+      "team": "Arsenal",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 760,
+      "canonicalName": "Wellity Lucky",
+      "displayName": "Lucky",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 761,
+      "canonicalName": "Freddie Simmonds",
+      "displayName": "Simmonds",
+      "team": "Brighton",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 762,
+      "canonicalName": "Joél Drakes-Thomas",
+      "displayName": "Drakes-Thomas",
+      "team": "Crystal Palace",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 763,
+      "canonicalName": "Charlie Gray",
+      "displayName": "Gray",
+      "team": "Man City",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 764,
+      "canonicalName": "Reigan Heskey",
+      "displayName": "Heskey",
+      "team": "Man City",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 765,
+      "canonicalName": "Leo Shahar",
+      "displayName": "Shahar",
+      "team": "Newcastle",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 766,
+      "canonicalName": "Saheed Olagunju",
+      "displayName": "Olagunju",
+      "team": "Wolves",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 767,
+      "canonicalName": "Luke Rawlings",
+      "displayName": "Rawlings",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 768,
+      "canonicalName": "Leon Routh",
+      "displayName": "Leon Routh",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 769,
+      "canonicalName": "Bendito Mantato",
+      "displayName": "Bendito Mantato",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 770,
+      "canonicalName": "Seth Ridgeon",
+      "displayName": "Ridgeon",
+      "team": "Fulham",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 771,
+      "canonicalName": "Tyler Fletcher",
+      "displayName": "Fletcher",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 772,
+      "canonicalName": "Sam Alabi",
+      "displayName": "Alabi",
+      "team": "Newcastle",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 773,
+      "canonicalName": "Dean Benamar",
+      "displayName": "Benamar",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 774,
+      "canonicalName": "Jenson Jones",
+      "displayName": "Jenson Jones",
+      "team": "Sunderland",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 775,
+      "canonicalName": "Tymur Tutierov",
+      "displayName": "Tutierov",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 776,
+      "canonicalName": "Oliver Pimlott",
+      "displayName": "Pimlott",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 777,
+      "canonicalName": "Temple Ojinnaka",
+      "displayName": "Ojinnaka",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 778,
+      "canonicalName": "Ethan Sutherland",
+      "displayName": "Sutherland",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 779,
+      "canonicalName": "Braiden Graham",
+      "displayName": "Graham",
+      "team": "Everton",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 780,
+      "canonicalName": "Ben Casey",
+      "displayName": "Casey",
+      "team": "Crystal Palace",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 781,
+      "canonicalName": "TJ Carroll",
+      "displayName": "Carroll",
+      "team": "Aston Villa",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 782,
+      "canonicalName": "Fraser Forster",
+      "displayName": "Forster",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 783,
+      "canonicalName": "Pascal Groß",
+      "displayName": "Groß",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 5.6,
+      "aliases": []
+    },
+    {
+      "playerId": 784,
+      "canonicalName": "George Brierley",
+      "displayName": "Brierley",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 785,
+      "canonicalName": "Pablo Felipe Pereira de Jesus",
+      "displayName": "Pablo",
+      "team": "West Ham",
+      "position": "FWD",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 786,
+      "canonicalName": "Alfie McNally",
+      "displayName": "McNally",
+      "team": "Fulham",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 787,
+      "canonicalName": "Sam Chambers",
+      "displayName": "Chambers",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.4,
+      "aliases": []
+    },
+    {
+      "playerId": 788,
+      "canonicalName": "Godwill Kukonki",
+      "displayName": "Kukonki",
+      "team": "Man Utd",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 789,
+      "canonicalName": "Max Merrick",
+      "displayName": "Merrick",
+      "team": "Chelsea",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 790,
+      "canonicalName": "Lucá Williams-Barnett",
+      "displayName": "Williams-Barnett",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 791,
+      "canonicalName": "Valentín Castellanos",
+      "displayName": "Taty",
+      "team": "West Ham",
+      "position": "FWD",
+      "price": 5.5,
+      "aliases": []
+    },
+    {
+      "playerId": 792,
+      "canonicalName": "Alysson Edward Franco da Rocha dos Santos",
+      "displayName": "Alysson",
+      "team": "Aston Villa",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 793,
+      "canonicalName": "George King",
+      "displayName": "King",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 794,
+      "canonicalName": "Max Alleyne",
+      "displayName": "Alleyne",
+      "team": "Man City",
+      "position": "DEF",
+      "price": 3.9,
+      "aliases": []
+    },
+    {
+      "playerId": 795,
+      "canonicalName": "Harry Howell",
+      "displayName": "Howell",
+      "team": "Brighton",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 796,
+      "canonicalName": "Conor Gallagher",
+      "displayName": "Gallagher",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 797,
+      "canonicalName": "Kaye Furo",
+      "displayName": "Furo",
+      "team": "Brentford",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 798,
+      "canonicalName": "Danny Imray",
+      "displayName": "Imray",
+      "team": "Crystal Palace",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 799,
+      "canonicalName": "Charlie Stevens",
+      "displayName": "Stevens",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 800,
+      "canonicalName": "Djiamgone Jocelin Ta Bi",
+      "displayName": "Jocelin.T",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 801,
+      "canonicalName": "Alex Tóth",
+      "displayName": "Tóth.A",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 4.9,
+      "aliases": []
+    },
+    {
+      "playerId": 802,
+      "canonicalName": "Keiber Lamadrid",
+      "displayName": "Lamadrid",
+      "team": "West Ham",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 803,
+      "canonicalName": "Teddy Sharman-Lowe",
+      "displayName": "Sharman-Lowe",
+      "team": "Chelsea",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 804,
+      "canonicalName": "João Victor de Souza Menezes",
+      "displayName": "Souza",
+      "team": "Spurs",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 805,
+      "canonicalName": "Lorenzo Lucca",
+      "displayName": "Lucca",
+      "team": "Nott'm Forest",
+      "position": "FWD",
+      "price": 5.3,
+      "aliases": []
+    },
+    {
+      "playerId": 806,
+      "canonicalName": "Christos Mandas",
+      "displayName": "Mandas",
+      "team": "Bournemouth",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 807,
+      "canonicalName": "Rayan Vitor Simplício Rocha",
+      "displayName": "Rayan",
+      "team": "Bournemouth",
+      "position": "MID",
+      "price": 5.4,
+      "aliases": []
+    },
+    {
+      "playerId": 808,
+      "canonicalName": "Tammy Abraham",
+      "displayName": "Abraham",
+      "team": "Aston Villa",
+      "position": "FWD",
+      "price": 5.7,
+      "aliases": []
+    },
+    {
+      "playerId": 809,
+      "canonicalName": "Jerome Abbey",
+      "displayName": "Abbey",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 810,
+      "canonicalName": "Luka Bentt",
+      "displayName": "Bentt",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 811,
+      "canonicalName": "Rio Kyerematen",
+      "displayName": "Kyerematen",
+      "team": "Spurs",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 812,
+      "canonicalName": "Melker Ellborg",
+      "displayName": "Ellborg",
+      "team": "Sunderland",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 813,
+      "canonicalName": "Nilson Angulo",
+      "displayName": "Angulo",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 5.0,
+      "aliases": []
+    },
+    {
+      "playerId": 814,
+      "canonicalName": "Luca Netz",
+      "displayName": "Netz",
+      "team": "Nott'm Forest",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 815,
+      "canonicalName": "Axel Disasi",
+      "displayName": "Disasi",
+      "team": "West Ham",
+      "position": "DEF",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 816,
+      "canonicalName": "Angel Gomes",
+      "displayName": "Angel",
+      "team": "Wolves",
+      "position": "MID",
+      "price": 4.6,
+      "aliases": []
+    },
+    {
+      "playerId": 817,
+      "canonicalName": "Adam Armstrong",
+      "displayName": "Armstrong",
+      "team": "Wolves",
+      "position": "FWD",
+      "price": 5.1,
+      "aliases": []
+    },
+    {
+      "playerId": 818,
+      "canonicalName": "James Wilson",
+      "displayName": "Wilson",
+      "team": "Spurs",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 819,
+      "canonicalName": "Ollie Shield",
+      "displayName": "Shield",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 820,
+      "canonicalName": "Kian McMahon-Brown",
+      "displayName": "McMahon-Brown",
+      "team": "Burnley",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 821,
+      "canonicalName": "Jack Whittaker",
+      "displayName": "Whittaker",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 822,
+      "canonicalName": "Jaydon Jones",
+      "displayName": "Jones",
+      "team": "Sunderland",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 823,
+      "canonicalName": "Joshua Stephenson",
+      "displayName": "Stephenson",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 824,
+      "canonicalName": "Conor McManus",
+      "displayName": "McManus",
+      "team": "Brentford",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 825,
+      "canonicalName": "Finlay Herrick",
+      "displayName": "Herrick",
+      "team": "West Ham",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 826,
+      "canonicalName": "Riley Owen",
+      "displayName": "Owen",
+      "team": "Brentford",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 827,
+      "canonicalName": "Jim Thwaites",
+      "displayName": "Thwaites",
+      "team": "Man Utd",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 828,
+      "canonicalName": "Alfie Brooks",
+      "displayName": "Brooks",
+      "team": "Wolves",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 829,
+      "canonicalName": "Jesse Derry",
+      "displayName": "Derry",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 830,
+      "canonicalName": "Will Wright",
+      "displayName": "Wright",
+      "team": "Liverpool",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 831,
+      "canonicalName": "Josh Gracey",
+      "displayName": "Gracey",
+      "team": "Wolves",
+      "position": "GK",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 832,
+      "canonicalName": "Talla Ndiaye",
+      "displayName": "Ndiaye",
+      "team": "Liverpool",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 833,
+      "canonicalName": "Mathis Eboué",
+      "displayName": "Eboué",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 834,
+      "canonicalName": "Ryan Kavuma-McQueen",
+      "displayName": "Kavuma-McQueen",
+      "team": "Chelsea",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 835,
+      "canonicalName": "Archie Whitehall",
+      "displayName": "Whitehall",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 836,
+      "canonicalName": "Jimmy Sinclair",
+      "displayName": "Sinclair",
+      "team": "Nott'm Forest",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 837,
+      "canonicalName": "Jayden Lienou",
+      "displayName": "Lienou",
+      "team": "Leeds",
+      "position": "DEF",
+      "price": 4.0,
+      "aliases": []
+    },
+    {
+      "playerId": 838,
+      "canonicalName": "Rhys Chadwick",
+      "displayName": "Chadwick",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 839,
+      "canonicalName": "Alfie Cresswell",
+      "displayName": "Cresswell",
+      "team": "Leeds",
+      "position": "MID",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 840,
+      "canonicalName": "Shumaira Mheuka",
+      "displayName": "Mheuka",
+      "team": "Chelsea",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    },
+    {
+      "playerId": 841,
+      "canonicalName": "Lamin Sillah",
+      "displayName": "Sillah",
+      "team": "Nott'm Forest",
+      "position": "FWD",
+      "price": 4.5,
+      "aliases": []
+    }
+  ]
+}

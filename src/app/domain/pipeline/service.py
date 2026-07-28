@@ -6,6 +6,7 @@ from threading import Thread
 from typing import Any
 from uuid import uuid4
 
+from src.adapters.fpl import get_player_catalogue_provider
 from src.adapters.transcript_api import (
     load_webshare_proxy_settings,
 )
@@ -100,6 +101,7 @@ def execute_pipeline_run(
             synthesis_enabled=payload.get("synthesis_enabled", True),
             proxy_settings=load_webshare_proxy_settings(),
             report_service=ReportWriteService(pipeline_run_id=run_id),
+            player_catalogue_provider=get_player_catalogue_provider(),
         )
         record = run_store.complete_with_report(
             run_id,

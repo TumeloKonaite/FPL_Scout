@@ -5,6 +5,7 @@ from datetime import datetime
 
 from pydantic import ValidationError
 
+from src.app.domain.reports.suggested_team import validate_consensus_squad
 from src.app.infrastructure.models import CompletedReportRun
 from src.app.infrastructure.report_repository import (
     EmptyReportDirectoryError,
@@ -99,7 +100,12 @@ class ReportService:
                 GameweekReportSummary(
                     gameweek=gameweek,
                     last_updated_at=row.updated_at,
-                    has_suggested_team=bundle.final_report.suggested_team is not None,
+                    has_suggested_team=(
+                        bundle.final_report.suggested_team is not None
+                        and validate_consensus_squad(
+                            bundle.final_report.suggested_team
+                        )
+                    ),
                 )
             )
         return [

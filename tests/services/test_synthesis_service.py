@@ -190,7 +190,9 @@ def test_synthesize_final_report_returns_schema_valid_output() -> None:
     with patch("src.services.synthesis_service.run_final_synthesis", mocked_run):
         result = asyncio.run(synthesize_final_report(report))
 
-    assert result == expected
+    assert result.model_copy(update={"suggested_team": None}) == expected
+    assert result.suggested_team is not None
+    assert result.suggested_team.constructionStatus == "insufficient_evidence"
     validated = FinalGameweekReport.model_validate(result.model_dump())
     assert validated.conclusion == expected.conclusion
     mocked_run.assert_awaited_once()
@@ -237,7 +239,7 @@ def test_build_fallback_final_report_is_schema_valid() -> None:
     assert validated.wait_for_news == ["Bukayo Saka"]
 
 
-def test_fallback_report_embeds_suggested_team_from_structured_positions() -> None:
+def test_fallback_report_rejects_non_authoritative_position_annotations() -> None:
     report = _build_aggregated_report()
     positions = ["GK", *(["DEF"] * 3), *(["MID"] * 4), *(["FWD"] * 3)]
     names = [f"Player {index}" for index in range(1, 12)]
@@ -268,33 +270,9 @@ def test_fallback_report_embeds_suggested_team_from_structured_positions() -> No
 
     assert final_report.suggested_team is not None
     snapshot = final_report.suggested_team.model_dump()
-    assert snapshot["formation"] == "3-4-3"
-    assert len(snapshot["startingXi"]) == 11
-    assert snapshot["captainPlayerId"] == snapshot["startingXi"][8]["playerId"]
-    assert snapshot["viceCaptainPlayerId"] == snapshot["startingXi"][7]["playerId"]
-    assert snapshot["startingXi"][8]["expertSupportCount"] == 2
-    assert snapshot["bench"][0]["isStarter"] is False
-    assert snapshot["bench"][0]["benchOrder"] == 1
-    assert set(snapshot["startingXi"][0]) == {
-        "playerId",
-        "name",
-        "number",
-        "shirtNumber",
-        "position",
-        "club",
-        "price",
-        "predictedPoints",
-        "ownership",
-        "expectedMinutes",
-        "fixtureDifficulty",
-        "fixture",
-        "expertSupportCount",
-        "consensus",
-        "captain",
-        "viceCaptain",
-        "isStarter",
-        "benchOrder",
-    }
+    assert snapshot["constructionStatus"] == "insufficient_evidence"
+    assert snapshot["failureReason"] == "authoritative_player_catalogue_unavailable"
+    assert snapshot["startingXi"] == []
 
 
 def test_synthesize_final_report_falls_back_when_agent_fails() -> None:

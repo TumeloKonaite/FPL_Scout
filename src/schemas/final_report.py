@@ -98,7 +98,9 @@ class FinalExpertTeamReveal(BaseModel):
 
 class SuggestedPlayer(BaseModel):
     playerId: int = Field(gt=0)
+    officialPlayerId: int | None = Field(default=None, gt=0)
     name: str = Field(min_length=1)
+    canonicalName: str | None = None
     number: int | None = Field(default=None, ge=1, le=99)
     shirtNumber: int | None = Field(default=None, ge=1, le=99)
     position: Literal["GK", "DEF", "MID", "FWD"]
@@ -110,6 +112,12 @@ class SuggestedPlayer(BaseModel):
     fixtureDifficulty: int | None = Field(default=None, ge=1, le=5)
     fixture: str | None = None
     expertSupportCount: int | None = Field(default=None, ge=0)
+    starterSupport: int = Field(default=0, ge=0)
+    benchSupport: int = Field(default=0, ge=0)
+    captainSupport: int = Field(default=0, ge=0)
+    viceCaptainSupport: int = Field(default=0, ge=0)
+    confidenceSum: float = Field(default=0, ge=0)
+    contributingExpertIds: list[str] = Field(default_factory=list)
     consensus: str | None = None
     captain: bool = False
     viceCaptain: bool = False
@@ -118,12 +126,26 @@ class SuggestedPlayer(BaseModel):
 
 
 class SuggestedTeam(BaseModel):
+    constructionStatus: Literal["consensus", "insufficient_evidence"] = (
+        "insufficient_evidence"
+    )
+    failureReason: str | None = None
+    eligibleRevealCount: int = Field(default=0, ge=0)
+    contributingReveals: list["ContributingReveal"] = Field(default_factory=list)
     formation: str | None = None
     startingXi: list[SuggestedPlayer]
     bench: list[SuggestedPlayer] = Field(default_factory=list)
     players: list[SuggestedPlayer] | None = None
     captainPlayerId: int | None = Field(default=None, gt=0)
     viceCaptainPlayerId: int | None = Field(default=None, gt=0)
+
+
+class ContributingReveal(BaseModel):
+    expertId: str
+    expertName: str
+    sourceId: str | None = None
+    sourceUrl: str | None = None
+    confidence: float = Field(ge=0, le=1)
 
 
 class FinalGameweekReport(BaseModel):

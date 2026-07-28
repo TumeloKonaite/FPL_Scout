@@ -88,6 +88,11 @@ class ConditionalAdviceItem(BaseModel):
 class ExpertTeamRevealItem(BaseModel):
     expert_name: str
     video_title: str
+    expert_id: str | None = None
+    source_id: str | None = None
+    source_url: str | None = None
+    season: str | None = None
+    gameweek: int | None = Field(default=None, ge=1, le=38)
     current_team: list[str] = Field(default_factory=list)
     starting_xi: list[str] = Field(default_factory=list)
     bench: list[str] = Field(default_factory=list)

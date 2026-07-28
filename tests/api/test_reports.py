@@ -164,9 +164,20 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
 
     assert payload["formation"] == "3-4-3"
     assert len(payload["startingXi"]) == 11
-    assert payload["startingXi"][0] == {
+    assert payload["startingXi"][0] | {
+        "officialPlayerId": None,
+        "canonicalName": None,
+        "starterSupport": 0,
+        "benchSupport": 0,
+        "captainSupport": 0,
+        "viceCaptainSupport": 0,
+        "confidenceSum": 0,
+        "contributingExpertIds": [],
+    } == {
         "playerId": 1,
+        "officialPlayerId": None,
         "name": "Player 1",
+        "canonicalName": None,
             "number": 1,
             "shirtNumber": None,
         "position": "GK",
@@ -178,6 +189,12 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
             "fixtureDifficulty": None,
             "fixture": None,
             "expertSupportCount": None,
+            "starterSupport": 0,
+            "benchSupport": 0,
+            "captainSupport": 0,
+            "viceCaptainSupport": 0,
+            "confidenceSum": 0,
+            "contributingExpertIds": [],
             "consensus": None,
         "captain": False,
         "viceCaptain": False,

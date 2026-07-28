@@ -147,6 +147,9 @@ def _canonicalize_player_positions(
 
 def aggregate_expert_team_reveals(
     analyses: list[ExpertVideoAnalysis],
+    *,
+    season: str | None = None,
+    gameweek: int | None = None,
 ) -> list[ExpertTeamRevealItem]:
     reveals: list[ExpertTeamRevealItem] = []
 
@@ -191,6 +194,11 @@ def aggregate_expert_team_reveals(
             ExpertTeamRevealItem(
                 expert_name=analysis.expert_name,
                 video_title=analysis.video_title,
+                expert_id=normalize_lookup_key(analysis.expert_name),
+                source_id=analysis.source_url,
+                source_url=analysis.source_url,
+                season=season,
+                gameweek=gameweek or analysis.gameweek,
                 current_team=current_team,
                 starting_xi=starting_xi,
                 bench=bench,
@@ -565,5 +573,7 @@ def build_aggregated_fpl_report(
         disagreements=build_disagreement_report(analyses),
         conditional_advice=conditional_advice,
         wait_for_news=extract_wait_for_news_entities(conditional_advice),
-        expert_team_reveals=aggregate_expert_team_reveals(analyses),
+        expert_team_reveals=aggregate_expert_team_reveals(
+            analyses, season=season, gameweek=gameweek
+        ),
     )

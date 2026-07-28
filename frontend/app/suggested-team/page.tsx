@@ -12,10 +12,10 @@ function SuggestedTeamSkeleton() {
   return <div className="suggested-team-skeleton" role="status"><span>Loading the latest suggested team…</span></div>;
 }
 
-function UnavailableState() {
+function UnavailableState({ reason }: { reason?: string | null }) {
   return (
     <section className="pitch-state suggested-team-unavailable">
-      <div><h2>Suggested team unavailable</h2><p>No recommended starting XI was generated for this gameweek.</p></div>
+      <div><h2>Consensus XI unavailable</h2><p>{reason ? reason.replaceAll("_", " ") : "No vote-based consensus squad was generated for this gameweek."}</p></div>
     </section>
   );
 }
@@ -23,7 +23,8 @@ function UnavailableState() {
 export default function SuggestedTeamPage() {
   const { report, error, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport } = useSelectedReport();
   const loading = isLoadingIndex || isLoadingReport;
-  const team = normalizeSuggestedTeam(report?.report.suggested_team);
+  const suggestedTeam = report?.report.suggested_team;
+  const team = suggestedTeam?.constructionStatus === "consensus" ? normalizeSuggestedTeam(suggestedTeam) : null;
   const gameweek = report?.gameweek ?? report?.report.gameweek;
 
   return (
@@ -31,7 +32,7 @@ export default function SuggestedTeamPage() {
       {loading ? <SuggestedTeamSkeleton /> : null}
       {!loading && error ? <ReportErrorState /> : null}
       {!loading && !error && isMissingReport ? <MissingReportState /> : null}
-      {!loading && !error && report && !team ? <UnavailableState /> : null}
+      {!loading && !error && report && !team ? <UnavailableState reason={suggestedTeam?.failureReason} /> : null}
       {!loading && !error && team ? (
         <div className="suggested-team-layout">
           <SuggestedTeamPitch team={team} gameweek={gameweek} />

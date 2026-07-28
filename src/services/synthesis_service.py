@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from src.app.domain.reports.suggested_team import build_suggested_team_from_reveals
+from src.app.domain.reports.suggested_team import (
+    CataloguePlayer,
+    ConsensusPolicy,
+    PlayerCatalogue,
+    construct_consensus_squad,
+)
 from src.agents.final_synthesis_agent import run_final_synthesis
 from src.schemas.final_report import (
     AggregatedFPLReport,
@@ -144,7 +149,10 @@ def _build_empty_final_report(report: AggregatedFPLReport) -> FinalGameweekRepor
     )
 
 
-def build_fallback_final_report(report: AggregatedFPLReport) -> FinalGameweekReport:
+def build_fallback_final_report(
+    report: AggregatedFPLReport,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+) -> FinalGameweekReport:
     """Build a safe report when synthesis is unavailable or malformed."""
     if not report.expert_count:
         overview = "There is not enough aggregated expert data yet to produce a confident final report."
@@ -258,20 +266,24 @@ def build_fallback_final_report(report: AggregatedFPLReport) -> FinalGameweekRep
         expert_team_reveals=expert_team_reveals,
         conclusion=" ".join(conclusion_parts),
     )
-    return _attach_suggested_team(final_report, report)
+    return _attach_suggested_team(final_report, report, player_catalogue)
 
 
 def _attach_suggested_team(
     final_report: FinalGameweekReport,
     aggregate_report: AggregatedFPLReport,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
 ) -> FinalGameweekReport:
     enriched = _attach_recommendation_evidence(final_report, aggregate_report)
-    if enriched.suggested_team is not None:
-        return enriched
     return enriched.model_copy(
         update={
-            "suggested_team": build_suggested_team_from_reveals(
-                aggregate_report.expert_team_reveals
+            "suggested_team": construct_consensus_squad(
+                aggregate_report.expert_team_reveals,
+                player_catalogue,
+                ConsensusPolicy(
+                    season=aggregate_report.season,
+                    gameweek=aggregate_report.gameweek,
+                ),
             )
         }
     )
@@ -300,16 +312,21 @@ def _build_team_reveal_summary(item) -> str:
     return ". ".join(summary_parts) or "Expert discussed a draft team for the week."
 
 
-async def synthesize_final_report(report: AggregatedFPLReport) -> FinalGameweekReport:
+async def synthesize_final_report(
+    report: AggregatedFPLReport,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
+) -> FinalGameweekReport:
     """Convert aggregated FPL data into a polished final gameweek report."""
     if report.expert_count == 0:
-        return _build_empty_final_report(report)
+        return _attach_suggested_team(
+            _build_empty_final_report(report), report, player_catalogue
+        )
 
     try:
         generated = await run_final_synthesis(report)
         generated = generated.model_copy(
             update={"season": report.season, "gameweek": report.gameweek}
         )
-        return _attach_suggested_team(generated, report)
+        return _attach_suggested_team(generated, report, player_catalogue)
     except Exception:
-        return build_fallback_final_report(report)
+        return build_fallback_final_report(report, player_catalogue)

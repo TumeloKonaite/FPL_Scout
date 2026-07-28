@@ -81,6 +81,16 @@ export type FinalExpertTeamReveal = {
 };
 
 export type SuggestedTeam = {
+  constructionStatus: "consensus" | "insufficient_evidence";
+  failureReason?: string | null;
+  eligibleRevealCount: number;
+  contributingReveals?: {
+    expertId: string;
+    expertName: string;
+    sourceId?: string | null;
+    sourceUrl?: string | null;
+    confidence: number;
+  }[];
   formation?: string;
   startingXi: import("@/components/suggestedTeam").SuggestedPlayer[];
   starters?: import("@/components/suggestedTeam").SuggestedPlayer[];

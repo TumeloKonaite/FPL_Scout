@@ -56,15 +56,33 @@ test("groups normalized positions and derives the pitch rows", () => {
 
 test("page declares loading, unavailable, warning, pitch, bench, and table states", () => {
   const component = readFileSync(fileURLToPath(new URL("../components/SuggestedTeamPitch.tsx", import.meta.url)), "utf8");
-  for (const copy of ["Suggested XI", "Captain:", "Vice-captain:", "football-pitch"]) assert.match(component, new RegExp(copy));
+  for (const copy of ["Consensus XI", "Captain:", "Vice-captain:", "football-pitch"]) assert.match(component, new RegExp(copy));
   const page = readFileSync(fileURLToPath(new URL("../app/suggested-team/page.tsx", import.meta.url)), "utf8");
   assert.match(page, /SuggestedTeamTable players=\{team\.allPlayers\}/);
   assert.match(page, /<SuggestedTeamPitch team=\{team\}/);
   assert.match(page, /<SuggestedTeamBench team=\{team\}/);
-  assert.match(page, /Suggested team unavailable/);
-  assert.match(page, /No recommended starting XI was generated for this gameweek/);
+  assert.match(page, /Consensus XI unavailable/);
+  assert.match(page, /failureReason/);
   assert.match(page, /useSelectedReport/);
   assert.match(page, /SuggestedTeamSkeleton/);
+});
+
+test("does not normalize an insufficient-evidence payload as a lineup", () => {
+  assert.equal(utils.normalizeSuggestedTeam({
+    constructionStatus: "insufficient_evidence",
+    failureReason: "fewer_than_two_eligible_experts",
+    startingXi: lineup("3-4-3")
+  }), null);
+});
+
+test("does not normalize a consensus status without a valid full squad", () => {
+  assert.equal(utils.normalizeSuggestedTeam({
+    constructionStatus: "consensus",
+    startingXi: lineup("3-4-3"),
+    bench: [],
+    captainPlayerId: 1,
+    viceCaptainPlayerId: 2
+  }), null);
 });
 
 test("normalizes one shared lineup, ordered bench, captaincy, and partial metadata", () => {

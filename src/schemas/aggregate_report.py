@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
-from src.schemas.player_resolution import ExtractedPlayerInput
+from src.schemas.player_resolution import (
+    ExtractedPlayerInput,
+    clean_extracted_player_list,
+    clean_optional_extracted_player,
+)
 from src.services.consensus import ConsensusLevel
 
 
@@ -105,3 +109,13 @@ class ExpertTeamRevealItem(BaseModel):
     transfers_in: list[str] = Field(default_factory=list)
     transfers_out: list[str] = Field(default_factory=list)
     confidence: float | None = Field(default=None, ge=0, le=1)
+
+    @field_validator("current_team", "starting_xi", "bench", mode="before")
+    @classmethod
+    def _discard_blank_player_entries(cls, value):
+        return clean_extracted_player_list(value)
+
+    @field_validator("captain", "vice_captain", mode="before")
+    @classmethod
+    def _discard_blank_captaincy_entries(cls, value):
+        return clean_optional_extracted_player(value)

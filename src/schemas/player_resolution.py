@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Literal
+from collections.abc import Mapping
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ExtractedPlayerReference(BaseModel):
@@ -11,15 +12,46 @@ class ExtractedPlayerReference(BaseModel):
     clubHint: str | None = None
     positionHint: Literal["GK", "DEF", "MID", "FWD"] | None = None
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def _strip_name(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
+
 
 ExtractedPlayerInput = str | ExtractedPlayerReference
+
+
+def clean_extracted_player_list(value: Any) -> Any:
+    """Strip names and discard blank LLM list entries before validation."""
+    if not isinstance(value, list):
+        return value
+    cleaned: list[Any] = []
+    for item in value:
+        normalized = clean_optional_extracted_player(item)
+        if normalized is not None:
+            cleaned.append(normalized)
+    return cleaned
+
+
+def clean_optional_extracted_player(value: Any) -> Any:
+    """Convert a blank scalar or structured player reference to no evidence."""
+    if isinstance(value, str):
+        return value.strip() or None
+    if isinstance(value, Mapping):
+        name = value.get("name")
+        if isinstance(name, str):
+            stripped = name.strip()
+            if not stripped:
+                return None
+            return {**value, "name": stripped}
+    return value
 
 
 def normalise_extracted_reference(
     value: ExtractedPlayerInput,
 ) -> ExtractedPlayerReference:
     if isinstance(value, str):
-        return ExtractedPlayerReference(name=value)
+        return ExtractedPlayerReference(name=value.strip())
     return value
 
 
@@ -72,6 +104,8 @@ class PlayerResolutionEvent(BaseModel):
 
 __all__ = [
     "CanonicalPlayerResult",
+    "clean_extracted_player_list",
+    "clean_optional_extracted_player",
     "ExtractedPlayerInput",
     "ExtractedPlayerReference",
     "FuzzyMatchDiagnostic",

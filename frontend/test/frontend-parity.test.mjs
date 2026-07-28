@@ -26,7 +26,8 @@ test("dashboard presents a read-only gameweek summary with resilient states", ()
   assert.match(dashboard, />Top Transfer</);
   assert.match(dashboard, />Key Risk</);
   assert.match(dashboard, />Your Gameweek Action Plan</);
-  assert.match(dashboard, />Consensus XI/);
+  assert.match(dashboard, /`Consensus XI — \$\{lineup\.formation\}`/);
+  assert.match(dashboard, /constructionStatus !== "consensus"/);
   assert.doesNotMatch(dashboard, /Generate report/);
 });
 

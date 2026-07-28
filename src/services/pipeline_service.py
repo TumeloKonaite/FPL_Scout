@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import dataclass, field
 
 from src.adapters.transcript_api import WebshareProxySettings
+from src.app.domain.reports.suggested_team import CataloguePlayer, PlayerCatalogue
 from src.orchestrators.gameweek_orchestrator import run_gameweek_orchestration
 from src.schemas.expert_analysis import ExpertVideoAnalysis
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
@@ -89,6 +90,7 @@ async def run_pipeline(
     synthesis_enabled: bool = True,
     report_service: ReportService | None = None,
     proxy_settings: WebshareProxySettings | None = None,
+    player_catalogue: PlayerCatalogue | list[CataloguePlayer] | None = None,
 ) -> PipelineRunResult:
     identity = ReportIdentity(season, gameweek)
     season = identity.season
@@ -144,9 +146,9 @@ async def run_pipeline(
         expert_outputs, season=season, gameweek=gameweek
     )
     final_report = (
-        await synthesize_final_report(aggregate_report)
+        await synthesize_final_report(aggregate_report, player_catalogue)
         if synthesis_enabled
-        else build_fallback_final_report(aggregate_report)
+        else build_fallback_final_report(aggregate_report, player_catalogue)
     )
 
     run_path = (report_service or ReportService()).persist_run(

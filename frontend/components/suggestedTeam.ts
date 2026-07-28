@@ -4,7 +4,9 @@ export type PlayerPosition = "GK" | "DEF" | "MID" | "FWD";
 
 export type SuggestedPlayer = {
   playerId: number;
+  officialPlayerId?: number | null;
   name: string;
+  canonicalName?: string | null;
   number?: number | null;
   shirtNumber?: number | null;
   position: PlayerPosition;
@@ -17,6 +19,12 @@ export type SuggestedPlayer = {
   expectedMinutes?: number | null;
   fixtureDifficulty?: number | null;
   expertSupportCount?: number | null;
+  starterSupport?: number;
+  benchSupport?: number;
+  captainSupport?: number;
+  viceCaptainSupport?: number;
+  confidenceSum?: number;
+  contributingExpertIds?: string[];
   consensus?: string | null;
   captain?: boolean;
   viceCaptain?: boolean;
@@ -25,6 +33,9 @@ export type SuggestedPlayer = {
 };
 
 export type SuggestedTeamInput = {
+  constructionStatus?: "consensus" | "insufficient_evidence";
+  failureReason?: string | null;
+  eligibleRevealCount?: number;
   formation?: string | null;
   startingXi?: SuggestedPlayer[];
   starters?: SuggestedPlayer[];
@@ -92,7 +103,7 @@ function uniquePlayers(players: SuggestedPlayer[], warnings: string[]): Suggeste
 }
 
 export function normalizeSuggestedTeam(team?: SuggestedTeamInput | null): NormalizedSuggestedTeam | null {
-  if (!team) return null;
+  if (!team || team.constructionStatus === "insufficient_evidence") return null;
   const warnings: string[] = [];
   const explicitStarters = team.startingXi ?? team.starters;
   const sourcePlayers = team.players ?? [];
@@ -120,7 +131,7 @@ export function normalizeSuggestedTeam(team?: SuggestedTeamInput | null): Normal
   if (!captain) warnings.push("Captain information is not available.");
   if (!viceCaptain) warnings.push("Vice-captain information is not available.");
 
-  return {
+  const normalized = {
     starters,
     bench,
     allPlayers,
@@ -131,6 +142,23 @@ export function normalizeSuggestedTeam(team?: SuggestedTeamInput | null): Normal
     warnings: [...new Set(warnings)],
     completeStartingXi: starters.length === 11 && derivedFormation !== null
   };
+  if (team.constructionStatus === "consensus") {
+    const fullCounts = groupPlayersByPosition(allPlayers);
+    const validFullSquad =
+      allPlayers.length === 15 &&
+      bench.length === 4 &&
+      fullCounts.goalkeeper.length === 2 &&
+      fullCounts.defenders.length === 5 &&
+      fullCounts.midfielders.length === 5 &&
+      fullCounts.forwards.length === 3 &&
+      captain !== null &&
+      viceCaptain !== null &&
+      captain.playerId !== viceCaptain.playerId &&
+      starterIdSet.has(captain.playerId) &&
+      starterIdSet.has(viceCaptain.playerId);
+    if (!normalized.completeStartingXi || !validFullSquad) return null;
+  }
+  return normalized;
 }
 
 export function validateStartingXi(players: SuggestedPlayer[], suppliedFormation?: string) {

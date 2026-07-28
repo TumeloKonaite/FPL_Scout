@@ -31,7 +31,7 @@ export function SuggestedTeamPitch({ team, gameweek }: SuggestedTeamPitchProps) 
       <div className="pitch-heading">
         <div>
           <span className="eyebrow">{gameweek ? `Gameweek ${gameweek}` : "Current gameweek"}</span>
-          <h2 id="suggested-formation-title">Suggested XI · {team.formation ?? "Formation unavailable"}</h2>
+          <h2 id="suggested-formation-title">Consensus XI · {team.formation ?? "Formation unavailable"}</h2>
           <p className="captaincy-summary">Captain: {team.captain?.name ?? "Not available"} · Vice-captain: {team.viceCaptain?.name ?? "Not available"}</p>
         </div>
         {team.formation ? <span className="formation-badge">{team.formation}</span> : null}

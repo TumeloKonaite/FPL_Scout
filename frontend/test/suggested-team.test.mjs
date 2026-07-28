@@ -56,12 +56,13 @@ test("groups normalized positions and derives the pitch rows", () => {
 
 test("page declares loading, unavailable, warning, pitch, bench, and table states", () => {
   const component = readFileSync(fileURLToPath(new URL("../components/SuggestedTeamPitch.tsx", import.meta.url)), "utf8");
-  for (const copy of ["Consensus XI", "Captain:", "Vice-captain:", "football-pitch"]) assert.match(component, new RegExp(copy));
+  for (const copy of ["teamTitle", "Captain:", "Vice-captain:", "football-pitch", "playerSupportLabel"]) assert.match(component, new RegExp(copy));
   const page = readFileSync(fileURLToPath(new URL("../app/suggested-team/page.tsx", import.meta.url)), "utf8");
   assert.match(page, /SuggestedTeamTable players=\{team\.allPlayers\}/);
   assert.match(page, /<SuggestedTeamPitch team=\{team\}/);
   assert.match(page, /<SuggestedTeamBench team=\{team\}/);
-  assert.match(page, /Consensus XI unavailable/);
+  assert.match(page, /Suggested team unavailable/);
+  assert.match(page, /SuggestedTeamProvenance/);
   assert.match(page, /failureReason/);
   assert.match(page, /useSelectedReport/);
   assert.match(page, /SuggestedTeamSkeleton/);
@@ -78,11 +79,49 @@ test("does not normalize an insufficient-evidence payload as a lineup", () => {
 test("does not normalize a consensus status without a valid full squad", () => {
   assert.equal(utils.normalizeSuggestedTeam({
     constructionStatus: "consensus",
+    constructionMethod: "vote_based_consensus",
     startingXi: lineup("3-4-3"),
     bench: [],
     captainPlayerId: 1,
     viceCaptainPlayerId: 2
   }), null);
+});
+
+test("uses construction provenance for safe labels and agreement copy", () => {
+  assert.equal(utils.teamTitle("vote_based_consensus"), "Consensus XI");
+  assert.equal(utils.teamTitle("single_reveal"), "Expert XI");
+  assert.equal(utils.teamTitle("legacy_snapshot"), "Suggested XI");
+  assert.equal(utils.teamTitle("insufficient_evidence"), null);
+  assert.equal(utils.agreementLabel("strong"), "Strong agreement");
+  assert.equal(utils.agreementLabel("split"), "Split opinion");
+});
+
+test("uses starter support for starters, squad support for bench, and unknown for legacy", () => {
+  const support = {
+    eligibleExpertCount: 6,
+    starterSupportCount: 4,
+    starterSupportPercentage: 66.7,
+    squadSupportCount: 5,
+    squadSupportPercentage: 83.3,
+    captainSupportCount: 2,
+    captainSupportPercentage: 33.3,
+    viceCaptainSupportCount: 1,
+    viceCaptainSupportPercentage: 16.7,
+    contributingExpertIds: ["a", "b"]
+  };
+  assert.equal(utils.playerSupportLabel({ playerId: 1, name: "A", position: "GK", isStarter: true, support }), "Started by 4 of 6 experts");
+  assert.equal(utils.playerSupportLabel({ playerId: 2, name: "B", position: "DEF", isStarter: false, support }), "Selected by 5 of 6 experts");
+  assert.equal(utils.playerSupportLabel({ playerId: 3, name: "Legacy", position: "MID" }), "Expert support unavailable");
+});
+
+test("treats an old consensus flag without provenance as a legacy snapshot", () => {
+  const legacy = utils.normalizeSuggestedTeam({
+    constructionStatus: "consensus",
+    startingXi: lineup("3-4-3")
+  });
+  assert.equal(legacy.constructionMethod, "legacy_snapshot");
+  assert.equal(legacy.consensusStrength, "insufficient");
+  assert.equal(legacy.provenanceAvailable, false);
 });
 
 test("normalizes one shared lineup, ordered bench, captaincy, and partial metadata", () => {

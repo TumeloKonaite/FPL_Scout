@@ -32,6 +32,10 @@ class ReportNotFoundError(ReportStoreError, FileNotFoundError):
     pass
 
 
+class ImmutableReportSnapshotError(ReportStoreError):
+    """Raised when a terminal report snapshot would be overwritten."""
+
+
 class InvalidReportFileError(ReportStoreError, ValueError):
     """Compatibility alias: means a stored report snapshot is invalid."""
 
@@ -81,6 +85,13 @@ class ReportRepository:
             if pipeline_run_id is not None and pipeline is None:
                 raise KeyError(f"Pipeline run not found: {pipeline_run_id}")
             record = session.get(CompletedReportRun, run_id)
+            if record is not None and record.status in {
+                "completed",
+                "superseded",
+            }:
+                raise ImmutableReportSnapshotError(
+                    f"Completed report snapshot cannot be overwritten: {run_id}"
+                )
             values = {
                 "pipeline_run_id": pipeline_run_id,
                 "season": identity.season,

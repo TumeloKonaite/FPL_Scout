@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from copy import deepcopy
 from datetime import datetime
 
 from pydantic import ValidationError
@@ -134,7 +135,25 @@ class ReportService:
     @staticmethod
     def _bundle(row: CompletedReportRun) -> ReportBundle:
         try:
-            final = FinalGameweekReport.model_validate(row.final_report)
+            final_snapshot = deepcopy(row.final_report)
+            suggested = final_snapshot.get("suggested_team")
+            if isinstance(suggested, dict) and "constructionMethod" not in suggested:
+                has_lineup = bool(
+                    suggested.get("startingXi")
+                    or suggested.get("starters")
+                    or suggested.get("players")
+                )
+                suggested["constructionMethod"] = (
+                    "legacy_snapshot" if has_lineup else "insufficient_evidence"
+                )
+                suggested["consensusStrength"] = "insufficient"
+                suggested["provenanceAvailable"] = False
+                suggested["provenance"] = None
+                if has_lineup:
+                    # This is a display-compatibility outcome only; it is not
+                    # evidence that the historical lineup was a consensus.
+                    suggested["constructionStatus"] = "consensus"
+            final = FinalGameweekReport.model_validate(final_snapshot)
             aggregate = AggregatedFPLReport.model_validate(row.aggregate_report)
         except ValidationError as exc:
             raise InvalidReportFileError(

@@ -80,25 +80,7 @@ export type FinalExpertTeamReveal = {
   confidence?: number | null;
 };
 
-export type SuggestedTeam = {
-  constructionStatus: "consensus" | "insufficient_evidence";
-  failureReason?: string | null;
-  eligibleRevealCount: number;
-  contributingReveals?: {
-    expertId: string;
-    expertName: string;
-    sourceId?: string | null;
-    sourceUrl?: string | null;
-    confidence: number;
-  }[];
-  formation?: string;
-  startingXi: import("@/components/suggestedTeam").SuggestedPlayer[];
-  starters?: import("@/components/suggestedTeam").SuggestedPlayer[];
-  bench?: import("@/components/suggestedTeam").SuggestedPlayer[];
-  players?: import("@/components/suggestedTeam").SuggestedPlayer[];
-  captainPlayerId?: number | null;
-  viceCaptainPlayerId?: number | null;
-};
+export type SuggestedTeam = import("@/components/suggestedTeam").SuggestedTeamInput;
 
 export type Report = {
   gameweek?: number;

@@ -3,9 +3,11 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import datetime, timezone
 import json
 import re
-from typing import Literal
+from statistics import median
+from typing import Any, Literal
 
 from src.app.domain.reports.player_catalogue import (
     CatalogueError,
@@ -17,9 +19,15 @@ from src.app.domain.reports.player_resolution import PlayerResolver
 from src.app.domain.reports.team_of_week import normalize_team_player
 from src.schemas.aggregate_report import ExpertTeamRevealItem
 from src.schemas.final_report import (
+    ConsensusStrengthBasis,
+    ContributingExpert,
     ContributingReveal,
+    ExcludedReveal,
+    FormationDerivation,
+    PlayerSupport,
     SuggestedPlayer,
     SuggestedTeam,
+    SuggestedTeamProvenance,
 )
 from src.schemas.player_resolution import (
     ExtractedPlayerInput,
@@ -115,6 +123,13 @@ class _EligibleReveal:
     captaincy_validation: tuple[str, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class _EligibilityResult:
+    eligible_reveals: tuple[_EligibleReveal, ...]
+    contributing_reveals: tuple[_EligibleReveal, ...]
+    exclusions: tuple[ExcludedReveal, ...]
+
+
 def construct_consensus_squad(
     reveals: Sequence[ExpertTeamRevealItem],
     player_catalogue: PlayerCatalogue | Iterable[CataloguePlayer] | CatalogueError | None,
@@ -128,8 +143,9 @@ def construct_consensus_squad(
     if catalogue is None or not catalogue:
         return _failure(FAILURE_MISSING_CATALOGUE)
 
-    resolved_reveals = _eligible_reveals(reveals, catalogue, policy)
-    eligible = [item for item in resolved_reveals if item.resolved_squad]
+    eligibility = _eligible_reveals(reveals, catalogue, policy)
+    resolved_reveals = list(eligibility.eligible_reveals)
+    eligible = list(eligibility.contributing_reveals)
     expert_ids = {item.expert_id for item in eligible}
     provenance = _provenance(eligible)
     diagnostics = [
@@ -142,11 +158,13 @@ def construct_consensus_squad(
             for outcome in item.captaincy_validation
         }
     )
-    if len(expert_ids) < policy.minimum_experts:
+    if not expert_ids:
         return _failure(
             FAILURE_TOO_FEW_EXPERTS,
-            eligible_count=len(eligible),
+            eligible_reveal_count=len(resolved_reveals),
+            eligible_expert_count=0,
             provenance=provenance,
+            excluded_reveals=list(eligibility.exclusions),
             diagnostics=diagnostics,
             catalogue=catalogue,
             captaincy_validation=captaincy_validation,
@@ -157,8 +175,10 @@ def construct_consensus_squad(
     if any(available[position] < quota for position, quota in SQUAD_QUOTAS.items()):
         return _failure(
             FAILURE_INSUFFICIENT_PLAYERS,
-            eligible_count=len(eligible),
+            eligible_reveal_count=len(resolved_reveals),
+            eligible_expert_count=len(expert_ids),
             provenance=provenance,
+            excluded_reveals=list(eligibility.exclusions),
             diagnostics=diagnostics,
             catalogue=catalogue,
             captaincy_validation=captaincy_validation,
@@ -194,8 +214,10 @@ def construct_consensus_squad(
         )
         return _failure(
             reason,
-            eligible_count=len(eligible),
+            eligible_reveal_count=len(resolved_reveals),
+            eligible_expert_count=len(expert_ids),
             provenance=provenance,
+            excluded_reveals=list(eligibility.exclusions),
             diagnostics=diagnostics,
             catalogue=catalogue,
             captaincy_validation=captaincy_validation,
@@ -208,8 +230,10 @@ def construct_consensus_squad(
     if captain is None:
         return _failure(
             FAILURE_NO_CAPTAINCY,
-            eligible_count=len(eligible),
+            eligible_reveal_count=len(resolved_reveals),
+            eligible_expert_count=len(expert_ids),
             provenance=provenance,
+            excluded_reveals=list(eligibility.exclusions),
             diagnostics=diagnostics,
             catalogue=catalogue,
             captaincy_validation=captaincy_validation,
@@ -220,11 +244,21 @@ def construct_consensus_squad(
     )
 
     starter_players = [
-        _output_player(item, is_starter=True, order=index)
+        _output_player(
+            item,
+            is_starter=True,
+            order=index,
+            eligible_expert_count=len(expert_ids),
+        )
         for index, item in enumerate(starters, start=1)
     ]
     bench_players = [
-        _output_player(item, is_starter=False, order=index)
+        _output_player(
+            item,
+            is_starter=False,
+            order=index,
+            eligible_expert_count=len(expert_ids),
+        )
         for index, item in enumerate(bench, start=1)
     ]
     captain_id = captain.player.official_player_id
@@ -233,10 +267,46 @@ def construct_consensus_squad(
         player.captain = player.playerId == captain_id
         player.viceCaptain = player.playerId == vice_id
 
+    construction_method = (
+        "vote_based_consensus" if len(expert_ids) >= 2 else "single_reveal"
+    )
+    strength, strength_basis = _consensus_strength(
+        starter_players,
+        eligible_expert_count=len(expert_ids),
+        valid_lineup=True,
+        construction_method=construction_method,
+    )
+    formation_derivation = FormationDerivation(
+        method="selected_starting_xi_positions",
+        formation=formation,
+        positionSource="authoritative_player_catalogue",
+        authoritativeCataloguePositions=True,
+        fallbackApplied=None,
+    )
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    contributing_experts = _contributing_experts(eligible)
+    snapshot_provenance = SuggestedTeamProvenance(
+        constructionMethod=construction_method,
+        generatedAt=generated_at,
+        eligibleRevealCount=len(resolved_reveals),
+        eligibleExpertCount=len(expert_ids),
+        contributingRevealCount=len(eligible),
+        contributingExperts=contributing_experts,
+        excludedRevealCount=len(eligibility.exclusions),
+        excludedReveals=list(eligibility.exclusions),
+        formationDerivation=formation_derivation,
+        consensusStrength=strength,
+        consensusStrengthBasis=strength_basis,
+    )
     result = SuggestedTeam(
         constructionStatus="consensus",
+        constructionMethod=construction_method,
+        consensusStrength=strength,
+        provenanceAvailable=True,
+        provenance=snapshot_provenance,
         failureReason=None,
-        eligibleRevealCount=len(eligible),
+        eligibleRevealCount=len(resolved_reveals),
+        eligibleExpertCount=len(expert_ids),
         contributingReveals=provenance,
         formation=formation,
         startingXi=starter_players,
@@ -260,8 +330,10 @@ def construct_consensus_squad(
     if not validate_consensus_squad(result):
         return _failure(
             FAILURE_NO_SQUAD,
-            eligible_count=len(eligible),
+            eligible_reveal_count=len(resolved_reveals),
+            eligible_expert_count=len(expert_ids),
             provenance=provenance,
+            excluded_reveals=list(eligibility.exclusions),
             diagnostics=diagnostics,
             catalogue=catalogue,
             captaincy_validation=captaincy_validation,
@@ -341,15 +413,33 @@ def _eligible_reveals(
     reveals: Sequence[ExpertTeamRevealItem],
     catalogue: PlayerCatalogue,
     policy: ConsensusPolicy,
-) -> list[_EligibleReveal]:
+) -> _EligibilityResult:
     eligible: list[_EligibleReveal] = []
-    seen_sources: set[tuple[str, str]] = set()
+    contributing: list[_EligibleReveal] = []
+    exclusions: list[ExcludedReveal] = []
+    seen_sources: set[str] = set()
+    seen_experts: set[str] = set()
+    valid_reveals: list[ExpertTeamRevealItem] = []
+    for raw_reveal in reveals:
+        if isinstance(raw_reveal, ExpertTeamRevealItem):
+            valid_reveals.append(raw_reveal)
+        else:
+            exclusions.append(
+                _excluded_raw_reveal(
+                    raw_reveal,
+                    (
+                        "invalid_reveal_structure"
+                        if isinstance(raw_reveal, Mapping)
+                        else "unsupported_reveal_type"
+                    ),
+                )
+            )
     ordered = sorted(
-        reveals,
+        valid_reveals,
         key=lambda item: (
+            -(item.confidence or 0.0),
             item.expert_id or "",
             item.source_id or item.source_url or item.video_title,
-            -(item.confidence or 0.0),
             json.dumps(item.model_dump(mode="json"), sort_keys=True),
         ),
     )
@@ -357,16 +447,19 @@ def _eligible_reveals(
     for reveal in ordered:
         expert_id = (reveal.expert_id or "").strip()
         if not expert_id:
+            exclusions.append(_excluded_reveal(reveal, "missing_expert_identity"))
             continue
         if policy.season is not None and reveal.season != policy.season:
+            exclusions.append(_excluded_reveal(reveal, "wrong_season"))
             continue
         if policy.gameweek is not None and reveal.gameweek != policy.gameweek:
+            exclusions.append(_excluded_reveal(reveal, "wrong_gameweek"))
             continue
         source_identity = reveal.source_id or reveal.source_url or reveal.video_title
-        source_key = (expert_id, source_identity)
-        if source_key in seen_sources:
+        if source_identity in seen_sources:
+            exclusions.append(_excluded_reveal(reveal, "duplicate_source"))
             continue
-        seen_sources.add(source_key)
+        seen_sources.add(source_identity)
 
         starters, starter_events = _resolve_slot(
             reveal.starting_xi, reveal, resolver, "starter"
@@ -403,28 +496,87 @@ def _eligible_reveals(
             captaincy_validation.append("duplicate_captain_and_vice")
             captain = None
             vice = None
-        eligible.append(
-            _EligibleReveal(
-                reveal=reveal,
-                expert_id=expert_id,
-                resolved_starters=frozenset(starters),
-                resolved_bench=frozenset(bench),
-                resolved_squad=frozenset(squad),
-                captain_id=captain,
-                vice_id=vice,
-                resolution_events=tuple(
-                    [
-                        *starter_events,
-                        *bench_events,
-                        *current_events,
-                        *captain_events,
-                        *vice_events,
-                    ]
-                ),
-                captaincy_validation=tuple(captaincy_validation),
-            )
+        item = _EligibleReveal(
+            reveal=reveal,
+            expert_id=expert_id,
+            resolved_starters=frozenset(starters),
+            resolved_bench=frozenset(bench),
+            resolved_squad=frozenset(squad),
+            captain_id=captain,
+            vice_id=vice,
+            resolution_events=tuple(
+                [
+                    *starter_events,
+                    *bench_events,
+                    *current_events,
+                    *captain_events,
+                    *vice_events,
+                ]
+            ),
+            captaincy_validation=tuple(captaincy_validation),
         )
-    return eligible
+        if not item.resolved_squad:
+            exclusions.append(_excluded_reveal(reveal, "empty_resolved_squad"))
+            continue
+        if len(item.resolved_squad) < 11:
+            exclusions.append(
+                _excluded_reveal(
+                    reveal,
+                    "insufficient_resolved_players",
+                    detail=(
+                        f"Resolved {len(item.resolved_squad)} distinct players; "
+                        "at least 11 are required."
+                    ),
+                )
+            )
+            continue
+        eligible.append(item)
+        if expert_id in seen_experts:
+            exclusions.append(_excluded_reveal(reveal, "duplicate_expert_reveal"))
+            continue
+        seen_experts.add(expert_id)
+        contributing.append(item)
+    return _EligibilityResult(
+        eligible_reveals=tuple(eligible),
+        contributing_reveals=tuple(contributing),
+        exclusions=tuple(exclusions),
+    )
+
+
+def _reveal_id(reveal: ExpertTeamRevealItem) -> str:
+    return reveal.source_id or reveal.source_url or reveal.video_title
+
+
+def _excluded_reveal(
+    reveal: ExpertTeamRevealItem,
+    reason: str,
+    *,
+    detail: str | None = None,
+) -> ExcludedReveal:
+    return ExcludedReveal(
+        revealId=_reveal_id(reveal),
+        expertId=(reveal.expert_id or "").strip() or None,
+        expertName=reveal.expert_name or None,
+        sourceId=reveal.source_id,
+        sourceTitle=reveal.video_title or None,
+        reasons=[reason],
+        detail=detail,
+    )
+
+
+def _excluded_raw_reveal(value: Any, reason: str) -> ExcludedReveal:
+    raw = value if isinstance(value, Mapping) else {}
+    source_id = raw.get("source_id")
+    source_title = raw.get("video_title")
+    return ExcludedReveal(
+        revealId=str(source_id or source_title) if source_id or source_title else None,
+        expertId=str(raw["expert_id"]) if raw.get("expert_id") else None,
+        expertName=str(raw["expert_name"]) if raw.get("expert_name") else None,
+        sourceId=str(source_id) if source_id else None,
+        sourceTitle=str(source_title) if source_title else None,
+        reasons=[reason],
+        detail=f"Received {type(value).__name__}.",
+    )
 
 
 def _resolve_slot(
@@ -614,8 +766,19 @@ def _select_captain(
     return None
 
 
-def _output_player(item: _Votes, *, is_starter: bool, order: int) -> SuggestedPlayer:
+def _percentage(count: int, denominator: int) -> float:
+    return round((count / denominator) * 100, 1) if denominator else 0.0
+
+
+def _output_player(
+    item: _Votes,
+    *,
+    is_starter: bool,
+    order: int,
+    eligible_expert_count: int,
+) -> SuggestedPlayer:
     player = item.player
+    contributing_expert_ids = sorted(item.contributing_experts)
     return SuggestedPlayer(
         playerId=player.official_player_id,
         officialPlayerId=player.official_player_id,
@@ -632,7 +795,27 @@ def _output_player(item: _Votes, *, is_starter: bool, order: int) -> SuggestedPl
         captainSupport=item.captain_support,
         viceCaptainSupport=item.vice_support,
         confidenceSum=item.confidence_sum,
-        contributingExpertIds=sorted(item.contributing_experts),
+        contributingExpertIds=contributing_expert_ids,
+        support=PlayerSupport(
+            eligibleExpertCount=eligible_expert_count,
+            starterSupportCount=item.starter_support,
+            starterSupportPercentage=_percentage(
+                item.starter_support, eligible_expert_count
+            ),
+            squadSupportCount=item.squad_support,
+            squadSupportPercentage=_percentage(
+                item.squad_support, eligible_expert_count
+            ),
+            captainSupportCount=item.captain_support,
+            captainSupportPercentage=_percentage(
+                item.captain_support, eligible_expert_count
+            ),
+            viceCaptainSupportCount=item.vice_support,
+            viceCaptainSupportPercentage=_percentage(
+                item.vice_support, eligible_expert_count
+            ),
+            contributingExpertIds=contributing_expert_ids,
+        ),
         isStarter=is_starter,
         benchOrder=None if is_starter else order,
     )
@@ -653,19 +836,127 @@ def _provenance(eligible: Sequence[_EligibleReveal]) -> list[ContributingReveal]
     return [unique[key] for key in sorted(unique)]
 
 
+def _contributing_experts(
+    eligible: Sequence[_EligibleReveal],
+) -> list[ContributingExpert]:
+    names: dict[str, str] = {}
+    reveal_ids: dict[str, set[str]] = {}
+    for item in eligible:
+        names.setdefault(item.expert_id, item.reveal.expert_name)
+        reveal_ids.setdefault(item.expert_id, set()).add(_reveal_id(item.reveal))
+    return [
+        ContributingExpert(
+            expertId=expert_id,
+            expertName=names[expert_id],
+            revealIds=sorted(reveal_ids[expert_id]),
+        )
+        for expert_id in sorted(names)
+    ]
+
+
+def _experts_from_reveal_provenance(
+    reveals: Sequence[ContributingReveal],
+) -> list[ContributingExpert]:
+    names: dict[str, str] = {}
+    reveal_ids: dict[str, set[str]] = {}
+    for reveal in reveals:
+        names.setdefault(reveal.expertId, reveal.expertName)
+        source = reveal.sourceId or reveal.sourceUrl
+        if source:
+            reveal_ids.setdefault(reveal.expertId, set()).add(source)
+    return [
+        ContributingExpert(
+            expertId=expert_id,
+            expertName=names[expert_id],
+            revealIds=sorted(reveal_ids.get(expert_id, set())),
+        )
+        for expert_id in sorted(names)
+    ]
+
+
+def _consensus_strength(
+    starters: Sequence[SuggestedPlayer],
+    *,
+    eligible_expert_count: int,
+    valid_lineup: bool,
+    construction_method: str,
+) -> tuple[str, ConsensusStrengthBasis]:
+    percentages = [
+        player.support.starterSupportPercentage
+        for player in starters
+        if player.support is not None
+    ]
+    median_percentage = (
+        round(float(median(percentages)), 1) if percentages else None
+    )
+    if (
+        not valid_lineup
+        or construction_method != "vote_based_consensus"
+        or eligible_expert_count < 2
+        or median_percentage is None
+    ):
+        strength = "insufficient"
+    elif eligible_expert_count >= 3 and median_percentage >= 67:
+        strength = "strong"
+    elif median_percentage >= 50:
+        strength = "moderate"
+    else:
+        strength = "split"
+    return strength, ConsensusStrengthBasis(
+        metric="median_starting_xi_support_percentage",
+        medianSupportPercentage=median_percentage,
+        minimumExpertRequirement=3,
+    )
+
+
 def _failure(
     reason: str,
     *,
-    eligible_count: int = 0,
+    eligible_reveal_count: int = 0,
+    eligible_expert_count: int = 0,
     provenance: list[ContributingReveal] | None = None,
+    excluded_reveals: list[ExcludedReveal] | None = None,
     diagnostics: list[PlayerResolutionEvent] | None = None,
     catalogue: PlayerCatalogue | None = None,
     captaincy_validation: list[str] | None = None,
 ) -> SuggestedTeam:
+    exclusions = excluded_reveals or []
+    formation_derivation = FormationDerivation(
+        method="selected_starting_xi_positions",
+        formation=None,
+        positionSource=(
+            "authoritative_player_catalogue" if catalogue else "unavailable"
+        ),
+        authoritativeCataloguePositions=catalogue is not None,
+        fallbackApplied=None,
+    )
+    basis = ConsensusStrengthBasis(
+        metric="median_starting_xi_support_percentage",
+        medianSupportPercentage=None,
+        minimumExpertRequirement=3,
+    )
+    generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     return SuggestedTeam(
         constructionStatus="insufficient_evidence",
+        constructionMethod="insufficient_evidence",
+        consensusStrength="insufficient",
+        provenanceAvailable=True,
+        provenance=SuggestedTeamProvenance(
+            constructionMethod="insufficient_evidence",
+            generatedAt=generated_at,
+            eligibleRevealCount=eligible_reveal_count,
+            eligibleExpertCount=eligible_expert_count,
+            contributingRevealCount=len(provenance or []),
+            contributingExperts=_experts_from_reveal_provenance(provenance or []),
+            excludedRevealCount=len(exclusions),
+            excludedReveals=exclusions,
+            formationDerivation=formation_derivation,
+            consensusStrength="insufficient",
+            consensusStrengthBasis=basis,
+        ),
         failureReason=reason,
-        eligibleRevealCount=eligible_count,
+        eligibleRevealCount=eligible_reveal_count,
+        eligibleExpertCount=eligible_expert_count,
         contributingReveals=provenance or [],
         formation=None,
         startingXi=[],

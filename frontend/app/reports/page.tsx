@@ -1,26 +1,39 @@
 "use client";
 
+import Link from "next/link";
+import { ArchiveGrid, ReportLoadingState } from "@/components/kasifpl";
 import { PageShell } from "@/components/PageShell";
-import { LoadingState, ReportViewer } from "@/components/ReportViewer";
-import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
+import { ReportErrorState } from "@/components/report-selection/ReportStates";
 import { useSelectedReport } from "@/components/useSelectedReport";
-import { seasonLabel } from "@/lib/reports/reportSelection";
+import { reportHref } from "@/lib/reports/reportHref";
 
 export default function ReportsPage() {
-  const { selection, report, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport, error } = useSelectedReport();
-  const loading = isLoadingIndex || isLoadingReport;
+  const { selection, availableSeasons, isLoadingIndex, error } = useSelectedReport();
+  const entries = availableSeasons.flatMap((season) =>
+    season.gameweeks.map((option) => ({
+      season: season.season,
+      gameweek: option.gameweek,
+      title: option.has_suggested_team ? "Suggested team available" : "Gameweek briefing",
+      href: reportHref("/dashboard", { season: season.season, gameweek: option.gameweek }),
+      isCurrent: selection?.season === season.season && selection.gameweek === option.gameweek
+    }))
+  );
 
   return (
     <PageShell
-      title="Reports"
-      eyebrow={isCurrentReport ? "Current analysis" : "Report archive"}
-      description={selection ? `Review the published recommendations for Gameweek ${selection.gameweek} of ${seasonLabel(selection.season)}.` : "Review published gameweek recommendations and supporting analysis."}
-      action={!loading && report && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
+      title="Historical Reports"
+      eyebrow="Archive"
+      description="Browse the completed, publicly selectable report snapshots exposed by the backend."
     >
-      {loading ? <LoadingState label="Loading the selected report..." /> : null}
-      {!loading && error ? <ReportErrorState /> : null}
-      {!loading && !error && isMissingReport ? <MissingReportState /> : null}
-      {!loading && !error && report ? <ReportViewer report={report} historical={!isCurrentReport} /> : null}
+      {isLoadingIndex ? <ReportLoadingState label="Loading the report archive…" /> : null}
+      {!isLoadingIndex && error ? <ReportErrorState /> : null}
+      {!isLoadingIndex && !error ? (
+        <ArchiveGrid
+          entries={entries}
+          subtitle="Archive cards use only the season, gameweek, update availability, and suggested-team flag supplied by the public index."
+          renderLink={({ href, children, ...props }) => <Link href={href} {...props}>{children}</Link>}
+        />
+      ) : null}
     </PageShell>
   );
 }

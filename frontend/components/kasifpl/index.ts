@@ -26,6 +26,9 @@ export type { SuggestedTeamPitchProps } from "./components/SuggestedTeamPitch";
 export { SuggestedTeamBench } from "./components/SuggestedTeamBench";
 export type { SuggestedTeamBenchProps } from "./components/SuggestedTeamBench";
 
+export { SuggestedTeamConsensusPanel } from "./components/SuggestedTeamConsensusPanel";
+export type { SuggestedTeamConsensusPanelProps } from "./components/SuggestedTeamConsensusPanel";
+
 export { PlayerTile, PlayerDetailsPopover } from "./components/PlayerTile";
 export type { PlayerTileProps, PlayerDetailsPopoverProps } from "./components/PlayerTile";
 

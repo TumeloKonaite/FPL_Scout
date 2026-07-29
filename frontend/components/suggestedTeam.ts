@@ -15,6 +15,7 @@ export type PlayerSupport = {
   viceCaptainSupportCount: number;
   viceCaptainSupportPercentage: number;
   contributingExpertIds: string[];
+  contributingRevealIds?: string[];
 };
 
 export type SuggestedPlayer = {
@@ -22,6 +23,7 @@ export type SuggestedPlayer = {
   officialPlayerId?: number | null;
   name: string;
   canonicalName?: string | null;
+  displayName?: string | null;
   number?: number | null;
   shirtNumber?: number | null;
   position: PlayerPosition;
@@ -40,6 +42,7 @@ export type SuggestedPlayer = {
   viceCaptainSupport?: number;
   confidenceSum?: number;
   contributingExpertIds?: string[];
+  contributingRevealIds?: string[];
   support?: PlayerSupport | null;
   consensus?: string | null;
   captain?: boolean;
@@ -60,6 +63,7 @@ export type SuggestedTeamInput = {
     eligibleRevealCount: number;
     eligibleExpertCount: number;
     contributingRevealCount: number;
+    contributingExpertCount?: number;
     contributingExperts: { expertId: string; expertName: string; revealIds: string[] }[];
     excludedRevealCount: number;
     excludedReveals: { revealId?: string | null; expertId?: string | null; expertName?: string | null; sourceId?: string | null; sourceTitle?: string | null; reasons: string[]; detail?: string | null }[];
@@ -69,6 +73,15 @@ export type SuggestedTeamInput = {
   } | null;
   eligibleRevealCount?: number;
   eligibleExpertCount?: number;
+  contributingRevealCount?: number;
+  contributingExpertCount?: number;
+  contributingReveals?: {
+    expertId: string;
+    expertName: string;
+    sourceId?: string | null;
+    sourceUrl?: string | null;
+    confidence: number;
+  }[];
   formation?: string | null;
   startingXi?: SuggestedPlayer[];
   starters?: SuggestedPlayer[];

@@ -9,34 +9,56 @@ export type PlayerTileProps = {
   isCaptain?: boolean;
   isViceCaptain?: boolean;
   onSelect?: (player: SuggestedPlayer) => void;
+  benchRole?: string;
 };
 
-export function PlayerTile({ player, isCaptain, isViceCaptain, onSelect }: PlayerTileProps) {
+function supportTone(player: SuggestedPlayer): "strong" | "moderate" | "limited" | "neutral" {
+  const support = player.support;
+  if (!support || support.eligibleExpertCount <= 0) return "neutral";
+  const ratio = support.starterSupportCount / support.eligibleExpertCount;
+  if (ratio === 1) return "strong";
+  if (ratio >= 2 / 3) return "moderate";
+  if (support.starterSupportCount > 0) return "limited";
+  return "neutral";
+}
+
+function playerLabel(player: SuggestedPlayer): string {
+  if (player.displayName?.trim()) return player.displayName.trim();
+  const parts = player.name.trim().split(/\s+/);
+  if (parts.length <= 1) return player.name;
+  const surname = parts.at(-1) ?? player.name;
+  return parts[0].endsWith(".") ? `${parts[0]} ${surname}` : surname;
+}
+
+export function PlayerTile({ player, isCaptain, isViceCaptain, onSelect, benchRole }: PlayerTileProps) {
   const captain = isCaptain ?? player.captain ?? false;
   const vice = isViceCaptain ?? player.viceCaptain ?? false;
-  const shirtNumber = player.shirtNumber ?? player.number ?? null;
-  const label = player.displayName || player.name;
-
-  const title = [
-    player.name,
-    player.club || undefined,
-    player.fixture || undefined,
-  ].filter(Boolean).join(" — ");
+  const label = playerLabel(player);
+  const support = player.support;
+  const supportText = support
+    ? `${support.starterSupportCount} of ${support.eligibleExpertCount}`
+    : player.expertSupportCount != null
+      ? `${player.expertSupportCount} experts`
+      : "Support unavailable";
 
   return (
     <button
       type="button"
-      className={`kasifpl-player ${positionClass(player.position)}`}
+      className={`kasifpl-player ${positionClass(player.position)} kasifpl-player--support-${supportTone(player)}`}
       onClick={() => onSelect?.(player)}
-      title={title}
-      aria-label={`${label}${captain ? ", captain" : vice ? ", vice-captain" : ""}`}
+      title={[player.name, player.club, player.fixture].filter(Boolean).join(" — ")}
+      aria-label={`${label}, ${supportText}${captain ? ", captain" : vice ? ", vice-captain" : ""}`}
     >
-      <span className="kasifpl-player__shirt" aria-hidden>
-        {shirtNumber ?? player.position}
+      <span className="kasifpl-player__topline">
+        <span className="kasifpl-player__position">{player.club || player.position}</span>
+        {player.shirtNumber != null ? <span className="kasifpl-player__shirt-number">#{player.shirtNumber}</span> : null}
       </span>
       <span className="kasifpl-player__name">{label}</span>
-      {captain ? <span className="kasifpl-player__badge" aria-hidden>C</span> : null}
-      {!captain && vice ? <span className="kasifpl-player__badge kasifpl-player__badge--vc" aria-hidden>V</span> : null}
+      <span className="kasifpl-player__support">{supportText}</span>
+      {player.price != null ? <span className="kasifpl-player__price">£{player.price.toFixed(1)}m</span> : null}
+      {benchRole ? <span className="kasifpl-player__bench-role">{benchRole}</span> : null}
+      {captain ? <span className="kasifpl-player__badge" aria-label="Captain">C</span> : null}
+      {!captain && vice ? <span className="kasifpl-player__badge kasifpl-player__badge--vc" aria-label="Vice-captain">VC</span> : null}
     </button>
   );
 }
@@ -46,74 +68,62 @@ export type PlayerDetailsPopoverProps = {
   onClose: () => void;
 };
 
-/** Modal popover with the player's support/statistics. Keyboard: Esc closes. */
 export function PlayerDetailsPopover({ player, onClose }: PlayerDetailsPopoverProps) {
   React.useEffect(() => {
     if (!player) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [player, onClose]);
 
   if (!player) return null;
 
-  const rows: Array<{ label: string; value: React.ReactNode }> = [];
+  const rows: Array<{ label: string; value: React.ReactNode }> = [
+    { label: "Position", value: player.position }
+  ];
   if (player.club) rows.push({ label: "Club", value: player.club });
-  if (player.fixture) rows.push({ label: "Fixture", value: player.fixture });
   if (player.price != null) rows.push({ label: "Price", value: `£${player.price.toFixed(1)}m` });
-  if (player.predictedPoints != null) rows.push({ label: "Predicted pts", value: player.predictedPoints.toFixed(1) });
-  if (player.ownership != null) rows.push({ label: "Ownership", value: `${player.ownership.toFixed(1)}%` });
-  if (player.expectedMinutes != null) rows.push({ label: "Expected mins", value: player.expectedMinutes.toFixed(0) });
-  if (player.fixtureDifficulty != null) rows.push({ label: "FDR", value: player.fixtureDifficulty });
+  if (player.fixture) rows.push({ label: "Fixture", value: player.fixture });
 
-  const s = player.support;
-  if (s) {
-    rows.push({
-      label: "Starter support",
-      value: `${s.starterSupportCount}/${s.eligibleExpertCount} (${Math.round(s.starterSupportPercentage)}%)`,
-    });
-    if (s.captainSupportCount > 0) {
-      rows.push({ label: "Captain support", value: `${s.captainSupportCount}/${s.eligibleExpertCount}` });
-    }
-    if (s.viceCaptainSupportCount > 0) {
-      rows.push({ label: "Vice support", value: `${s.viceCaptainSupportCount}/${s.eligibleExpertCount}` });
-    }
+  const support = player.support;
+  if (support) {
+    rows.push({ label: "Starter support", value: `${support.starterSupportCount} of ${support.eligibleExpertCount} (${Math.round(support.starterSupportPercentage)}%)` });
+    rows.push({ label: "Squad support", value: `${support.squadSupportCount} of ${support.eligibleExpertCount}` });
+    rows.push({ label: "Captain support", value: `${support.captainSupportCount} of ${support.eligibleExpertCount}` });
+    rows.push({ label: "Vice-captain support", value: `${support.viceCaptainSupportCount} of ${support.eligibleExpertCount}` });
   } else if (player.expertSupportCount != null) {
-    rows.push({ label: "Expert support", value: `${player.expertSupportCount}` });
+    rows.push({ label: "Expert support", value: player.expertSupportCount });
   }
 
+  const expertIds = support?.contributingExpertIds ?? player.contributingExpertIds ?? [];
+  const revealIds = support?.contributingRevealIds ?? player.contributingRevealIds ?? [];
+
   return (
-    <div
-      className="kasifpl-popover-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${player.name} details`}
-      onClick={onClose}
-    >
-      <div className="kasifpl-popover" onClick={(e) => e.stopPropagation()}>
+    <div className="kasifpl-popover-backdrop" role="dialog" aria-modal="true" aria-label={`${player.name} details`} onClick={onClose}>
+      <div className="kasifpl-popover" onClick={(event) => event.stopPropagation()}>
         <div className="kasifpl-popover__header">
           <div>
-            <h3 className="kasifpl-popover__title">{player.displayName || player.name}</h3>
-            <p className="kasifpl-popover__sub">
-              {[player.position, player.club].filter(Boolean).join(" · ")}
-            </p>
+            <h3 className="kasifpl-popover__title">{player.name}</h3>
+            <p className="kasifpl-popover__sub">{[player.club, player.position].filter(Boolean).join(" · ")}</p>
           </div>
           <button type="button" className="kasifpl-popover__close" aria-label="Close" onClick={onClose}>×</button>
         </div>
-        {rows.length ? (
-          <div className="kasifpl-popover__grid">
-            {rows.map((row) => (
-              <div key={row.label} className="kasifpl-popover__stat">
-                <div className="kasifpl-popover__stat-label">{row.label}</div>
-                <div className="kasifpl-popover__stat-value">{row.value}</div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={{ color: "var(--kasifpl-color-fg-muted)", fontSize: "0.875rem" }}>
-            No additional statistics available for this player.
-          </p>
-        )}
+        <div className="kasifpl-popover__grid">
+          {rows.map((row) => (
+            <div key={row.label} className="kasifpl-popover__stat">
+              <div className="kasifpl-popover__stat-label">{row.label}</div>
+              <div className="kasifpl-popover__stat-value">{row.value}</div>
+            </div>
+          ))}
+        </div>
+        <div className="kasifpl-popover__evidence">
+          <strong>Supporting experts</strong>
+          <p>{expertIds.length ? expertIds.join(", ") : "Expert identities unavailable"}</p>
+        </div>
+        <div className="kasifpl-popover__evidence">
+          <strong>Source reveals</strong>
+          <p>{revealIds.length ? revealIds.join(", ") : "Reveal identifiers unavailable"}</p>
+        </div>
       </div>
     </div>
   );

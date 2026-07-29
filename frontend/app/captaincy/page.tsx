@@ -1,29 +1,30 @@
 "use client";
 
+import { CaptaincyPanel, ReportLoadingState } from "@/components/kasifpl";
 import { PageShell } from "@/components/PageShell";
-import { LoadingState } from "@/components/ReportViewer";
-import { HistoricalReportBadge, MissingReportSection, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
+import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
 import { useSelectedReport } from "@/components/useSelectedReport";
-import { RecommendationEvidence } from "@/components/RecommendationEvidence";
 
 export default function CaptaincyPage() {
   const { report, error, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport } = useSelectedReport();
   const loading = isLoadingIndex || isLoadingReport;
-  const picks = report?.report.captaincy ?? [];
   return (
     <PageShell
       title="Captaincy"
       eyebrow="Armband matrix"
-      description="Compare captain options using expert agreement, source attribution, and late-news risk."
+      description="Compare captain options without treating mentions or missing evidence as expert votes."
       action={!loading && report && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
     >
-      {loading ? <LoadingState label="Loading captaincy intelligence..." /> : null}
+      {loading ? <ReportLoadingState label="Loading captaincy intelligence…" /> : null}
       {!loading && error ? <ReportErrorState /> : null}
       {!loading && !error && isMissingReport ? <MissingReportState /> : null}
-      {!loading && !error && report && !picks.length ? <MissingReportSection>No captaincy recommendations were recorded for this gameweek.</MissingReportSection> : null}
-      {!loading && !error && picks.length ? <section className="insight-grid" aria-label="Captain ranking">{picks.map((pick, index) => {
-        return <article className={`insight-card ${index === 0 ? "featured" : ""}`} key={`${pick.title}-${index}`}><span className="rank-badge">{index + 1}</span><h2>{pick.title}</h2><p>{pick.rationale}</p><RecommendationEvidence recommendation={pick} /></article>;
-      })}</section> : null}
+      {!loading && !error && report ? (
+        <CaptaincyPanel
+          captaincy={report.report.captaincy}
+          title="Captaincy comparison"
+          subtitle="Candidates are shown in the order stored by the selected report; support counts come from its consensus fields."
+        />
+      ) : null}
     </PageShell>
   );
 }

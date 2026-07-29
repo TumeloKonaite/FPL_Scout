@@ -1,0 +1,24 @@
+{
+  "name": "@kasifpl/next-component-pack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Framework-neutral, presentation-only React component pack for the KasiFPL UI. Designed to drop into a Next.js 15 App Router application.",
+  "type": "module",
+  "sideEffects": ["**/*.css"],
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./styles": "./styles/kasifpl.css",
+    "./types": "./types.ts"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^7.0.2"
+  }
+}

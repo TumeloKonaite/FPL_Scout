@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import "./globals.css";
+import "@/components/kasifpl/styles/kasifpl.css";
 import { Header } from "@/components/Header";
-import { Sidebar } from "@/components/Sidebar";
+import { KasiFplFooter } from "@/components/kasifpl";
 import { ReportSelectionProvider } from "@/components/useSelectedReport";
 
 export const metadata: Metadata = {
@@ -18,14 +19,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Suspense fallback={<div className="app-layout"><div className="main-column"><main className="content">Loading reports…</main></div></div>}>
+        <Suspense fallback={<div className="kasifpl-shell"><main className="kasifpl-shell__main">Loading reports…</main></div>}>
           <ReportSelectionProvider>
-            <div className="app-layout">
-              <Sidebar />
-              <div className="main-column">
-                <Header />
-                <main className="content">{children}</main>
-              </div>
+            <div className="kasifpl-shell">
+              <Header />
+              <main className="kasifpl-shell__main">{children}</main>
+              <KasiFplFooter>Public, read-only FPL decision support · Recommendations remain tied to their published gameweek.</KasiFplFooter>
             </div>
           </ReportSelectionProvider>
         </Suspense>

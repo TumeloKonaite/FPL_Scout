@@ -54,18 +54,27 @@ test("groups normalized positions and derives the pitch rows", () => {
   assert.equal(utils.deriveFormation(lineup("3-5-2")), "3-5-2");
 });
 
-test("page declares loading, unavailable, warning, pitch, bench, and table states", () => {
+test("page declares loading, unavailable, warning, pitch, bench, and provenance states", () => {
   const component = readFileSync(fileURLToPath(new URL("../components/SuggestedTeamPitch.tsx", import.meta.url)), "utf8");
   for (const copy of ["teamTitle", "Captain:", "Vice-captain:", "football-pitch", "playerSupportLabel"]) assert.match(component, new RegExp(copy));
   const page = readFileSync(fileURLToPath(new URL("../app/suggested-team/page.tsx", import.meta.url)), "utf8");
-  assert.match(page, /SuggestedTeamTable players=\{team\.allPlayers\}/);
   assert.match(page, /<SuggestedTeamPitch team=\{team\}/);
   assert.match(page, /<SuggestedTeamBench team=\{team\}/);
   assert.match(page, /Suggested team unavailable/);
-  assert.match(page, /SuggestedTeamProvenance/);
-  assert.match(page, /failureReason/);
+  assert.match(page, /constructionMethod/);
+  assert.match(page, /consensusStrength/);
+  assert.match(page, /eligibleExpertCount/);
+  assert.match(page, /team\.warnings/);
   assert.match(page, /useSelectedReport/);
-  assert.match(page, /SuggestedTeamSkeleton/);
+  assert.match(page, /ReportLoadingState/);
+});
+
+test("exported pitch rejects incomplete and mismatched lineups", () => {
+  const shared = readFileSync(fileURLToPath(new URL("../components/kasifpl/components/_shared.tsx", import.meta.url)), "utf8");
+  assert.match(shared, /starters\.length !== 11/);
+  assert.match(shared, /new Set\(starters\.map/);
+  assert.match(shared, /gk\.length !== 1/);
+  assert.match(shared, /team\.formation\.trim\(\) !== derivedFormation/);
 });
 
 test("does not normalize an insufficient-evidence payload as a lineup", () => {

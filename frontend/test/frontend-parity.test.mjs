@@ -10,37 +10,33 @@ function source(path) {
   return readFileSync(join(root, path), "utf8");
 }
 
-test("dashboard presents a read-only gameweek summary with resilient states", () => {
+test("dashboard presents the component-pack briefing with resilient states", () => {
   const dashboard = source("app/dashboard/page.tsx");
 
   assert.match(dashboard, /useSelectedReport\(\)/);
   assert.doesNotMatch(dashboard, /getLatestReport\(\)/);
   assert.doesNotMatch(dashboard, /getReports\(\)/);
-  assert.match(dashboard, /<DashboardSkeleton \/>/);
+  assert.match(dashboard, /<ReportLoadingState/);
   assert.match(dashboard, /<MissingReportState \/>/);
   assert.match(dashboard, /<ReportErrorState \/>/);
-  assert.match(dashboard, /isCurrentReport \? `This Gameweek\$\{gameweekLabel\}`/);
-  assert.match(dashboard, /Gameweek \$\{report\.gameweek\} deadline/);
-  assert.match(dashboard, /Last updated time unavailable/);
-  assert.match(dashboard, />Top Captain</);
-  assert.match(dashboard, />Top Transfer</);
-  assert.match(dashboard, />Key Risk</);
-  assert.match(dashboard, />Your Gameweek Action Plan</);
-  assert.match(dashboard, /teamTitle\(lineup\.constructionMethod\)/);
-  assert.match(dashboard, /Original provenance unavailable/);
-  assert.match(dashboard, /Not a multi-expert consensus/);
+  assert.match(dashboard, /<OverviewBriefingFromReport/);
+  assert.match(dashboard, /<TransfersPanel/);
+  assert.match(dashboard, /<CaptaincyPanel/);
+  assert.match(dashboard, /<SuggestedTeamPitch/);
+  assert.match(dashboard, /reportHref\("\/suggested-team", selection\)/);
   assert.doesNotMatch(dashboard, /Generate report/);
 });
 
-test("reports page renders the URL-selected public report", () => {
+test("reports page renders the public canonical archive", () => {
   const reportsPage = source("app/reports/page.tsx");
 
   assert.match(reportsPage, /useSelectedReport\(\)/);
   assert.doesNotMatch(reportsPage, /getLatestReport\(\)/);
   assert.doesNotMatch(reportsPage, /getReports\(\)/);
   assert.doesNotMatch(reportsPage, /selectedRunId/);
-  assert.match(reportsPage, /<MissingReportState \/>/);
-  assert.match(reportsPage, /historical=\{!isCurrentReport\}/);
+  assert.match(reportsPage, /availableSeasons\.flatMap/);
+  assert.match(reportsPage, /<ArchiveGrid/);
+  assert.match(reportsPage, /reportHref\("\/dashboard"/);
 });
 
 test("report viewer renders every final report section", () => {

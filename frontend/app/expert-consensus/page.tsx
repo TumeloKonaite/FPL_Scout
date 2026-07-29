@@ -1,31 +1,54 @@
 "use client";
 
+import {
+  ConsensusMatrix,
+  ExpertConsensusPanel,
+  OverviewBriefing,
+  ReportLoadingState,
+  SectionUnavailableState
+} from "@/components/kasifpl";
 import { PageShell } from "@/components/PageShell";
-import { LoadingState } from "@/components/ReportViewer";
-import { HistoricalReportBadge, MissingReportSection, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
+import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
 import { useSelectedReport } from "@/components/useSelectedReport";
 
 export default function ExpertConsensusPage() {
   const { report: selectedReport, error, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport } = useSelectedReport();
   const loading = isLoadingIndex || isLoadingReport;
   const report = selectedReport?.report;
-  const hasConsensus = Boolean(report && (report.overview?.trim() || report.disagreements?.length || report.wait_for_news?.length));
   return (
     <PageShell
-      title="Expert Consensus"
+      title="Expert Analysis"
       eyebrow="Expert room"
-      description="See where the expert panel aligns, where it splits, and what requires late news."
-      action={!loading && report && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
+      description="See the recorded team reveals, agreements, disagreements, and late-news flags."
+      action={!loading && selectedReport && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
     >
-      {loading ? <LoadingState label="Loading expert consensus..." /> : null}
+      {loading ? <ReportLoadingState label="Loading expert analysis…" /> : null}
       {!loading && error ? <ReportErrorState /> : null}
       {!loading && !error && isMissingReport ? <MissingReportState /> : null}
-      {!loading && !error && report && !hasConsensus ? <MissingReportSection>No expert consensus data was available for this gameweek.</MissingReportSection> : null}
-      {!loading && !error && report && hasConsensus ? <section className="insight-grid" aria-label="Expert consensus">
-        <article className="insight-card featured"><span className="rank-badge">✓</span><h2>Consensus themes</h2><p>{report.overview}</p></article>
-        <article className="insight-card"><span className="rank-badge">≠</span><h2>Disagreements</h2>{report.disagreements?.length ? report.disagreements.map((item, index) => <p key={`${item.topic}-${index}`}><strong>{item.topic}:</strong> {item.summary}</p>) : <p>No major disagreements were identified.</p>}</article>
-        <article className="insight-card"><span className="rank-badge">!</span><h2>Wait for news</h2>{report.wait_for_news?.length ? report.wait_for_news.map((item, index) => <p key={`${item}-${index}`}>{item}</p>) : <p>No late-news flags are open.</p>}</article>
-      </section> : null}
+      {!loading && !error && report ? (
+        <>
+          <OverviewBriefing
+            overview={report.overview}
+            keyRisk={report.key_risk}
+            waitForNews={report.wait_for_news}
+          />
+          {report.disagreements?.length ? (
+            <section className="kasifpl-section" aria-labelledby="disagreements-title">
+              <h2 className="kasifpl-section__title" id="disagreements-title">Disagreements</h2>
+              <div className="kasifpl-grid kasifpl-grid--cols-2">
+                {report.disagreements.map((item) => (
+                  <article className="kasifpl-card" key={item.topic}>
+                    <h3 className="kasifpl-card__title">{item.topic}</h3>
+                    <p className="kasifpl-card__body">{item.summary}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : <SectionUnavailableState title="No recorded disagreements" message="The selected report did not include a disagreement section." />}
+          <ExpertConsensusPanel reveals={report.expert_team_reveals} />
+          <ConsensusMatrix reveals={report.expert_team_reveals} />
+        </>
+      ) : null}
     </PageShell>
   );
 }

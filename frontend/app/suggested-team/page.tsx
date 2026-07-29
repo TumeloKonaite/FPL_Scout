@@ -1,47 +1,54 @@
 "use client";
 
+import {
+  ReportLoadingState,
+  SectionUnavailableState,
+  SuggestedTeamBench,
+  SuggestedTeamPitch
+} from "@/components/kasifpl";
 import { PageShell } from "@/components/PageShell";
-import { SuggestedTeamBench } from "@/components/SuggestedTeamBench";
-import { SuggestedTeamPitch } from "@/components/SuggestedTeamPitch";
-import { SuggestedTeamProvenance } from "@/components/SuggestedTeamProvenance";
-import { SuggestedTeamTable } from "@/components/SuggestedTeamTable";
-import { normalizeSuggestedTeam } from "@/components/suggestedTeam";
-import { useSelectedReport } from "@/components/useSelectedReport";
 import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
+import { useSelectedReport } from "@/components/useSelectedReport";
 
-function SuggestedTeamSkeleton() {
-  return <div className="suggested-team-skeleton" role="status"><span>Loading the latest suggested team…</span></div>;
-}
-
-function UnavailableState({ reason }: { reason?: string | null }) {
-  return (
-    <section className="pitch-state suggested-team-unavailable">
-      <div><h2>Suggested team unavailable</h2><p>No reliable suggested team is available for this gameweek.</p><p>{reason ? reason.replaceAll("_", " ") : "There was not enough eligible evidence to construct a valid team."}</p></div>
-    </section>
-  );
+function readable(value?: string | null): string {
+  return value ? value.replaceAll("_", " ") : "Unavailable";
 }
 
 export default function SuggestedTeamPage() {
   const { report, error, isLoadingIndex, isLoadingReport, isMissingReport, isCurrentReport } = useSelectedReport();
   const loading = isLoadingIndex || isLoadingReport;
-  const suggestedTeam = report?.report.suggested_team;
-  const team = normalizeSuggestedTeam(suggestedTeam);
-  const gameweek = report?.gameweek ?? report?.report.gameweek;
+  const team = report?.report.suggested_team;
 
   return (
-    <PageShell title="Suggested Team" eyebrow="Squad planner" description="The expert-recommended lineup saved with the selected gameweek report." action={!loading && report && !isCurrentReport ? <HistoricalReportBadge /> : undefined}>
-      {loading ? <SuggestedTeamSkeleton /> : null}
+    <PageShell
+      title="Suggested Team"
+      eyebrow="Squad planner"
+      description="The selected report’s validated starting XI, bench, and player-level support."
+      action={!loading && report && !isCurrentReport ? <HistoricalReportBadge /> : undefined}
+    >
+      {loading ? <ReportLoadingState label="Loading the suggested team…" /> : null}
       {!loading && error ? <ReportErrorState /> : null}
       {!loading && !error && isMissingReport ? <MissingReportState /> : null}
-      {!loading && !error && report && !team ? <UnavailableState reason={suggestedTeam?.failureReason} /> : null}
+      {!loading && !error && report && !team ? (
+        <SectionUnavailableState title="Suggested team unavailable" message="This report does not contain suggested-team data." />
+      ) : null}
       {!loading && !error && team ? (
-        <div className="suggested-team-layout">
-          <SuggestedTeamPitch team={team} gameweek={gameweek} />
-          <SuggestedTeamProvenance team={team} />
-          {team.warnings.length ? <aside className="team-data-warning" role="status"><strong>Team data notice</strong><ul>{team.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul></aside> : null}
+        <>
+          <section className="kasifpl-team-summary" aria-label="Suggested team provenance">
+            <span><strong>Method</strong>{readable(team.constructionMethod)}</span>
+            <span><strong>Agreement</strong>{readable(team.consensusStrength)}</span>
+            <span><strong>Eligible experts</strong>{team.eligibleExpertCount ?? "Unavailable"}</span>
+            <span><strong>Formation</strong>{team.formation ?? "Validated from XI"}</span>
+          </section>
+          <SuggestedTeamPitch team={team} />
           <SuggestedTeamBench team={team} />
-          <SuggestedTeamTable players={team.allPlayers} />
-        </div>
+          {team.warnings?.length ? (
+            <aside className="kasifpl-state" role="status">
+              <h2 className="kasifpl-state__title">Team data notice</h2>
+              <ul>{team.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
+            </aside>
+          ) : null}
+        </>
       ) : null}
     </PageShell>
   );

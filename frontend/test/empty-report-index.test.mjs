@@ -20,7 +20,6 @@ test("public report pages render a clear zero-report state", () => {
 
   for (const page of [
     "app/dashboard/page.tsx",
-    "app/reports/page.tsx",
     "app/captaincy/page.tsx",
     "app/transfers/page.tsx",
     "app/expert-consensus/page.tsx",
@@ -28,6 +27,8 @@ test("public report pages render a clear zero-report state", () => {
   ]) {
     assert.match(source(page), /isMissingReport \? <MissingReportState \/>/, page);
   }
+  assert.match(source("app/reports/page.tsx"), /<ArchiveGrid/);
+  assert.match(source("components/kasifpl/components/ArchiveGrid.tsx"), /No archived reports available\./);
 });
 
 test("selectors remain disabled when the index has no seasons", () => {

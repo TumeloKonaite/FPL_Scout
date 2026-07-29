@@ -76,6 +76,7 @@ export type SuggestedTeamInput = {
   players?: SuggestedPlayer[];
   captainPlayerId?: number | null;
   viceCaptainPlayerId?: number | null;
+  warnings?: string[];
 };
 
 export type GroupedPlayers = {

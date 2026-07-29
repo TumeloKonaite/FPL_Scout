@@ -67,6 +67,7 @@ export type PlayerSupport = {
   viceCaptainSupportCount: number;
   viceCaptainSupportPercentage: number;
   contributingExpertIds: string[];
+  contributingRevealIds?: string[];
 };
 
 export type SuggestedPlayer = {
@@ -91,6 +92,7 @@ export type SuggestedPlayer = {
   captainSupport?: number;
   viceCaptainSupport?: number;
   contributingExpertIds?: string[];
+  contributingRevealIds?: string[];
   support?: PlayerSupport | null;
   consensus?: string | null;
   captain?: boolean;
@@ -111,6 +113,47 @@ export type SuggestedTeam = {
   provenanceAvailable?: boolean;
   eligibleRevealCount?: number;
   eligibleExpertCount?: number;
+  contributingRevealCount?: number;
+  contributingExpertCount?: number;
+  contributingReveals?: Array<{
+    expertId: string;
+    expertName: string;
+    sourceId?: string | null;
+    sourceUrl?: string | null;
+    confidence: number;
+  }>;
+  provenance?: {
+    constructionMethod: "vote_based_consensus" | "single_reveal" | "insufficient_evidence" | "legacy_snapshot";
+    generatedAt: string;
+    eligibleRevealCount: number;
+    eligibleExpertCount: number;
+    contributingRevealCount: number;
+    contributingExpertCount?: number;
+    contributingExperts: Array<{ expertId: string; expertName: string; revealIds: string[] }>;
+    excludedRevealCount: number;
+    excludedReveals: Array<{
+      revealId?: string | null;
+      expertId?: string | null;
+      expertName?: string | null;
+      sourceId?: string | null;
+      sourceTitle?: string | null;
+      reasons: string[];
+      detail?: string | null;
+    }>;
+    formationDerivation: {
+      method: string;
+      formation?: string | null;
+      positionSource: string;
+      authoritativeCataloguePositions: boolean;
+      fallbackApplied?: string | null;
+    };
+    consensusStrength: "strong" | "moderate" | "split" | "insufficient";
+    consensusStrengthBasis: {
+      metric: string;
+      medianSupportPercentage?: number | null;
+      minimumExpertRequirement: number;
+    };
+  } | null;
   formation?: string | null;
   startingXi?: SuggestedPlayer[];
   starters?: SuggestedPlayer[];

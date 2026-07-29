@@ -60,13 +60,37 @@ test("page declares loading, unavailable, warning, pitch, bench, and provenance 
   const page = readFileSync(fileURLToPath(new URL("../app/suggested-team/page.tsx", import.meta.url)), "utf8");
   assert.match(page, /<SuggestedTeamPitch team=\{team\}/);
   assert.match(page, /<SuggestedTeamBench team=\{team\}/);
+  assert.match(page, /<SuggestedTeamConsensusPanel team=\{team\}/);
   assert.match(page, /Suggested team unavailable/);
-  assert.match(page, /constructionMethod/);
-  assert.match(page, /consensusStrength/);
-  assert.match(page, /eligibleExpertCount/);
-  assert.match(page, /team\.warnings/);
+  assert.match(page, /kasifpl-team-layout/);
   assert.match(page, /useSelectedReport/);
   assert.match(page, /ReportLoadingState/);
+});
+
+test("refined team UI exposes support, captaincy, bench roles, and provenance", () => {
+  const player = readFileSync(fileURLToPath(new URL("../components/kasifpl/components/PlayerTile.tsx", import.meta.url)), "utf8");
+  const bench = readFileSync(fileURLToPath(new URL("../components/kasifpl/components/SuggestedTeamBench.tsx", import.meta.url)), "utf8");
+  const consensus = readFileSync(fileURLToPath(new URL("../components/kasifpl/components/SuggestedTeamConsensusPanel.tsx", import.meta.url)), "utf8");
+  const styles = readFileSync(fileURLToPath(new URL("../components/kasifpl/styles/kasifpl.css", import.meta.url)), "utf8");
+
+  assert.match(player, /player\.shirtNumber != null/);
+  assert.doesNotMatch(player, /player\.number/);
+  assert.match(player, /starterSupportCount/);
+  assert.match(player, /squadSupportCount/);
+  assert.match(player, /captainSupportCount/);
+  assert.match(player, /viceCaptainSupportCount/);
+  assert.match(player, /contributingExpertIds/);
+  assert.match(player, /contributingRevealIds/);
+  assert.match(bench, /Substitute goalkeeper/);
+  assert.match(bench, /First/);
+  assert.match(consensus, /Median XI support/);
+  assert.match(consensus, /Split consensus/);
+  assert.match(consensus, /contributingExperts/);
+  assert.match(consensus, /excludedRevealCount/);
+  assert.match(consensus, /authoritativeCataloguePositions/);
+  assert.match(styles, /grid-template-columns: minmax\(0, 7fr\) minmax\(300px, 3fr\)/);
+  assert.match(styles, /max-height: 700px/);
+  assert.match(styles, /kasifpl-player--support-limited/);
 });
 
 test("exported pitch rejects incomplete and mismatched lineups", () => {

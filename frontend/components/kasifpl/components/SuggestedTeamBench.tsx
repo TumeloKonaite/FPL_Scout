@@ -19,6 +19,12 @@ export function SuggestedTeamBench({ team, interactive = true }: SuggestedTeamBe
   if (!bench || bench.length === 0) return null;
 
   const ordered = [...bench].sort((a, b) => (a.benchOrder ?? 0) - (b.benchOrder ?? 0));
+  let outfieldIndex = 0;
+  const roleFor = (player: SuggestedPlayer) => {
+    if (player.position === "GK") return "Substitute goalkeeper";
+    outfieldIndex += 1;
+    return `${["First", "Second", "Third"][outfieldIndex - 1] ?? `${outfieldIndex}th`} outfield substitute`;
+  };
 
   return (
     <div>
@@ -28,6 +34,7 @@ export function SuggestedTeamBench({ team, interactive = true }: SuggestedTeamBe
           <PlayerTile
             key={p.playerId}
             player={p}
+            benchRole={roleFor(p)}
             onSelect={interactive ? setSelected : undefined}
           />
         ))}

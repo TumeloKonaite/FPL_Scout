@@ -11,6 +11,10 @@ from pathlib import Path
 POSITIONS = {"1": "GK", "2": "DEF", "3": "MID", "4": "FWD"}
 
 
+def _optional_int(value: str | None) -> int | None:
+    return int(value) if value and value.strip() else None
+
+
 def build_snapshot(
     *,
     season: str,
@@ -21,7 +25,7 @@ def build_snapshot(
     aliases_path: Path | None = None,
 ) -> dict:
     teams = {
-        row["id"]: row["name"]
+        row["id"]: (row["name"], _optional_int(row.get("code")))
         for row in csv.DictReader(teams_path.open(encoding="utf-8"))
     }
     aliases: dict[str, list[str]] = {}
@@ -34,6 +38,7 @@ def build_snapshot(
     players = []
     for row in csv.DictReader(players_path.open(encoding="utf-8")):
         player_id = int(row["id"])
+        team_name, team_code = teams.get(row["team"], (None, None))
         canonical_name = " ".join(
             value.strip()
             for value in (row.get("first_name", ""), row.get("second_name", ""))
@@ -44,9 +49,12 @@ def build_snapshot(
                 "playerId": player_id,
                 "canonicalName": canonical_name or row["web_name"],
                 "displayName": row["web_name"],
-                "team": teams.get(row["team"]),
+                "team": team_name,
                 "position": POSITIONS[row["element_type"]],
                 "price": int(row["now_cost"]) / 10,
+                "playerCode": _optional_int(row.get("code")),
+                "teamCode": team_code,
+                "photo": row.get("photo") or None,
                 "aliases": aliases.get(str(player_id), []),
             }
         )

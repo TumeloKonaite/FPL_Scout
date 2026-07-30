@@ -17,7 +17,9 @@ from src.app.domain.reports.player_catalogue import (
     catalogue_from_bootstrap,
     load_catalogue_snapshot,
 )
+from src.app.domain.reports.player_media import player_image_url, team_badge_url
 from src.app.domain.reports.player_resolution import PlayerResolver
+from src.scripts.build_catalogue_snapshot import build_snapshot
 from src.schemas.player_resolution import ExtractedPlayerReference, ResolutionSource
 
 
@@ -116,10 +118,12 @@ def test_live_provider_serves_only_bootstrap_season_and_maps_positions() -> None
             {"id": 1, "singular_name_short": "GKP"},
             {"id": 3, "singular_name_short": "MID"},
         ],
-        "teams": [{"id": 1, "name": "Arsenal"}],
+        "teams": [{"id": 1, "name": "Arsenal", "code": 3}],
         "elements": [
             {
                 "id": 1,
+                "code": 223094,
+                "photo": "223094.jpg",
                 "first_name": "Bukayo",
                 "second_name": "Saka",
                 "web_name": "Saka",
@@ -133,6 +137,9 @@ def test_live_provider_serves_only_bootstrap_season_and_maps_positions() -> None
     catalogue = provider.get_current_catalogue("2025-26")
 
     assert catalogue.by_id(1).position == "MID"  # type: ignore[union-attr]
+    assert catalogue.by_id(1).player_code == 223094  # type: ignore[union-attr]
+    assert catalogue.by_id(1).team_code == 3  # type: ignore[union-attr]
+    assert catalogue.by_id(1).photo == "223094.jpg"  # type: ignore[union-attr]
     with pytest.raises(CatalogueSeasonMismatch):
         provider.get_current_catalogue("2024-25")
 
@@ -158,6 +165,9 @@ def test_persisted_snapshot_loads_metadata_and_rejects_season_mismatch(
                 "team": "Arsenal",
                 "position": "MID",
                 "price": 10.0,
+                "playerCode": 223094,
+                "teamCode": 3,
+                "photo": "223094.jpg",
                 "aliases": ["Starboy"],
             }
         ],
@@ -171,12 +181,95 @@ def test_persisted_snapshot_loads_metadata_and_rejects_season_mismatch(
     assert catalogue.season == "2025-26"
     assert catalogue.snapshot_id == "2025-26:test"
     assert catalogue.resolve("Starboy").official_player_id == 1  # type: ignore[union-attr]
+    assert catalogue.by_id(1).player_code == 223094  # type: ignore[union-attr]
+    assert catalogue.by_id(1).team_code == 3  # type: ignore[union-attr]
+    assert catalogue.by_id(1).photo == "223094.jpg"  # type: ignore[union-attr]
     assert provider.get_catalogue("2025-26").source == "archived_fpl_bootstrap"
 
     snapshot["season"] = "2024-25"
     path.write_text(json.dumps(snapshot), encoding="utf-8")
     with pytest.raises(CatalogueSeasonMismatch):
         provider.get_catalogue("2025-26")
+
+
+def test_media_urls_require_the_pl_codes_and_never_use_element_ids() -> None:
+    assert player_image_url(223094) == (
+        "https://resources.premierleague.com/premierleague/"
+        "photos/players/110x140/p223094.png"
+    )
+    assert team_badge_url(43) == (
+        "https://resources.premierleague.com/premierleague/badges/50/t43.png"
+    )
+    assert player_image_url(None) is None
+    assert player_image_url(0) is None
+    assert team_badge_url(None) is None
+    assert team_badge_url(-1) is None
+
+
+def test_old_persisted_snapshot_defaults_media_fields_to_none(tmp_path) -> None:
+    snapshot = {
+        "schemaVersion": 1,
+        "snapshotId": "2024-25:legacy",
+        "season": "2024-25",
+        "source": "archived_fpl_bootstrap",
+        "retrievedAt": "2025-05-25T00:00:00Z",
+        "players": [
+            {
+                "playerId": 7,
+                "canonicalName": "Legacy Player",
+                "team": "Legacy FC",
+                "position": "MID",
+                "aliases": [],
+            }
+        ],
+    }
+    path = tmp_path / "2024-25.json"
+    path.write_text(json.dumps(snapshot), encoding="utf-8")
+
+    player = load_catalogue_snapshot(path).by_id(7)
+
+    assert player is not None
+    assert player.player_code is None
+    assert player.team_code is None
+    assert player.photo is None
+
+
+def test_snapshot_builder_serializes_player_and_team_media_codes(tmp_path) -> None:
+    players_path = tmp_path / "players.csv"
+    teams_path = tmp_path / "teams.csv"
+    players_path.write_text(
+        (
+            "id,code,photo,first_name,second_name,web_name,team,"
+            "element_type,now_cost\n"
+            "17,223094,223094.jpg,Bukayo,Saka,Saka,1,3,100\n"
+        ),
+        encoding="utf-8",
+    )
+    teams_path.write_text(
+        "id,name,code\n1,Arsenal,3\n",
+        encoding="utf-8",
+    )
+
+    snapshot = build_snapshot(
+        season="2025-26",
+        players_path=players_path,
+        teams_path=teams_path,
+        source="test",
+        retrieved_at="2026-05-25T00:00:00Z",
+    )
+
+    assert snapshot["players"][0] | {"aliases": []} == {
+        "playerId": 17,
+        "canonicalName": "Bukayo Saka",
+        "displayName": "Saka",
+        "team": "Arsenal",
+        "position": "MID",
+        "price": 10.0,
+        "playerCode": 223094,
+        "teamCode": 3,
+        "photo": "223094.jpg",
+        "aliases": [],
+    }
 
 
 def test_season_aware_provider_never_falls_back_to_live_for_history() -> None:

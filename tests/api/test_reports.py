@@ -166,6 +166,10 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
     assert len(payload["startingXi"]) == 11
     assert payload["startingXi"][0] | {
         "officialPlayerId": None,
+        "playerCode": None,
+        "teamCode": None,
+        "imageUrl": None,
+        "teamBadgeUrl": None,
         "canonicalName": None,
         "starterSupport": 0,
         "benchSupport": 0,
@@ -176,6 +180,10 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
     } == {
         "playerId": 1,
         "officialPlayerId": None,
+        "playerCode": None,
+        "teamCode": None,
+        "imageUrl": None,
+        "teamBadgeUrl": None,
         "name": "Player 1",
         "canonicalName": None,
             "number": 1,

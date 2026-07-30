@@ -16,7 +16,14 @@ def _catalogue() -> PlayerCatalogue:
     positions = ["GK"] * 2 + ["DEF"] * 5 + ["MID"] * 5 + ["FWD"] * 3
     return PlayerCatalogue(
         (
-            CataloguePlayer(index, f"Player {index}", position)
+            CataloguePlayer(
+                index,
+                f"Player {index}",
+                position,
+                player_code=220000 + index,
+                team_code=40 + (index % 2),
+                photo=f"{220000 + index}.jpg",
+            )
             for index, position in enumerate(positions, start=1)
         ),
         season="2025-26",
@@ -62,6 +69,23 @@ def test_constructs_vote_based_full_squad_from_authoritative_catalogue() -> None
     assert team.captainPlayerId == 13
     assert team.viceCaptainPlayerId == 8
     assert all(player.officialPlayerId == player.playerId for player in team.players or [])
+    assert all(player.playerCode != player.officialPlayerId for player in team.players or [])
+    assert all(
+        player.imageUrl
+        == (
+            "https://resources.premierleague.com/premierleague/"
+            f"photos/players/110x140/p{player.playerCode}.png"
+        )
+        for player in team.players or []
+    )
+    assert all(
+        player.teamBadgeUrl
+        == (
+            "https://resources.premierleague.com/premierleague/"
+            f"badges/50/t{player.teamCode}.png"
+        )
+        for player in team.players or []
+    )
     assert team.constructionMethod == "vote_based_consensus"
     assert team.consensusStrength == "moderate"
     assert team.eligibleRevealCount == 2

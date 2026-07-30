@@ -69,6 +69,9 @@ class CataloguePlayer:
     price: float | None = None
     aliases: tuple[str, ...] = ()
     display_name: str | None = None
+    player_code: int | None = None
+    team_code: int | None = None
+    photo: str | None = None
 
     def __post_init__(self) -> None:
         try:
@@ -367,6 +370,11 @@ def load_catalogue_snapshot(path: str | Path) -> PlayerCatalogue:
                         if raw_player.get("price") is not None
                         else None
                     ),
+                    player_code=_nullable_positive_int(
+                        raw_player.get("playerCode")
+                    ),
+                    team_code=_nullable_positive_int(raw_player.get("teamCode")),
+                    photo=_nullable_string(raw_player.get("photo")),
                 )
             )
             aliases[player_id] = tuple(raw_aliases)
@@ -467,7 +475,10 @@ def catalogue_from_bootstrap(
         if isinstance(item, Mapping)
     }
     clubs = {
-        item.get("id"): item.get("name")
+        item.get("id"): (
+            item.get("name"),
+            _nullable_positive_int(item.get("code")),
+        )
         for item in teams
         if isinstance(item, Mapping)
     }
@@ -491,19 +502,33 @@ def catalogue_from_bootstrap(
             full_name = display_name
         cost = raw.get("now_cost")
         price = cost / 10 if isinstance(cost, int) else None
+        club, team_code = clubs.get(raw.get("team"), (None, None))
         players.append(
             CataloguePlayer(
                 player_id,
                 full_name,
                 position,
-                club=str(clubs.get(raw.get("team")) or "") or None,
+                club=str(club or "") or None,
                 price=price,
                 display_name=display_name,
+                player_code=_nullable_positive_int(raw.get("code")),
+                team_code=team_code,
+                photo=_nullable_string(raw.get("photo")),
             )
         )
     return PlayerCatalogue(
         players, season=season, aliases=aliases, source="fpl_bootstrap_static"
     )
+
+
+def _nullable_positive_int(value: Any) -> int | None:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        return None
+    return value
+
+
+def _nullable_string(value: Any) -> str | None:
+    return value.strip() if isinstance(value, str) and value.strip() else None
 
 
 __all__ = [

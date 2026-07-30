@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- Remote PL media is optional and must retain native error fallback handling. */
 
 import * as React from "react";
 import type { SuggestedPlayer } from "../types";
@@ -34,6 +35,10 @@ export function PlayerTile({ player, isCaptain, isViceCaptain, onSelect, benchRo
   const captain = isCaptain ?? player.captain ?? false;
   const vice = isViceCaptain ?? player.viceCaptain ?? false;
   const label = playerLabel(player);
+  const [failedImageUrl, setFailedImageUrl] = React.useState<string | null>(null);
+  const [failedBadgeUrl, setFailedBadgeUrl] = React.useState<string | null>(null);
+  const showHeadshot = Boolean(player.imageUrl) && failedImageUrl !== player.imageUrl;
+  const showBadge = Boolean(player.teamBadgeUrl) && failedBadgeUrl !== player.teamBadgeUrl;
   const support = player.support;
   const supportText = support
     ? `${support.starterSupportCount} of ${support.eligibleExpertCount}`
@@ -52,6 +57,32 @@ export function PlayerTile({ player, isCaptain, isViceCaptain, onSelect, benchRo
       <span className="kasifpl-player__topline">
         <span className="kasifpl-player__position">{player.club || player.position}</span>
         {player.shirtNumber != null ? <span className="kasifpl-player__shirt-number">#{player.shirtNumber}</span> : null}
+      </span>
+      <span className={`kasifpl-player__media${showHeadshot ? "" : " kasifpl-player__media--fallback"}`}>
+        {showHeadshot ? (
+          <img
+            className="kasifpl-player__headshot"
+            src={player.imageUrl ?? undefined}
+            alt={`${player.name} headshot`}
+            width={110}
+            height={140}
+            loading="lazy"
+            onError={() => setFailedImageUrl(player.imageUrl ?? null)}
+          />
+        ) : (
+          <span className="kasifpl-player__fallback-position" aria-hidden="true">{player.position}</span>
+        )}
+        {showBadge ? (
+          <img
+            className="kasifpl-player__club-badge"
+            src={player.teamBadgeUrl ?? undefined}
+            alt={`${player.club ?? player.name} club badge`}
+            width={50}
+            height={50}
+            loading="lazy"
+            onError={() => setFailedBadgeUrl(player.teamBadgeUrl ?? null)}
+          />
+        ) : null}
       </span>
       <span className="kasifpl-player__name">{label}</span>
       <span className="kasifpl-player__support">{supportText}</span>

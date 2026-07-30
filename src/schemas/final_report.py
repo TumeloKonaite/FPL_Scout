@@ -100,6 +100,10 @@ class FinalExpertTeamReveal(BaseModel):
 class SuggestedPlayer(BaseModel):
     playerId: int = Field(gt=0)
     officialPlayerId: int | None = Field(default=None, gt=0)
+    playerCode: int | None = Field(default=None, gt=0)
+    teamCode: int | None = Field(default=None, gt=0)
+    imageUrl: str | None = None
+    teamBadgeUrl: str | None = None
     name: str = Field(min_length=1)
     canonicalName: str | None = None
     displayName: str | None = Field(

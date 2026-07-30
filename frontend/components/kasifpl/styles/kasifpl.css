@@ -435,7 +435,7 @@
   align-items: center;
   gap: 2px 6px;
   width: clamp(78px, 11.5vw, 126px);
-  min-height: 82px;
+  min-height: 106px;
   cursor: pointer;
   padding: 9px 10px;
   background: rgba(8, 19, 31, 0.9);
@@ -470,6 +470,46 @@
 }
 .kasifpl-player__position { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kasifpl-player__shirt-number { color: var(--kasifpl-color-fg-muted); font-variant-numeric: tabular-nums; }
+.kasifpl-player__media {
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  height: 42px;
+  overflow: hidden;
+}
+.kasifpl-player__headshot {
+  display: block;
+  width: auto;
+  height: 42px;
+  max-width: 100%;
+  object-fit: contain;
+}
+.kasifpl-player__club-badge {
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+.kasifpl-player__media--fallback {
+  border-radius: 6px;
+  background: linear-gradient(145deg, rgba(148,163,184,0.2), rgba(15,23,42,0.22));
+}
+.kasifpl-player--gk .kasifpl-player__media--fallback { background-color: rgba(245,158,11,0.32); }
+.kasifpl-player--def .kasifpl-player__media--fallback { background-color: rgba(56,189,248,0.28); }
+.kasifpl-player--mid .kasifpl-player__media--fallback { background-color: rgba(16,185,129,0.28); }
+.kasifpl-player--fwd .kasifpl-player__media--fallback { background-color: rgba(244,63,94,0.28); }
+.kasifpl-player__fallback-position {
+  place-self: center;
+  color: rgba(255,255,255,0.84);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
 .kasifpl-player__name {
   grid-column: 1 / -1;
   min-width: 0;
@@ -517,9 +557,11 @@
   .kasifpl-pitch__row { left: 1%; right: 1%; gap: 2px; }
   .kasifpl-player {
     width: clamp(60px, 18vw, 92px);
-    min-height: 78px;
+    min-height: 102px;
     padding: 7px 6px;
   }
+  .kasifpl-player__media,
+  .kasifpl-player__headshot { height: 40px; }
   .kasifpl-player__name { font-size: 0.8125rem; }
   .kasifpl-player__price { display: none; }
 }

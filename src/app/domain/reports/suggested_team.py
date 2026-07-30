@@ -15,6 +15,7 @@ from src.app.domain.reports.player_catalogue import (
     PlayerCatalogue,
     Position,
 )
+from src.app.domain.reports.player_media import player_image_url, team_badge_url
 from src.app.domain.reports.player_resolution import PlayerResolver
 from src.app.domain.reports.team_of_week import normalize_team_player
 from src.schemas.aggregate_report import ExpertTeamRevealItem
@@ -829,6 +830,10 @@ def _output_player(
     return SuggestedPlayer(
         playerId=player.official_player_id,
         officialPlayerId=player.official_player_id,
+        playerCode=player.player_code,
+        teamCode=player.team_code,
+        imageUrl=player_image_url(player.player_code),
+        teamBadgeUrl=team_badge_url(player.team_code),
         name=player.canonical_name,
         canonicalName=player.canonical_name,
         displayName=player.display_name,

@@ -73,6 +73,10 @@ export type PlayerSupport = {
 export type SuggestedPlayer = {
   playerId: number;
   officialPlayerId?: number | null;
+  playerCode?: number | null;
+  teamCode?: number | null;
+  imageUrl?: string | null;
+  teamBadgeUrl?: string | null;
   name: string;
   canonicalName?: string | null;
   displayName?: string | null;

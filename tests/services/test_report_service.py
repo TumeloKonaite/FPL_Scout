@@ -9,9 +9,13 @@ from src.services.report_service import ReportService
 class CapturingRepository:
     def __init__(self) -> None:
         self.snapshot: dict[str, Any] | None = None
+        self.publication: dict[str, Any] | None = None
 
     def save_snapshot(self, **kwargs: Any) -> None:
         self.snapshot = kwargs
+
+    def publish_report(self, **kwargs: Any) -> None:
+        self.publication = kwargs
 
 
 def _contains_null_character(value: Any) -> bool:
@@ -70,3 +74,8 @@ def test_persist_run_removes_null_characters_from_entire_snapshot() -> None:
         "14 VALUE Players for Gameweek 1 "
     )
     assert "\x00" not in repository.snapshot["rendered_markdown"]
+    assert repository.publication == {
+        "run_id": "run-1",
+        "season": "2025-26",
+        "gameweek": 1,
+    }

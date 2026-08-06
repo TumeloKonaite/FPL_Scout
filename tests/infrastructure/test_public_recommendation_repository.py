@@ -40,7 +40,7 @@ class _SessionFactory:
         return self.session
 
 
-def test_public_recommendation_query_is_narrow_filtered_and_deterministic() -> None:
+def test_public_recommendation_query_is_narrow_and_explicitly_published() -> None:
     updated_at = datetime(2026, 8, 6, 12, 0, tzinfo=timezone.utc)
     factory = _SessionFactory(
         SimpleNamespace(
@@ -75,11 +75,9 @@ def test_public_recommendation_query_is_narrow_filtered_and_deterministic() -> N
     assert "completed_report_runs.season = '2025-26'" in sql
     assert "completed_report_runs.gameweek = 32" in sql
     assert "completed_report_runs.status = 'completed'" in sql
+    assert "completed_report_runs.publication_status = 'published'" in sql
     assert "completed_report_runs.final_report IS NOT NULL" in sql
-    assert (
-        "ORDER BY completed_report_runs.updated_at DESC, "
-        "completed_report_runs.run_id DESC" in sql
-    )
+    assert "ORDER BY" not in sql
     assert "LIMIT 1" in sql
 
 

@@ -173,14 +173,21 @@ class CompletedReportRun(Base):
             name="ck_completed_report_runs_status",
         ),
         CheckConstraint(
-            "("
-            "status = 'superseded' AND superseded_by_run_id IS NOT NULL "
-            "AND superseded_at IS NOT NULL AND supersession_reason IS NOT NULL"
-            ") OR ("
-            "status != 'superseded' AND superseded_by_run_id IS NULL "
-            "AND superseded_at IS NULL AND supersession_reason IS NULL"
-            ")",
+            "(superseded_by_run_id IS NULL AND superseded_at IS NULL "
+            "AND supersession_reason IS NULL) OR "
+            "(publication_status = 'superseded' "
+            "AND superseded_by_run_id IS NOT NULL "
+            "AND superseded_at IS NOT NULL AND supersession_reason IS NOT NULL)",
             name="ck_completed_report_runs_supersession_fields",
+        ),
+        CheckConstraint(
+            "publication_status IN ('published', 'superseded', 'unpublished')",
+            name="ck_completed_report_runs_publication_status",
+        ),
+        CheckConstraint(
+            "publication_status != 'published' OR "
+            "(status = 'completed' AND final_report IS NOT NULL)",
+            name="ck_completed_report_runs_published_is_valid",
         ),
         CheckConstraint(
             "superseded_by_run_id IS NULL OR superseded_by_run_id != run_id",
@@ -220,19 +227,11 @@ class CompletedReportRun(Base):
             "updated_at",
         ),
         Index(
-            "ix_completed_report_runs_public_recommendation",
+            "uq_published_report_per_gameweek",
             "season",
             "gameweek",
-            text("updated_at DESC"),
-            text("run_id DESC"),
-            postgresql_where=text("status = 'completed' AND final_report IS NOT NULL"),
-        ),
-        Index(
-            "ix_completed_report_public_lookup",
-            "season",
-            "gameweek",
-            text("updated_at DESC"),
-            postgresql_where=text("status = 'completed'"),
+            unique=True,
+            postgresql_where=text("publication_status = 'published'"),
         ),
     )
 
@@ -243,6 +242,12 @@ class CompletedReportRun(Base):
     season: Mapped[str] = mapped_column(String(7), nullable=False)
     gameweek: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="completed")
+    publication_status: Mapped[str] = mapped_column(
+        String(16),
+        nullable=False,
+        default="unpublished",
+        server_default=text("'unpublished'"),
+    )
     discovered_videos: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     input_jobs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     expert_outputs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
@@ -252,7 +257,7 @@ class CompletedReportRun(Base):
         JSONB, nullable=False, default=list
     )
     aggregate_report: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    final_report: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    final_report: Mapped[dict | None] = mapped_column(JSONB)
     manifest: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     rendered_markdown: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(

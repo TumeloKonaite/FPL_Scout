@@ -40,11 +40,15 @@ def _load_latest(
 ) -> ReportBundle:
     try:
         return (
-            service.get_latest_report(season, gameweek)
+            service.get_public_recommendation(season, gameweek)
             if season and gameweek
-            else service.get_latest_report()
+            else service.get_latest_public_report()
         )
-    except (EmptyReportDirectoryError, ReportDirectoryNotFoundError) as exc:
+    except (
+        EmptyReportDirectoryError,
+        GameweekReportNotFoundError,
+        ReportDirectoryNotFoundError,
+    ) as exc:
         raise HTTPException(status_code=404, detail=UNAVAILABLE_DETAIL) from exc
     except InvalidReportFileError as exc:
         raise HTTPException(status_code=503, detail=UNAVAILABLE_DETAIL) from exc

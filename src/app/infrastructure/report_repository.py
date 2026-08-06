@@ -106,6 +106,7 @@ class ReportRepository:
                 "season": identity.season,
                 "gameweek": identity.gameweek,
                 "status": resolved_status,
+                "publication_status": "unpublished",
                 "discovered_videos": to_json_value(discovered_videos),
                 "input_jobs": to_json_value(input_jobs),
                 "expert_outputs": to_json_value(expert_outputs),
@@ -118,6 +119,7 @@ class ReportRepository:
                     {
                         **manifest,
                         "status": resolved_status,
+                        "publication_status": "unpublished",
                     }
                 ),
                 "rendered_markdown": to_json_value(rendered_markdown),
@@ -143,6 +145,7 @@ class ReportRepository:
         to_gameweek: int,
         *,
         statuses: tuple[str, ...] | None = None,
+        publication_statuses: tuple[str, ...] | None = None,
     ) -> list[CompletedReportRun]:
         validate_from = ReportIdentity(season, from_gameweek)
         validate_to = ReportIdentity(season, to_gameweek)
@@ -156,6 +159,10 @@ class ReportRepository:
         )
         if statuses is not None:
             statement = statement.where(CompletedReportRun.status.in_(statuses))
+        if publication_statuses is not None:
+            statement = statement.where(
+                CompletedReportRun.publication_status.in_(publication_statuses)
+            )
         with self._session_factory() as session:
             return list(
                 session.scalars(
@@ -166,6 +173,125 @@ class ReportRepository:
                     )
                 )
             )
+
+    @staticmethod
+    def _lock_publication_identity(
+        session: Session, *, season: str, gameweek: int
+    ) -> None:
+        # A transaction-level lock works even when this is the first report for
+        # the identity, where there is no existing row available to lock.
+        session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtext(:identity))"),
+            {"identity": f"report-publication:{season}:{gameweek}"},
+        )
+
+    @staticmethod
+    def _publish_locked(
+        session: Session,
+        *,
+        target: CompletedReportRun,
+        now: datetime,
+        supersession_reason: str,
+    ) -> list[CompletedReportRun]:
+        if target.status != "completed":
+            raise ValueError("only a completed report can be published")
+        if target.final_report is None:
+            raise ValueError("a report with no final_report cannot be published")
+        if target.publication_status == "published":
+            return []
+
+        previous_rows = list(
+            session.scalars(
+                select(CompletedReportRun)
+                .where(
+                    CompletedReportRun.season == target.season,
+                    CompletedReportRun.gameweek == target.gameweek,
+                    CompletedReportRun.publication_status == "published",
+                    CompletedReportRun.run_id != target.run_id,
+                )
+                .with_for_update()
+            )
+        )
+        for previous in previous_rows:
+            previous.publication_status = "superseded"
+            previous.superseded_by_run_id = target.run_id
+            previous.superseded_at = now
+            previous.supersession_reason = supersession_reason
+            previous.updated_at = now
+            previous.manifest = {
+                **previous.manifest,
+                "publication_status": "superseded",
+                "superseded_by_run_id": target.run_id,
+                "superseded_at": now.isoformat(),
+                "supersession_reason": supersession_reason,
+                "updated_at": now.isoformat(),
+            }
+
+        target.publication_status = "published"
+        target.superseded_by_run_id = None
+        target.superseded_at = None
+        target.supersession_reason = None
+        target.updated_at = now
+        target.manifest = {
+            key: value
+            for key, value in target.manifest.items()
+            if key
+            not in {
+                "superseded_by_run_id",
+                "superseded_at",
+                "supersession_reason",
+            }
+        }
+        target.manifest = {
+            **target.manifest,
+            "publication_status": "published",
+            "published_at": now.isoformat(),
+            "updated_at": now.isoformat(),
+        }
+        session.flush()
+        return previous_rows
+
+    def publish_report(
+        self,
+        *,
+        run_id: str,
+        season: str,
+        gameweek: int,
+        supersession_reason: str | None = None,
+    ) -> list[str]:
+        """Make one completed snapshot canonical in a serialized transaction."""
+        identity = ReportIdentity(season, gameweek)
+        now = _utc_now()
+        with self._session_factory.begin() as session:
+            self._lock_publication_identity(
+                session,
+                season=identity.season,
+                gameweek=identity.gameweek,
+            )
+            target = session.scalar(
+                select(CompletedReportRun)
+                .where(CompletedReportRun.run_id == run_id)
+                .with_for_update()
+            )
+            if target is None:
+                raise ReportNotFoundError(f"Report not found: {run_id}")
+            if (target.season, target.gameweek) != (
+                identity.season,
+                identity.gameweek,
+            ):
+                raise ValueError(
+                    "report does not belong to the requested season and gameweek"
+                )
+            previous = self._publish_locked(
+                session,
+                target=target,
+                now=now,
+                supersession_reason=(
+                    supersession_reason
+                    or f"Replaced by published report {target.run_id}"
+                ),
+            )
+            return [row.run_id for row in previous]
 
     def publish_replacement(
         self,
@@ -182,6 +308,19 @@ class ReportRepository:
         """Publish a validated replacement and supersede prior canonicals atomically."""
         now = _utc_now()
         with self._session_factory.begin() as session:
+            replacement_identity = session.execute(
+                select(
+                    CompletedReportRun.season,
+                    CompletedReportRun.gameweek,
+                ).where(CompletedReportRun.run_id == replacement_run_id)
+            ).one_or_none()
+            if replacement_identity is None:
+                raise ReportNotFoundError(f"Report not found: {replacement_run_id}")
+            self._lock_publication_identity(
+                session,
+                season=replacement_identity.season,
+                gameweek=replacement_identity.gameweek,
+            )
             replacement = session.scalar(
                 select(CompletedReportRun)
                 .where(CompletedReportRun.run_id == replacement_run_id)
@@ -191,33 +330,8 @@ class ReportRepository:
                 raise ReportNotFoundError(f"Report not found: {replacement_run_id}")
             if replacement.status != "processing":
                 raise ValueError("replacement report must be processing")
-
-            # Serialize publishers for one season/gameweek even when there are
-            # currently no report rows to lock.
-            session.execute(
-                text("SELECT pg_advisory_xact_lock(hashtext(:identity))"),
-                {
-                    "identity": (
-                        f"historical-report:{replacement.season}:{replacement.gameweek}"
-                    )
-                },
-            )
-            prior = list(
-                session.scalars(
-                    select(CompletedReportRun)
-                    .where(
-                        CompletedReportRun.season == replacement.season,
-                        CompletedReportRun.gameweek == replacement.gameweek,
-                        CompletedReportRun.status == "completed",
-                        CompletedReportRun.run_id != replacement.run_id,
-                    )
-                    .order_by(
-                        CompletedReportRun.updated_at,
-                        CompletedReportRun.run_id,
-                    )
-                    .with_for_update()
-                )
-            )
+            if replacement.final_report is None:
+                raise ValueError("a report with no final_report cannot be published")
             replacement.status = "completed"
             replacement.completed_at = now
             replacement.updated_at = now
@@ -234,27 +348,12 @@ class ReportRepository:
                     "published_at": now.isoformat(),
                 },
             }
-            for previous in prior:
-                if (
-                    previous.season != replacement.season
-                    or previous.gameweek != replacement.gameweek
-                ):
-                    raise ValueError(
-                        "cross-season or cross-gameweek supersession is forbidden"
-                    )
-                previous.status = "superseded"
-                previous.superseded_by_run_id = replacement.run_id
-                previous.superseded_at = now
-                previous.supersession_reason = supersession_reason
-                previous.updated_at = now
-                previous.manifest = {
-                    **previous.manifest,
-                    "status": "superseded",
-                    "updated_at": now.isoformat(),
-                    "superseded_by_run_id": replacement.run_id,
-                    "superseded_at": now.isoformat(),
-                    "supersession_reason": supersession_reason,
-                }
+            prior = self._publish_locked(
+                session,
+                target=replacement,
+                now=now,
+                supersession_reason=supersession_reason,
+            )
 
             audit_rows = prior or [None]
             for previous in audit_rows:
@@ -283,6 +382,8 @@ class ReportRepository:
                         CompletedReportRun.season == replacement.season,
                         CompletedReportRun.gameweek == replacement.gameweek,
                         CompletedReportRun.status == "completed",
+                        CompletedReportRun.publication_status == "published",
+                        CompletedReportRun.final_report.is_not(None),
                     )
                 )
             )
@@ -305,10 +406,12 @@ class ReportRepository:
                 raise ValueError("only a processing report can be invalidated")
             now = _utc_now()
             record.status = "invalid"
+            record.publication_status = "unpublished"
             record.updated_at = now
             record.manifest = {
                 **record.manifest,
                 "status": "invalid",
+                "publication_status": "unpublished",
                 "updated_at": now.isoformat(),
                 "invalidation_reason": reason,
             }
@@ -317,6 +420,19 @@ class ReportRepository:
         """Compensate an erroneous publication while preserving its audit row."""
         now = _utc_now()
         with self._session_factory.begin() as session:
+            replacement_identity = session.execute(
+                select(
+                    CompletedReportRun.season,
+                    CompletedReportRun.gameweek,
+                ).where(CompletedReportRun.run_id == run_id)
+            ).one_or_none()
+            if replacement_identity is None:
+                raise ReportNotFoundError(f"Report not found: {run_id}")
+            self._lock_publication_identity(
+                session,
+                season=replacement_identity.season,
+                gameweek=replacement_identity.gameweek,
+            )
             replacement = session.scalar(
                 select(CompletedReportRun)
                 .where(CompletedReportRun.run_id == run_id)
@@ -324,36 +440,34 @@ class ReportRepository:
             )
             if replacement is None:
                 raise ReportNotFoundError(f"Report not found: {run_id}")
-            if replacement.status != "completed":
-                raise ValueError("only a completed replacement can be retracted")
-            session.execute(
-                text("SELECT pg_advisory_xact_lock(hashtext(:identity))"),
-                {
-                    "identity": (
-                        f"historical-report:{replacement.season}:{replacement.gameweek}"
-                    )
-                },
-            )
+            if (
+                replacement.status != "completed"
+                or replacement.publication_status != "published"
+            ):
+                raise ValueError("only a published completed replacement can be retracted")
             previous_rows = list(
                 session.scalars(
                     select(CompletedReportRun)
                     .where(
                         CompletedReportRun.superseded_by_run_id == run_id,
-                        CompletedReportRun.status == "superseded",
+                        CompletedReportRun.publication_status == "superseded",
                     )
                     .with_for_update()
                 )
             )
             replacement.status = "invalid"
+            replacement.publication_status = "unpublished"
             replacement.updated_at = now
             replacement.manifest = {
                 **replacement.manifest,
                 "status": "invalid",
+                "publication_status": "unpublished",
                 "updated_at": now.isoformat(),
                 "retraction_reason": reason,
             }
             for previous in previous_rows:
                 previous.status = "completed"
+                previous.publication_status = "published"
                 previous.superseded_by_run_id = None
                 previous.superseded_at = None
                 previous.supersession_reason = None
@@ -371,6 +485,7 @@ class ReportRepository:
                 previous.manifest = {
                     **previous.manifest,
                     "status": "completed",
+                    "publication_status": "published",
                     "updated_at": now.isoformat(),
                 }
             audits = list(
@@ -422,6 +537,23 @@ class ReportRepository:
                 )
             )
 
+    def list_published_reports(self) -> list[CompletedReportRun]:
+        with self._session_factory() as session:
+            return list(
+                session.scalars(
+                    select(CompletedReportRun)
+                    .where(
+                        CompletedReportRun.status == "completed",
+                        CompletedReportRun.publication_status == "published",
+                        CompletedReportRun.final_report.is_not(None),
+                    )
+                    .order_by(
+                        CompletedReportRun.updated_at,
+                        CompletedReportRun.run_id,
+                    )
+                )
+            )
+
     def get(self, run_id: str) -> CompletedReportRun:
         with self._session_factory() as session:
             record = session.get(CompletedReportRun, run_id)
@@ -452,7 +584,7 @@ class ReportRepository:
     def latest_public_recommendation(
         self, season: str, gameweek: int
     ) -> PublicRecommendationRecord | None:
-        """Load the newest publishable recommendation without pipeline payloads."""
+        """Load the canonical published recommendation without pipeline payloads."""
         identity = ReportIdentity(season, gameweek)
         statement = (
             select(
@@ -464,11 +596,8 @@ class ReportRepository:
                 CompletedReportRun.season == identity.season,
                 CompletedReportRun.gameweek == identity.gameweek,
                 CompletedReportRun.status == "completed",
+                CompletedReportRun.publication_status == "published",
                 CompletedReportRun.final_report.is_not(None),
-            )
-            .order_by(
-                CompletedReportRun.updated_at.desc(),
-                CompletedReportRun.run_id.desc(),
             )
             .limit(1)
         )
@@ -490,6 +619,25 @@ class ReportRepository:
                     final_report=row.final_report,
                     updated_at=row.updated_at,
                 )
+
+    def latest_published(self) -> CompletedReportRun:
+        with self._session_factory() as session:
+            record = session.scalar(
+                select(CompletedReportRun)
+                .where(
+                    CompletedReportRun.status == "completed",
+                    CompletedReportRun.publication_status == "published",
+                    CompletedReportRun.final_report.is_not(None),
+                )
+                .order_by(
+                    CompletedReportRun.updated_at.desc(),
+                    CompletedReportRun.run_id.desc(),
+                )
+                .limit(1)
+            )
+            if record is None:
+                raise EmptyReportDirectoryError("No published reports were found")
+            return record
 
     def latest_completed(
         self, season: str | None = None, gameweek: int | None = None

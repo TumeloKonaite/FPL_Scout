@@ -23,7 +23,12 @@ def verify(
     client = TestClient(create_app())
     results = []
     for gameweek in range(from_gameweek, to_gameweek + 1):
-        canonical = reports.latest_completed(season, gameweek)
+        canonical_record = reports.latest_public_recommendation(season, gameweek)
+        if canonical_record is None:
+            raise RuntimeError(
+                f"No published report for {season} gameweek {gameweek}"
+            )
+        canonical = reports.get(canonical_record.run_id)
         response = client.get(
             "/api/recommendations",
             params={"season": season, "gameweek": gameweek},

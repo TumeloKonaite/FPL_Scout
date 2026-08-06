@@ -13,6 +13,7 @@ from src.app.infrastructure.report_repository import (
     InvalidReportFileError,
     ReportDirectoryNotFoundError,
     ReportNotFoundError,
+    PublicRecommendationRecord,
     ReportRepository,
 )
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
@@ -70,13 +71,23 @@ class ReportService:
         return self._bundle(self.repository.latest_completed(season, gameweek))
 
     def get_report_for_gameweek(self, season: str, gameweek: int) -> ReportBundle:
-        rows = self.repository.completed_for_gameweek(season, gameweek)
-        for row in reversed(rows):
-            try:
-                return self._bundle(row)
-            except InvalidReportFileError:
-                continue
-        raise GameweekReportNotFoundError(season, gameweek)
+        """Compatibility alias for the public recommendation retrieval path."""
+        return self.get_public_recommendation(season, gameweek)
+
+    def get_public_recommendation(self, season: str, gameweek: int) -> ReportBundle:
+        row = self.repository.latest_public_recommendation(season, gameweek)
+        if row is None:
+            raise GameweekReportNotFoundError(season, gameweek)
+        try:
+            final = self._validate_final_report(row)
+        except InvalidReportFileError as exc:
+            raise GameweekReportNotFoundError(season, gameweek) from exc
+        return ReportBundle(
+            run_id=row.run_id,
+            final_report=final,
+            aggregate_report=None,
+            updated_at=row.updated_at.timestamp(),
+        )
 
     def get_reports_for_gameweek(
         self, season: str, gameweek: int
@@ -103,9 +114,7 @@ class ReportService:
                     last_updated_at=row.updated_at,
                     has_suggested_team=(
                         bundle.final_report.suggested_team is not None
-                        and validate_consensus_squad(
-                            bundle.final_report.suggested_team
-                        )
+                        and validate_consensus_squad(bundle.final_report.suggested_team)
                     ),
                 )
             )
@@ -133,9 +142,13 @@ class ReportService:
         )
 
     @staticmethod
-    def _bundle(row: CompletedReportRun) -> ReportBundle:
+    def _validate_final_report(
+        row: CompletedReportRun | PublicRecommendationRecord,
+    ) -> FinalGameweekReport:
         try:
             final_snapshot = deepcopy(row.final_report)
+            if not isinstance(final_snapshot, dict):
+                raise TypeError("final_report must be a JSON object")
             suggested = final_snapshot.get("suggested_team")
             if isinstance(suggested, dict) and "constructionMethod" not in suggested:
                 has_lineup = bool(
@@ -153,7 +166,16 @@ class ReportService:
                     # This is a display-compatibility outcome only; it is not
                     # evidence that the historical lineup was a consensus.
                     suggested["constructionStatus"] = "consensus"
-            final = FinalGameweekReport.model_validate(final_snapshot)
+            return FinalGameweekReport.model_validate(final_snapshot)
+        except (TypeError, ValidationError) as exc:
+            raise InvalidReportFileError(
+                f"Invalid report snapshot: {row.run_id}"
+            ) from exc
+
+    @staticmethod
+    def _bundle(row: CompletedReportRun) -> ReportBundle:
+        final = ReportService._validate_final_report(row)
+        try:
             aggregate = AggregatedFPLReport.model_validate(row.aggregate_report)
         except ValidationError as exc:
             raise InvalidReportFileError(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
@@ -44,10 +45,17 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+@dataclass(frozen=True)
+class PublicRecommendationRecord:
+    """The only stored fields needed to serve a public recommendation."""
+
+    run_id: str
+    final_report: dict[str, Any]
+    updated_at: datetime
+
+
 class ReportRepository:
-    def __init__(
-        self, session_factory: sessionmaker[Session] | None = None
-    ) -> None:
+    def __init__(self, session_factory: sessionmaker[Session] | None = None) -> None:
         self._session_factory = session_factory or get_session_factory()
 
     def save_snapshot(
@@ -119,9 +127,7 @@ class ReportRepository:
                 "supersession_reason": None,
             }
             if record is None:
-                record = CompletedReportRun(
-                    run_id=run_id, created_at=now, **values
-                )
+                record = CompletedReportRun(run_id=run_id, created_at=now, **values)
                 session.add(record)
             else:
                 for name, value in values.items():
@@ -181,9 +187,7 @@ class ReportRepository:
                 .with_for_update()
             )
             if replacement is None:
-                raise ReportNotFoundError(
-                    f"Report not found: {replacement_run_id}"
-                )
+                raise ReportNotFoundError(f"Report not found: {replacement_run_id}")
             if replacement.status != "processing":
                 raise ValueError("replacement report must be processing")
 
@@ -193,8 +197,7 @@ class ReportRepository:
                 text("SELECT pg_advisory_xact_lock(hashtext(:identity))"),
                 {
                     "identity": (
-                        f"historical-report:{replacement.season}:"
-                        f"{replacement.gameweek}"
+                        f"historical-report:{replacement.season}:{replacement.gameweek}"
                     )
                 },
             )
@@ -284,8 +287,7 @@ class ReportRepository:
             )
             if canonical_ids != [replacement.run_id]:
                 raise RuntimeError(
-                    "Atomic publication did not produce exactly one canonical "
-                    "report"
+                    "Atomic publication did not produce exactly one canonical report"
                 )
             return [row.run_id for row in prior]
 
@@ -327,8 +329,7 @@ class ReportRepository:
                 text("SELECT pg_advisory_xact_lock(hashtext(:identity))"),
                 {
                     "identity": (
-                        f"historical-report:{replacement.season}:"
-                        f"{replacement.gameweek}"
+                        f"historical-report:{replacement.season}:{replacement.gameweek}"
                     )
                 },
             )
@@ -374,9 +375,7 @@ class ReportRepository:
             audits = list(
                 session.scalars(
                     select(HistoricalRegenerationAudit)
-                    .where(
-                        HistoricalRegenerationAudit.replacement_run_id == run_id
-                    )
+                    .where(HistoricalRegenerationAudit.replacement_run_id == run_id)
                     .with_for_update()
                 )
             )
@@ -448,6 +447,39 @@ class ReportRepository:
                     )
                 )
             )
+
+    def latest_public_recommendation(
+        self, season: str, gameweek: int
+    ) -> PublicRecommendationRecord | None:
+        """Load the newest publishable recommendation without pipeline payloads."""
+        identity = ReportIdentity(season, gameweek)
+        statement = (
+            select(
+                CompletedReportRun.run_id,
+                CompletedReportRun.final_report,
+                CompletedReportRun.updated_at,
+            )
+            .where(
+                CompletedReportRun.season == identity.season,
+                CompletedReportRun.gameweek == identity.gameweek,
+                CompletedReportRun.status == "completed",
+                CompletedReportRun.final_report.is_not(None),
+            )
+            .order_by(
+                CompletedReportRun.updated_at.desc(),
+                CompletedReportRun.run_id.desc(),
+            )
+            .limit(1)
+        )
+        with self._session_factory() as session:
+            row = session.execute(statement).one_or_none()
+        if row is None:
+            return None
+        return PublicRecommendationRecord(
+            run_id=row.run_id,
+            final_report=row.final_report,
+            updated_at=row.updated_at,
+        )
 
     def latest_completed(
         self, season: str | None = None, gameweek: int | None = None

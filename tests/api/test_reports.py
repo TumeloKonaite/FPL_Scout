@@ -7,7 +7,11 @@ from fastapi.testclient import TestClient
 from src.app.core.dependencies import get_report_service
 from src.app.core.dependencies import get_current_gameweek_service
 from src.app.core.auth import AdminPrincipal, require_admin
-from src.app.domain.reports.service import EmptyReportDirectoryError, ReportNotFoundError
+from src.app.domain.reports.service import (
+    EmptyReportDirectoryError,
+    GameweekReportNotFoundError,
+    ReportNotFoundError,
+)
 from src.app.main import create_app
 from src.schemas.final_report import FinalGameweekReport, SuggestedPlayer, SuggestedTeam
 from src.adapters.fpl import CurrentGameweek
@@ -37,6 +41,11 @@ class StubReportService:
     def get_latest_report(self) -> StubReportBundle:
         if not self.reports:
             raise EmptyReportDirectoryError("No reports found")
+        return list(self.reports.values())[-1]
+
+    def get_public_recommendation(self, season: str, gameweek: int) -> StubReportBundle:
+        if not self.reports:
+            raise GameweekReportNotFoundError(season, gameweek)
         return list(self.reports.values())[-1]
 
     def get_report(self, run_id: str) -> StubReportBundle:
@@ -82,7 +91,9 @@ def _client(service: StubReportService) -> TestClient:
 
 
 def test_current_gameweek_does_not_mark_a_stale_report_available() -> None:
-    client = _client(StubReportService({"gw38": StubReportBundle("gw38", _final_report(38))}))
+    client = _client(
+        StubReportService({"gw38": StubReportBundle("gw38", _final_report(38))})
+    )
 
     response = client.get("/api/gameweek/current")
 
@@ -92,7 +103,9 @@ def test_current_gameweek_does_not_mark_a_stale_report_available() -> None:
 
 
 def test_current_gameweek_marks_a_matching_report_available() -> None:
-    client = _client(StubReportService({"gw32": StubReportBundle("gw32", _final_report(32))}))
+    client = _client(
+        StubReportService({"gw32": StubReportBundle("gw32", _final_report(32))})
+    )
 
     response = client.get("/api/gameweek/current")
 
@@ -133,7 +146,11 @@ def test_latest_report_returns_200_when_report_exists() -> None:
 
 
 def test_public_latest_recommendations_excludes_internal_run_metadata() -> None:
-    client = _client(StubReportService({"internal-run-id": StubReportBundle("internal-run-id", _final_report())}))
+    client = _client(
+        StubReportService(
+            {"internal-run-id": StubReportBundle("internal-run-id", _final_report())}
+        )
+    )
 
     response = client.get("/api/recommendations/latest")
 
@@ -141,6 +158,42 @@ def test_public_latest_recommendations_excludes_internal_run_metadata() -> None:
     assert response.json()["gameweek"] == 32
     assert response.json()["available"] is True
     assert "run_id" not in response.json()
+
+
+def test_public_gameweek_recommendation_preserves_response_contract() -> None:
+    client = _client(
+        StubReportService(
+            {"internal-run-id": StubReportBundle("internal-run-id", _final_report())}
+        )
+    )
+
+    response = client.get(
+        "/api/recommendations", params={"season": "2025-26", "gameweek": 32}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["season"] == "2025-26"
+    assert response.json()["gameweek"] == 32
+    assert response.json()["available"] is True
+    assert response.json()["report"]["overview"] == "Overview"
+    assert "run_id" not in response.json()
+
+
+def test_public_gameweek_recommendation_preserves_structured_not_found() -> None:
+    response = _client(StubReportService()).get(
+        "/api/recommendations", params={"season": "2025-26", "gameweek": 32}
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {
+            "code": "REPORT_NOT_FOUND",
+            "message": (
+                "No completed report is available for season 2025-26, gameweek 32."
+            ),
+            "details": {"season": "2025-26", "gameweek": 32},
+        }
+    }
 
 
 def test_latest_report_preserves_structured_suggested_team() -> None:
@@ -186,30 +239,30 @@ def test_latest_report_preserves_structured_suggested_team() -> None:
         "teamBadgeUrl": None,
         "name": "Player 1",
         "canonicalName": None,
-            "number": 1,
-            "shirtNumber": None,
+        "number": 1,
+        "shirtNumber": None,
         "position": "GK",
         "club": None,
         "price": None,
         "predictedPoints": None,
         "ownership": None,
         "expectedMinutes": None,
-            "fixtureDifficulty": None,
-            "fixture": None,
-            "expertSupportCount": None,
-            "starterSupport": 0,
-            "benchSupport": 0,
-            "captainSupport": 0,
-            "viceCaptainSupport": 0,
-            "confidenceSum": 0,
-            "contributingExpertIds": [],
-            "contributingRevealIds": [],
-            "support": None,
-            "consensus": None,
+        "fixtureDifficulty": None,
+        "fixture": None,
+        "expertSupportCount": None,
+        "starterSupport": 0,
+        "benchSupport": 0,
+        "captainSupport": 0,
+        "viceCaptainSupport": 0,
+        "confidenceSum": 0,
+        "contributingExpertIds": [],
+        "contributingRevealIds": [],
+        "support": None,
+        "consensus": None,
         "captain": False,
         "viceCaptain": False,
-            "isStarter": True,
-            "benchOrder": None,
+        "isStarter": True,
+        "benchOrder": None,
     }
 
 

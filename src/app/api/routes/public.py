@@ -86,9 +86,7 @@ def get_latest_recommendations(
     )
 
 
-@router.get(
-    "/recommendations/gameweeks", response_model=AvailableGameweeksResponse
-)
+@router.get("/recommendations/gameweeks", response_model=AvailableGameweeksResponse)
 def list_available_gameweeks(
     service: ReportService = Depends(get_report_service),
 ) -> AvailableGameweeksResponse:
@@ -121,7 +119,7 @@ def get_recommendations(
     service: ReportService = Depends(get_report_service),
 ) -> PublicRecommendationResponse | JSONResponse:
     try:
-        report = service.get_report_for_gameweek(season, gameweek)
+        report = service.get_public_recommendation(season, gameweek)
     except GameweekReportNotFoundError:
         return JSONResponse(
             status_code=404,

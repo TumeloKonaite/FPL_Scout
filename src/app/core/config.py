@@ -23,6 +23,20 @@ class Settings(BaseSettings):
     DATABASE_CONNECT_TIMEOUT_SECONDS: int = Field(default=5, ge=1)
     TRANSCRIPT_FAILURE_RETRY_HOURS: int = Field(default=24, ge=0)
 
+    REDIS_URL: str = Field(default="")
+    PUBLIC_RECOMMENDATION_CURRENT_TTL_SECONDS: int = Field(default=300, ge=1)
+    PUBLIC_RECOMMENDATION_HISTORICAL_TTL_SECONDS: int = Field(
+        default=604_800, ge=1
+    )
+    PUBLIC_RECOMMENDATION_CURRENT_SWR_SECONDS: int = Field(default=60, ge=0)
+    PUBLIC_RECOMMENDATION_HISTORICAL_SWR_SECONDS: int = Field(
+        default=86_400, ge=0
+    )
+    PUBLIC_RECOMMENDATION_RECENT_GAMEWEEKS: int = Field(default=1, ge=0, le=38)
+    PUBLIC_RECOMMENDATION_REDIS_TIMEOUT_SECONDS: float = Field(
+        default=0.2, gt=0
+    )
+
     VIDEO_SELECTION_WINDOW_DAYS_BEFORE: int = Field(default=10, ge=0)
     VIDEO_SELECTION_WINDOW_DAYS_AFTER: int = Field(default=2, ge=0)
 
@@ -43,6 +57,18 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @model_validator(mode="after")
+    def validate_public_recommendation_cache_policy(self) -> "Settings":
+        if (
+            self.PUBLIC_RECOMMENDATION_HISTORICAL_TTL_SECONDS
+            <= self.PUBLIC_RECOMMENDATION_CURRENT_TTL_SECONDS
+        ):
+            raise ValueError(
+                "PUBLIC_RECOMMENDATION_HISTORICAL_TTL_SECONDS must be greater "
+                "than PUBLIC_RECOMMENDATION_CURRENT_TTL_SECONDS"
+            )
+        return self
 
     @model_validator(mode="after")
     def validate_production_database(self) -> "Settings":

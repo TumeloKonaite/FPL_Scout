@@ -88,6 +88,11 @@ class PublicRecommendationTiming:
     gameweek: int | None
     request_state: str
     cache_status: str = "not_configured"
+    cache_read_ms: float | None = None
+    cache_population_ms: float | None = None
+    database_fallback: bool = False
+    historical: bool | None = None
+    ttl_seconds: int | None = None
     started_at: float = field(default_factory=perf_counter)
     run_id: str | None = None
     failure_stage: str | None = None
@@ -142,6 +147,11 @@ class PublicRecommendationTiming:
             "gameweek": self.gameweek,
             "request_state": self.request_state,
             "cache_status": self.cache_status,
+            "cache_read_ms": self.cache_read_ms,
+            "cache_population_ms": self.cache_population_ms,
+            "database_fallback": self.database_fallback,
+            "historical": self.historical,
+            "ttl_seconds": self.ttl_seconds,
             "run_id": self.run_id,
             **{name: self.timings.get(name) for name in TIMING_FIELDS},
             "serialization_status": (

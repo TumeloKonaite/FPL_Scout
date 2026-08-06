@@ -227,6 +227,13 @@ class CompletedReportRun(Base):
             text("run_id DESC"),
             postgresql_where=text("status = 'completed' AND final_report IS NOT NULL"),
         ),
+        Index(
+            "ix_completed_report_public_lookup",
+            "season",
+            "gameweek",
+            text("updated_at DESC"),
+            postgresql_where=text("status = 'completed'"),
+        ),
     )
 
     run_id: Mapped[str] = mapped_column(String(64), primary_key=True)

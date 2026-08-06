@@ -15,6 +15,7 @@ from src.app.infrastructure.models import (
 )
 from src.app.infrastructure.serialization import to_json_value
 from src.app.core.public_recommendation_timing import measure
+from src.app.domain.reports.index_metadata import public_gameweek_index_metadata
 from src.schemas.report_identity import ReportIdentity
 
 
@@ -55,6 +56,19 @@ class PublicRecommendationRecord:
     updated_at: datetime
 
 
+@dataclass(frozen=True)
+class PublicGameweekIndexRecord:
+    """Relational projection used by the public gameweek selector."""
+
+    season: str
+    gameweek: int
+    run_id: str
+    updated_at: datetime
+    has_report: bool
+    has_suggested_team: bool
+    publication_status: str
+
+
 class ReportRepository:
     def __init__(self, session_factory: sessionmaker[Session] | None = None) -> None:
         self._session_factory = session_factory or get_session_factory()
@@ -80,6 +94,8 @@ class ReportRepository:
     ) -> CompletedReportRun:
         identity = ReportIdentity(season, gameweek)
         now = _utc_now()
+        final_report_value = to_json_value(final_report)
+        index_metadata = public_gameweek_index_metadata(final_report_value)
         resolved_status = initial_status or (
             "processing" if pipeline_run_id is not None else "completed"
         )
@@ -114,7 +130,9 @@ class ReportRepository:
                 "duplicate_sources": to_json_value(duplicate_sources),
                 "transcript_failures": to_json_value(transcript_failures),
                 "aggregate_report": to_json_value(aggregate_report),
-                "final_report": to_json_value(final_report),
+                "final_report": final_report_value,
+                "has_report": index_metadata.has_report,
+                "has_suggested_team": index_metadata.has_suggested_team,
                 "manifest": to_json_value(
                     {
                         **manifest,
@@ -553,6 +571,47 @@ class ReportRepository:
                     )
                 )
             )
+
+    def public_gameweek_index(self) -> list[PublicGameweekIndexRecord]:
+        """Return one lightweight, canonical row per published gameweek.
+
+        Publication is explicit and protected by a partial unique index, so the
+        canonical choice is made by PostgreSQL without loading competing runs.
+        """
+        statement = (
+            select(
+                CompletedReportRun.season,
+                CompletedReportRun.gameweek,
+                CompletedReportRun.run_id,
+                CompletedReportRun.updated_at,
+                CompletedReportRun.has_report,
+                CompletedReportRun.has_suggested_team,
+                CompletedReportRun.publication_status,
+            )
+            .where(
+                CompletedReportRun.status == "completed",
+                CompletedReportRun.publication_status == "published",
+                CompletedReportRun.has_report.is_(True),
+            )
+            .order_by(
+                CompletedReportRun.season.desc(),
+                CompletedReportRun.gameweek.desc(),
+                CompletedReportRun.run_id.desc(),
+            )
+        )
+        with self._session_factory() as session:
+            return [
+                PublicGameweekIndexRecord(
+                    season=row.season,
+                    gameweek=row.gameweek,
+                    run_id=row.run_id,
+                    updated_at=row.updated_at,
+                    has_report=row.has_report,
+                    has_suggested_team=row.has_suggested_team,
+                    publication_status=row.publication_status,
+                )
+                for row in session.execute(statement).all()
+            ]
 
     def get(self, run_id: str) -> CompletedReportRun:
         with self._session_factory() as session:

@@ -143,6 +143,11 @@ class ReportService:
         }
         if regeneration_metadata:
             manifest["regeneration"] = to_json_value(regeneration_metadata)
+        initial_status = (
+            "processing"
+            if self.pipeline_run_id is not None or self.defer_publication
+            else "completed"
+        )
         self.repository.save_snapshot(
             run_id=resolved_run_id,
             pipeline_run_id=self.pipeline_run_id,
@@ -160,12 +165,14 @@ class ReportService:
             rendered_markdown=to_json_value(
                 format_gameweek_markdown_report(aggregate, final)
             ),
-            initial_status=(
-                "processing"
-                if self.pipeline_run_id is not None or self.defer_publication
-                else "completed"
-            ),
+            initial_status=initial_status,
         )
+        if initial_status == "completed":
+            self.repository.publish_report(
+                run_id=resolved_run_id,
+                season=identity.season,
+                gameweek=identity.gameweek,
+            )
         return resolved_run_id
 
     def load_run(self, run_id: str) -> dict[str, Any]:

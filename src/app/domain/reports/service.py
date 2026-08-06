@@ -71,6 +71,9 @@ class ReportService:
     ) -> ReportBundle:
         return self._bundle(self.repository.latest_completed(season, gameweek))
 
+    def get_latest_public_report(self) -> ReportBundle:
+        return self._bundle(self.repository.latest_published())
+
     def get_report_for_gameweek(self, season: str, gameweek: int) -> ReportBundle:
         """Compatibility alias for the public recommendation retrieval path."""
         return self.get_public_recommendation(season, gameweek)
@@ -115,19 +118,20 @@ class ReportService:
         ]
 
     def list_available_gameweeks(self) -> list[SeasonGameweekSummary]:
-        rows = self.repository.list_reports(completed_only=True)
-        newest: dict[tuple[str, int], CompletedReportRun] = {}
-        for row in rows:
-            newest[(row.season, row.gameweek)] = row
+        rows = self.repository.list_published_reports()
         grouped: dict[str, list[GameweekReportSummary]] = {}
-        for (season, gameweek), row in sorted(newest.items(), reverse=True):
+        for row in sorted(
+            rows,
+            key=lambda item: (item.season, item.gameweek),
+            reverse=True,
+        ):
             try:
                 bundle = self._bundle(row)
             except InvalidReportFileError:
                 continue
-            grouped.setdefault(season, []).append(
+            grouped.setdefault(row.season, []).append(
                 GameweekReportSummary(
-                    gameweek=gameweek,
+                    gameweek=row.gameweek,
                     last_updated_at=row.updated_at,
                     has_suggested_team=(
                         bundle.final_report.suggested_team is not None

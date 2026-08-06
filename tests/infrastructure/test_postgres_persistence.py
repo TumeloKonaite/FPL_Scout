@@ -3,10 +3,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from src.app.core.config import Settings
@@ -173,12 +175,13 @@ def test_public_recommendation_selects_latest_completed_report_in_postgres(
         session.get(CompletedReportRun, "run-b").updated_at = tied
         session.get(CompletedReportRun, "run-z-processing").updated_at = newest
 
+    reports.publish_report(run_id="run-a", season="2025-26", gameweek=32)
     record = reports.latest_public_recommendation("2025-26", 32)
     public_report = ReportService(reports).get_public_recommendation("2025-26", 32)
 
     assert record is not None
-    assert record.run_id == "run-b"
-    assert public_report.run_id == "run-b"
+    assert record.run_id == "run-a"
+    assert public_report.run_id == "run-a"
     assert public_report.final_report.overview == "Selected report"
     assert public_report.aggregate_report is None
 
@@ -264,6 +267,7 @@ def test_replacement_publication_supersedes_previous_report_atomically(
         "rendered_markdown": None,
     }
     reports.save_snapshot(run_id="legacy", manifest={}, **common)
+    reports.publish_report(run_id="legacy", season="2025-26", gameweek=30)
     reports.save_snapshot(
         run_id="replacement",
         manifest={
@@ -286,17 +290,156 @@ def test_replacement_publication_supersedes_previous_report_atomically(
 
     legacy = reports.get("legacy")
     assert superseded == ["legacy"]
-    assert legacy.status == "superseded"
+    assert legacy.status == "completed"
+    assert legacy.publication_status == "superseded"
     assert legacy.superseded_by_run_id == "replacement"
     assert legacy.superseded_at is not None
     assert legacy.supersession_reason == "contaminated historical sources"
     assert reports.latest_completed("2025-26", 30).run_id == "replacement"
     assert reports.list_reports()[-1].run_id == "replacement"
     assert reports.get("legacy").run_id == "legacy"
+    assert reports.get("replacement").publication_status == "published"
     audits = reports.list_regeneration_audits(batch_identifier="batch-1")
     assert len(audits) == 1
     assert audits[0].previous_run_id == "legacy"
     assert audits[0].replacement_run_id == "replacement"
+
+
+def test_publication_is_idempotent_and_preserves_snapshots(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    common = {
+        "season": "2025-26",
+        "gameweek": 10,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"season": "2025-26", "gameweek": 10},
+        "final_report": {"season": "2025-26", "gameweek": 10},
+        "manifest": {},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(run_id="first", **common)
+    reports.save_snapshot(run_id="replacement", **common)
+
+    assert reports.publish_report(
+        run_id="first", season="2025-26", gameweek=10
+    ) == []
+    assert reports.publish_report(
+        run_id="first", season="2025-26", gameweek=10
+    ) == []
+    assert reports.publish_report(
+        run_id="replacement", season="2025-26", gameweek=10
+    ) == ["first"]
+
+    assert reports.get("first").publication_status == "superseded"
+    assert reports.get("replacement").publication_status == "published"
+    assert {row.run_id for row in reports.completed_for_gameweek("2025-26", 10)} == {
+        "first",
+        "replacement",
+    }
+
+
+def test_publication_rejects_incomplete_and_payload_less_reports(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    common = {
+        "season": "2025-26",
+        "gameweek": 11,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"season": "2025-26", "gameweek": 11},
+        "manifest": {},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(
+        run_id="processing",
+        initial_status="processing",
+        final_report={"season": "2025-26", "gameweek": 11},
+        **common,
+    )
+    reports.save_snapshot(run_id="missing-payload", final_report=None, **common)
+
+    with pytest.raises(ValueError, match="completed"):
+        reports.publish_report(
+            run_id="processing", season="2025-26", gameweek=11
+        )
+    with pytest.raises(ValueError, match="final_report"):
+        reports.publish_report(
+            run_id="missing-payload", season="2025-26", gameweek=11
+        )
+    assert reports.latest_public_recommendation("2025-26", 11) is None
+
+
+def test_concurrent_publications_leave_exactly_one_published_report(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    common = {
+        "season": "2025-26",
+        "gameweek": 12,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"season": "2025-26", "gameweek": 12},
+        "final_report": {"season": "2025-26", "gameweek": 12},
+        "manifest": {},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(run_id="concurrent-a", **common)
+    reports.save_snapshot(run_id="concurrent-b", **common)
+
+    def publish(run_id: str) -> None:
+        ReportRepository(postgres_session_factory).publish_report(
+            run_id=run_id, season="2025-26", gameweek=12
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        list(executor.map(publish, ("concurrent-a", "concurrent-b")))
+
+    rows = reports.completed_for_gameweek("2025-26", 12)
+    assert sum(row.publication_status == "published" for row in rows) == 1
+    assert sum(row.publication_status == "superseded" for row in rows) == 1
+
+
+def test_partial_unique_index_is_the_final_publication_safeguard(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    common = {
+        "season": "2025-26",
+        "gameweek": 13,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"season": "2025-26", "gameweek": 13},
+        "final_report": {"season": "2025-26", "gameweek": 13},
+        "manifest": {},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(run_id="guard-a", **common)
+    reports.save_snapshot(run_id="guard-b", **common)
+
+    with pytest.raises(IntegrityError):
+        with postgres_session_factory.begin() as session:
+            session.get(CompletedReportRun, "guard-a").publication_status = "published"
+            session.get(CompletedReportRun, "guard-b").publication_status = "published"
+            session.flush()
 
 
 def test_transcript_revision_survives_repository_recreation(

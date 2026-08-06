@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from src.app.infrastructure.database import get_session_factory
 from src.app.infrastructure.models import CompletedReportRun, PipelineRun
+from src.app.infrastructure.report_repository import ReportRepository
 
 PipelineRunStatus = Literal["queued", "running", "completed", "failed"]
 ACTIVE_STATUSES = ("queued", "running")
@@ -138,7 +139,7 @@ class PipelineRunRepository:
     def complete_with_report(
         self, run_id: str, result: dict[str, Any]
     ) -> dict[str, Any]:
-        """Publish the report snapshot and complete its pipeline run atomically."""
+        """Complete the run, then publish its valid snapshot explicitly."""
         with self._session_factory.begin() as session:
             record = session.scalar(
                 select(PipelineRun)
@@ -163,11 +164,19 @@ class PipelineRunRepository:
             report.manifest = {
                 **report.manifest,
                 "status": "completed",
+                "publication_status": "unpublished",
                 "updated_at": now.isoformat(),
             }
             self._transition(record, "completed", result=result, now=now)
             session.flush()
-            return _as_dict(record)
+            payload = _as_dict(record)
+            report_identity = (report.season, report.gameweek)
+        ReportRepository(self._session_factory).publish_report(
+            run_id=run_id,
+            season=report_identity[0],
+            gameweek=report_identity[1],
+        )
+        return payload
 
     def fail_with_report(self, run_id: str, error: str) -> dict[str, Any]:
         """Fail a run and invalidate any unpublished report in one transaction."""
@@ -187,10 +196,12 @@ class PipelineRunRepository:
             now = _utc_now()
             if report is not None and report.status == "processing":
                 report.status = "invalid"
+                report.publication_status = "unpublished"
                 report.updated_at = now
                 report.manifest = {
                     **report.manifest,
                     "status": "invalid",
+                    "publication_status": "unpublished",
                     "updated_at": now.isoformat(),
                 }
             self._transition(record, "failed", error=error, now=now)

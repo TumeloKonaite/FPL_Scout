@@ -69,6 +69,7 @@ def build_contamination_inventory(
         from_gameweek,
         to_gameweek,
         statuses=("completed",),
+        publication_statuses=("published",),
     )
     reports: list[dict[str, Any]] = []
     for row in rows:
@@ -367,7 +368,9 @@ class HistoricalRegenerationService:
                 row.manifest.get("gameweek_deadline"),
             )
             if (
-                regeneration
+                row.publication_status == "published"
+                and row.status == "completed"
+                and regeneration
                 and stored_deadline
                 and parse_deadline(str(stored_deadline)) == deadline
                 and validations

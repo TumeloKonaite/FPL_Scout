@@ -43,6 +43,9 @@ class StubReportService:
             raise EmptyReportDirectoryError("No reports found")
         return list(self.reports.values())[-1]
 
+    def get_latest_public_report(self) -> StubReportBundle:
+        return self.get_latest_report()
+
     def get_public_recommendation(self, season: str, gameweek: int) -> StubReportBundle:
         if not self.reports:
             raise GameweekReportNotFoundError(season, gameweek)

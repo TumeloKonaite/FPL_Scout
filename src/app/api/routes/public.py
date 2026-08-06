@@ -26,6 +26,7 @@ from src.app.domain.reports.service import (
     ReportService,
 )
 from src.schemas.report_identity import validate_season
+from src.app.core.public_recommendation_timing import current_timing, measure
 
 router = APIRouter(prefix="/api", tags=["Public recommendations"])
 UNAVAILABLE_DETAIL = "The latest gameweek analysis is temporarily unavailable."
@@ -118,44 +119,52 @@ def get_recommendations(
     gameweek: Annotated[int, Query(ge=1, le=38)],
     service: ReportService = Depends(get_report_service),
 ) -> PublicRecommendationResponse | JSONResponse:
+    timing = current_timing()
+    if timing is not None:
+        timing.season = season
+        timing.gameweek = gameweek
     try:
         report = service.get_public_recommendation(season, gameweek)
     except GameweekReportNotFoundError:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": {
-                    "code": "REPORT_NOT_FOUND",
-                    "message": (
-                        "No completed report is available for season "
-                        f"{season}, gameweek {gameweek}."
-                    ),
-                    "details": {"season": season, "gameweek": gameweek},
-                }
-            },
-        )
+        if timing is not None and timing.failure_stage is None:
+            timing.mark_failure("recommendation_lookup", category="report_not_found")
+        return _not_found_response(season, gameweek)
     except (EmptyReportDirectoryError, ReportDirectoryNotFoundError):
-        return JSONResponse(
-            status_code=404,
-            content={
-                "error": {
-                    "code": "REPORT_NOT_FOUND",
-                    "message": (
-                        "No completed report is available for season "
-                        f"{season}, gameweek {gameweek}."
-                    ),
-                    "details": {"season": season, "gameweek": gameweek},
-                }
-            },
-        )
+        if timing is not None:
+            timing.mark_failure("recommendation_lookup", category="report_not_found")
+        return _not_found_response(season, gameweek)
     except InvalidReportFileError as exc:
+        if timing is not None:
+            timing.mark_failure(
+                "final_report_validation", exc, category="invalid_stored_report"
+            )
         raise HTTPException(status_code=503, detail=UNAVAILABLE_DETAIL) from exc
-    return PublicRecommendationResponse(
-        season=report.final_report.season,
-        gameweek=report.final_report.gameweek,
-        last_updated_at=_last_updated(report),
-        report=_report_payload(report),
-    )
+    if timing is not None:
+        timing.run_id = report.run_id
+    with measure("response_model_ms", "response_model_construction"):
+        response_model = PublicRecommendationResponse(
+            season=report.final_report.season,
+            gameweek=report.final_report.gameweek,
+            last_updated_at=_last_updated(report),
+            report=_report_payload(report),
+        )
+    with measure("serialization_ms", "response_serialization"):
+        return JSONResponse(content=response_model.model_dump(mode="json"))
+
+
+def _not_found_response(season: str, gameweek: int) -> JSONResponse:
+    content = {
+        "error": {
+            "code": "REPORT_NOT_FOUND",
+            "message": (
+                "No completed report is available for season "
+                f"{season}, gameweek {gameweek}."
+            ),
+            "details": {"season": season, "gameweek": gameweek},
+        }
+    }
+    with measure("serialization_ms", "response_serialization"):
+        return JSONResponse(status_code=404, content=content)
 
 
 @router.get("/gameweek/current", response_model=CurrentGameweekResponse)

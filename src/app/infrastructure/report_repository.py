@@ -14,6 +14,7 @@ from src.app.infrastructure.models import (
     PipelineRun,
 )
 from src.app.infrastructure.serialization import to_json_value
+from src.app.core.public_recommendation_timing import measure
 from src.schemas.report_identity import ReportIdentity
 
 
@@ -471,15 +472,24 @@ class ReportRepository:
             )
             .limit(1)
         )
-        with self._session_factory() as session:
-            row = session.execute(statement).one_or_none()
-        if row is None:
-            return None
-        return PublicRecommendationRecord(
-            run_id=row.run_id,
-            final_report=row.final_report,
-            updated_at=row.updated_at,
-        )
+        with measure("db_session_ms", "db_session"):
+            session = self._session_factory()
+        with session:
+            connection = getattr(session, "connection", None)
+            if callable(connection):
+                with measure("db_connection_wait_ms", "db_connection_acquisition"):
+                    connection()
+            with measure("db_query_ms", "db_query"):
+                result = session.execute(statement)
+            with measure("db_result_processing_ms", "db_result_processing"):
+                row = result.one_or_none()
+                if row is None:
+                    return None
+                return PublicRecommendationRecord(
+                    run_id=row.run_id,
+                    final_report=row.final_report,
+                    updated_at=row.updated_at,
+                )
 
     def latest_completed(
         self, season: str | None = None, gameweek: int | None = None

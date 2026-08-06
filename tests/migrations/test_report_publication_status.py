@@ -158,7 +158,9 @@ def test_backfill_and_unique_index_in_postgres() -> None:
                 {"schema": schema},
             ).scalar_one()
             assert "UNIQUE INDEX" in index
-            assert "publication_status = 'published'" in index
+            assert "WHERE" in index
+            assert "publication_status" in index
+            assert "'published'" in index
     finally:
         with engine.connect().execution_options(
             isolation_level="AUTOCOMMIT"

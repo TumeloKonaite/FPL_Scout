@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+import logging
 from typing import Any
 
 from sqlalchemy import select, text
@@ -53,6 +54,14 @@ class PublicRecommendationRecord:
 
     run_id: str
     final_report: dict[str, Any]
+    updated_at: datetime
+
+
+@dataclass(frozen=True)
+class PublicRecommendationMetadata:
+    """Canonical publication identity without loading the JSONB report."""
+
+    run_id: str
     updated_at: datetime
 
 
@@ -309,7 +318,13 @@ class ReportRepository:
                     or f"Replaced by published report {target.run_id}"
                 ),
             )
-            return [row.run_id for row in previous]
+            previous_ids = [row.run_id for row in previous]
+        self._invalidate_public_cache(
+            season=identity.season,
+            gameweek=identity.gameweek,
+            run_ids=previous_ids,
+        )
+        return previous_ids
 
     def publish_replacement(
         self,
@@ -409,7 +424,15 @@ class ReportRepository:
                 raise RuntimeError(
                     "Atomic publication did not produce exactly one canonical report"
                 )
-            return [row.run_id for row in prior]
+            previous_ids = [row.run_id for row in prior]
+            published_season = replacement.season
+            published_gameweek = replacement.gameweek
+        self._invalidate_public_cache(
+            season=published_season,
+            gameweek=published_gameweek,
+            run_ids=previous_ids,
+        )
+        return previous_ids
 
     def invalidate_processing(self, run_id: str, reason: str) -> None:
         with self._session_factory.begin() as session:
@@ -521,7 +544,44 @@ class ReportRepository:
                     "retraction_reason": reason,
                 }
             session.flush()
-            return [row.run_id for row in previous_rows]
+            restored_ids = [row.run_id for row in previous_rows]
+            published_season = replacement.season
+            published_gameweek = replacement.gameweek
+        self._invalidate_public_cache(
+            season=published_season,
+            gameweek=published_gameweek,
+            run_ids=[run_id, *restored_ids],
+        )
+        return restored_ids
+
+    @staticmethod
+    def _invalidate_public_cache(
+        *, season: str, gameweek: int, run_ids: list[str]
+    ) -> None:
+        """Best-effort cache cleanup after the database transaction commits."""
+        if not run_ids:
+            return
+        try:
+            from src.app.core.dependencies import get_public_recommendation_cache
+
+            get_public_recommendation_cache().invalidate_versions(
+                season=season,
+                gameweek=gameweek,
+                run_ids=run_ids,
+            )
+        except Exception as exc:
+            logging.getLogger("src.app.cache.public_recommendations").warning(
+                "public_recommendation_cache_invalidation_failed",
+                extra={
+                    "cache_event": {
+                        "event": "public_recommendation_cache_invalidation_failed",
+                        "season": season,
+                        "gameweek": gameweek,
+                        "run_id": run_ids[-1],
+                        "exception_type": type(exc).__name__,
+                    }
+                },
+            )
 
     def list_regeneration_audits(
         self, *, batch_identifier: str | None = None
@@ -652,6 +712,83 @@ class ReportRepository:
                 CompletedReportRun.updated_at,
             )
             .where(
+                CompletedReportRun.season == identity.season,
+                CompletedReportRun.gameweek == identity.gameweek,
+                CompletedReportRun.status == "completed",
+                CompletedReportRun.publication_status == "published",
+                CompletedReportRun.final_report.is_not(None),
+            )
+            .limit(1)
+        )
+        with measure("db_session_ms", "db_session"):
+            session = self._session_factory()
+        with session:
+            connection = getattr(session, "connection", None)
+            if callable(connection):
+                with measure("db_connection_wait_ms", "db_connection_acquisition"):
+                    connection()
+            with measure("db_query_ms", "db_query"):
+                result = session.execute(statement)
+            with measure("db_result_processing_ms", "db_result_processing"):
+                row = result.one_or_none()
+                if row is None:
+                    return None
+                return PublicRecommendationRecord(
+                    run_id=row.run_id,
+                    final_report=row.final_report,
+                    updated_at=row.updated_at,
+                )
+
+    def public_recommendation_metadata(
+        self, season: str, gameweek: int
+    ) -> PublicRecommendationMetadata | None:
+        """Resolve the canonical version without transferring report JSONB."""
+        identity = ReportIdentity(season, gameweek)
+        statement = (
+            select(
+                CompletedReportRun.run_id,
+                CompletedReportRun.updated_at,
+            )
+            .where(
+                CompletedReportRun.season == identity.season,
+                CompletedReportRun.gameweek == identity.gameweek,
+                CompletedReportRun.status == "completed",
+                CompletedReportRun.publication_status == "published",
+                CompletedReportRun.final_report.is_not(None),
+            )
+            .limit(1)
+        )
+        with measure("db_session_ms", "db_session"):
+            session = self._session_factory()
+        with session:
+            connection = getattr(session, "connection", None)
+            if callable(connection):
+                with measure("db_connection_wait_ms", "db_connection_acquisition"):
+                    connection()
+            with measure("db_query_ms", "db_query"):
+                result = session.execute(statement)
+            with measure("db_result_processing_ms", "db_result_processing"):
+                row = result.one_or_none()
+                if row is None:
+                    return None
+                return PublicRecommendationMetadata(
+                    run_id=row.run_id,
+                    updated_at=row.updated_at,
+                )
+
+    def public_recommendation_by_run_id(
+        self, season: str, gameweek: int, run_id: str
+    ) -> PublicRecommendationRecord | None:
+        """Load one version only while it remains the canonical publication."""
+        identity = ReportIdentity(season, gameweek)
+        statement = (
+            select(
+                CompletedReportRun.run_id,
+                CompletedReportRun.final_report,
+                CompletedReportRun.updated_at,
+            )
+            .where(
+                CompletedReportRun.run_id == run_id,
                 CompletedReportRun.season == identity.season,
                 CompletedReportRun.gameweek == identity.gameweek,
                 CompletedReportRun.status == "completed",

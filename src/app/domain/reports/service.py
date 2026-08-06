@@ -13,6 +13,7 @@ from src.app.infrastructure.report_repository import (
     ReportDirectoryNotFoundError,
     ReportNotFoundError,
     PublicRecommendationRecord,
+    PublicRecommendationMetadata,
     ReportRepository,
 )
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
@@ -94,6 +95,43 @@ class ReportService:
                 final = self._validate_final_report(row)
         except InvalidReportFileError as exc:
             timing = current_timing()
+            if timing is not None:
+                timing.mark_failure(
+                    "final_report_validation",
+                    exc,
+                    category="invalid_stored_report",
+                )
+            raise GameweekReportNotFoundError(season, gameweek) from exc
+        return ReportBundle(
+            run_id=row.run_id,
+            final_report=final,
+            aggregate_report=None,
+            updated_at=row.updated_at.timestamp(),
+        )
+
+    def get_public_recommendation_metadata(
+        self, season: str, gameweek: int
+    ) -> PublicRecommendationMetadata:
+        row = self.repository.public_recommendation_metadata(season, gameweek)
+        if row is None:
+            raise GameweekReportNotFoundError(season, gameweek)
+        return row
+
+    def get_public_recommendation_version(
+        self, season: str, gameweek: int, run_id: str
+    ) -> ReportBundle:
+        row = self.repository.public_recommendation_by_run_id(
+            season, gameweek, run_id
+        )
+        if row is None:
+            raise GameweekReportNotFoundError(season, gameweek)
+        timing = current_timing()
+        if timing is not None:
+            timing.run_id = row.run_id
+        try:
+            with measure("validation_ms", "final_report_validation"):
+                final = self._validate_final_report(row)
+        except InvalidReportFileError as exc:
             if timing is not None:
                 timing.mark_failure(
                     "final_report_validation",

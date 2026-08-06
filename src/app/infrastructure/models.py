@@ -248,6 +248,18 @@ class CompletedReportRun(Base):
         default="unpublished",
         server_default=text("'unpublished'"),
     )
+    # Derived from final_report when a snapshot is written.  final_report is the
+    # source of truth; these relational copies exist only for lightweight indexes.
+    has_report: Mapped[bool] = mapped_column(
+        nullable=False,
+        default=False,
+        server_default=text("false"),
+    )
+    has_suggested_team: Mapped[bool] = mapped_column(
+        nullable=False,
+        default=False,
+        server_default=text("false"),
+    )
     discovered_videos: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     input_jobs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     expert_outputs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)

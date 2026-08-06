@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
@@ -184,6 +184,100 @@ def test_public_recommendation_selects_latest_completed_report_in_postgres(
     assert public_report.run_id == "run-a"
     assert public_report.final_report.overview == "Selected report"
     assert public_report.aggregate_report is None
+
+
+def test_public_gameweek_index_selects_canonical_rows_in_one_query(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+
+    def snapshot(run_id: str, season: str, gameweek: int, **overrides: object) -> None:
+        starter_positions = [
+            "GK",
+            *(["DEF"] * 3),
+            *(["MID"] * 4),
+            *(["FWD"] * 3),
+        ]
+        bench_positions = ["GK", "DEF", "DEF", "MID"]
+        players = [
+            {
+                "playerId": player_id,
+                "officialPlayerId": player_id,
+                "name": f"Player {player_id}",
+                "position": position,
+            }
+            for player_id, position in enumerate(
+                [*starter_positions, *bench_positions], start=1
+            )
+        ]
+        values = {
+            "run_id": run_id,
+            "season": season,
+            "gameweek": gameweek,
+            "discovered_videos": [],
+            "input_jobs": [],
+            "expert_outputs": [{"must_not_load": "x" * 10_000}],
+            "failed_jobs": [],
+            "duplicate_sources": [],
+            "transcript_failures": [],
+            "aggregate_report": {"malformed": "x" * 10_000},
+            "final_report": {
+                "season": season,
+                "gameweek": gameweek,
+                "overview": "Index report",
+                "conclusion": "Conclusion",
+                "suggested_team": {
+                    "constructionStatus": "consensus",
+                    "constructionMethod": "vote_based_consensus",
+                    "consensusStrength": "moderate",
+                    "formation": "3-4-3",
+                    "startingXi": players[:11],
+                    "bench": players[11:],
+                    "captainPlayerId": 1,
+                    "viceCaptainPlayerId": 2,
+                },
+            },
+            "manifest": {"must_not_load": "x" * 10_000},
+            "rendered_markdown": None,
+        }
+        reports.save_snapshot(**{**values, **overrides})  # type: ignore[arg-type]
+
+    snapshot("gw1-old", "2025-26", 1)
+    snapshot("gw1-published", "2025-26", 1)
+    snapshot("gw2-published", "2025-26", 2)
+    snapshot("prior-season", "2024-25", 38)
+    snapshot("processing", "2025-26", 3, initial_status="processing")
+    snapshot("payload-less", "2025-26", 4, final_report=None)
+    reports.publish_report(
+        run_id="gw1-published", season="2025-26", gameweek=1
+    )
+    reports.publish_report(
+        run_id="gw2-published", season="2025-26", gameweek=2
+    )
+    reports.publish_report(
+        run_id="prior-season", season="2024-25", gameweek=38
+    )
+
+    engine = postgres_session_factory.kw["bind"]
+    statements: list[str] = []
+
+    def count_query(*args: object) -> None:
+        statements.append(str(args[2]))
+
+    event.listen(engine, "before_cursor_execute", count_query)
+    try:
+        rows = reports.public_gameweek_index()
+    finally:
+        event.remove(engine, "before_cursor_execute", count_query)
+
+    assert [(row.season, row.gameweek, row.run_id) for row in rows] == [
+        ("2025-26", 2, "gw2-published"),
+        ("2025-26", 1, "gw1-published"),
+        ("2024-25", 38, "prior-season"),
+    ]
+    assert all(row.has_report for row in rows)
+    assert all(row.has_suggested_team for row in rows)
+    assert len(statements) == 1
 
 
 def test_completed_report_snapshot_cannot_be_overwritten(

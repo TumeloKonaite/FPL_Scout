@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
@@ -9,8 +10,10 @@ from src.app.core.dependencies import get_current_gameweek_service
 from src.app.core.auth import AdminPrincipal, require_admin
 from src.app.domain.reports.service import (
     EmptyReportDirectoryError,
+    GameweekReportSummary,
     GameweekReportNotFoundError,
     ReportNotFoundError,
+    SeasonGameweekSummary,
 )
 from src.app.main import create_app
 from src.schemas.final_report import FinalGameweekReport, SuggestedPlayer, SuggestedTeam
@@ -32,8 +35,13 @@ class StubReportBundle:
 
 
 class StubReportService:
-    def __init__(self, reports: dict[str, StubReportBundle] | None = None) -> None:
+    def __init__(
+        self,
+        reports: dict[str, StubReportBundle] | None = None,
+        gameweek_index: list[SeasonGameweekSummary] | None = None,
+    ) -> None:
         self.reports = reports or {}
+        self.gameweek_index = gameweek_index or []
 
     def list_reports(self) -> list[StubReportSummary]:
         return [StubReportSummary(run_id) for run_id in self.reports]
@@ -56,6 +64,9 @@ class StubReportService:
             return self.reports[run_id]
         except KeyError as exc:
             raise ReportNotFoundError(run_id) from exc
+
+    def list_available_gameweeks(self) -> list[SeasonGameweekSummary]:
+        return self.gameweek_index
 
 
 class StubFplApiClient:
@@ -180,6 +191,57 @@ def test_public_gameweek_recommendation_preserves_response_contract() -> None:
     assert response.json()["available"] is True
     assert response.json()["report"]["overview"] == "Overview"
     assert "run_id" not in response.json()
+
+
+def test_public_gameweek_index_preserves_schema_and_selector_order() -> None:
+    client = _client(
+        StubReportService(
+            gameweek_index=[
+                SeasonGameweekSummary(
+                    season="2025-26",
+                    gameweeks=[
+                        GameweekReportSummary(
+                            gameweek=32,
+                            last_updated_at=datetime.fromtimestamp(
+                                1_700_000_000, tz=timezone.utc
+                            ),
+                            has_suggested_team=True,
+                        ),
+                        GameweekReportSummary(
+                            gameweek=31,
+                            last_updated_at=datetime.fromtimestamp(
+                                1_699_000_000, tz=timezone.utc
+                            ),
+                            has_suggested_team=False,
+                        ),
+                    ],
+                )
+            ]
+        )
+    )
+
+    response = client.get("/api/recommendations/gameweeks")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "seasons": [
+            {
+                "season": "2025-26",
+                "gameweeks": [
+                    {
+                        "gameweek": 32,
+                        "last_updated_at": "2023-11-14T22:13:20Z",
+                        "has_suggested_team": True,
+                    },
+                    {
+                        "gameweek": 31,
+                        "last_updated_at": "2023-11-03T08:26:40Z",
+                        "has_suggested_team": False,
+                    },
+                ],
+            }
+        ]
+    }
 
 
 def test_public_gameweek_recommendation_preserves_structured_not_found() -> None:

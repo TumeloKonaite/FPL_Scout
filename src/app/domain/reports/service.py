@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from copy import deepcopy
 from datetime import datetime
 
 from pydantic import ValidationError
 
-from src.app.domain.reports.suggested_team import validate_consensus_squad
 from src.app.infrastructure.models import CompletedReportRun
+from src.app.domain.reports.index_metadata import normalize_legacy_final_report
 from src.app.infrastructure.report_repository import (
     EmptyReportDirectoryError,
     InvalidReportFileError,
@@ -118,25 +117,14 @@ class ReportService:
         ]
 
     def list_available_gameweeks(self) -> list[SeasonGameweekSummary]:
-        rows = self.repository.list_published_reports()
+        rows = self.repository.public_gameweek_index()
         grouped: dict[str, list[GameweekReportSummary]] = {}
-        for row in sorted(
-            rows,
-            key=lambda item: (item.season, item.gameweek),
-            reverse=True,
-        ):
-            try:
-                bundle = self._bundle(row)
-            except InvalidReportFileError:
-                continue
+        for row in rows:
             grouped.setdefault(row.season, []).append(
                 GameweekReportSummary(
                     gameweek=row.gameweek,
                     last_updated_at=row.updated_at,
-                    has_suggested_team=(
-                        bundle.final_report.suggested_team is not None
-                        and validate_consensus_squad(bundle.final_report.suggested_team)
-                    ),
+                    has_suggested_team=row.has_suggested_team,
                 )
             )
         return [
@@ -167,27 +155,9 @@ class ReportService:
         row: CompletedReportRun | PublicRecommendationRecord,
     ) -> FinalGameweekReport:
         try:
-            final_snapshot = deepcopy(row.final_report)
-            if not isinstance(final_snapshot, dict):
-                raise TypeError("final_report must be a JSON object")
-            suggested = final_snapshot.get("suggested_team")
-            if isinstance(suggested, dict) and "constructionMethod" not in suggested:
-                has_lineup = bool(
-                    suggested.get("startingXi")
-                    or suggested.get("starters")
-                    or suggested.get("players")
-                )
-                suggested["constructionMethod"] = (
-                    "legacy_snapshot" if has_lineup else "insufficient_evidence"
-                )
-                suggested["consensusStrength"] = "insufficient"
-                suggested["provenanceAvailable"] = False
-                suggested["provenance"] = None
-                if has_lineup:
-                    # This is a display-compatibility outcome only; it is not
-                    # evidence that the historical lineup was a consensus.
-                    suggested["constructionStatus"] = "consensus"
-            return FinalGameweekReport.model_validate(final_snapshot)
+            return FinalGameweekReport.model_validate(
+                normalize_legacy_final_report(row.final_report)
+            )
         except (TypeError, ValidationError) as exc:
             raise InvalidReportFileError(
                 f"Invalid report snapshot: {row.run_id}"

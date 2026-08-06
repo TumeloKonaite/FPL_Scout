@@ -9,6 +9,7 @@ from src.app.domain.reports.service import (
     ReportService,
 )
 from src.app.infrastructure.report_repository import PublicRecommendationRecord
+from src.app.infrastructure.report_repository import PublicGameweekIndexRecord
 
 
 def _final_report() -> dict:
@@ -72,3 +73,55 @@ def test_public_recommendation_returns_not_found_for_missing_or_invalid_final_re
         ReportService(
             repository=PublicRecommendationRepository(record)
         ).get_public_recommendation("2025-26", 32)
+
+
+class PublicGameweekIndexRepository:
+    def __init__(self, rows: list[PublicGameweekIndexRecord]) -> None:
+        self.rows = rows
+
+    def public_gameweek_index(self) -> list[PublicGameweekIndexRecord]:
+        return self.rows
+
+    def list_published_reports(self) -> None:
+        raise AssertionError("the complete report retrieval path must not be used")
+
+
+def test_gameweek_index_uses_only_projection_metadata_and_sorts_deterministically() -> None:
+    updated_at = datetime(2026, 8, 6, 12, 0, tzinfo=timezone.utc)
+    rows = [
+        PublicGameweekIndexRecord(
+            season="2024-25",
+            gameweek=38,
+            run_id="older-season",
+            updated_at=updated_at,
+            has_report=True,
+            has_suggested_team=False,
+            publication_status="published",
+        ),
+        PublicGameweekIndexRecord(
+            season="2025-26",
+            gameweek=2,
+            run_id="newer-season-gw2",
+            updated_at=updated_at,
+            has_report=True,
+            has_suggested_team=True,
+            publication_status="published",
+        ),
+        PublicGameweekIndexRecord(
+            season="2025-26",
+            gameweek=10,
+            run_id="newer-season-gw10",
+            updated_at=updated_at,
+            has_report=True,
+            has_suggested_team=False,
+            publication_status="published",
+        ),
+    ]
+
+    seasons = ReportService(
+        repository=PublicGameweekIndexRepository(rows)  # type: ignore[arg-type]
+    ).list_available_gameweeks()
+
+    assert [season.season for season in seasons] == ["2025-26", "2024-25"]
+    assert [item.gameweek for item in seasons[0].gameweeks] == [10, 2]
+    assert [item.has_suggested_team for item in seasons[0].gameweeks] == [False, True]

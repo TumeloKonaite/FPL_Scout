@@ -10,7 +10,8 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 
 from src.app.core.config import Settings
-from src.app.infrastructure.models import Base
+from src.app.domain.reports.service import ReportService
+from src.app.infrastructure.models import Base, CompletedReportRun
 from src.app.infrastructure.pipeline_run_repository import (
     ActivePipelineRunError,
     PipelineRunRepository,
@@ -83,9 +84,10 @@ def test_report_publish_and_terminal_run_update_are_atomic(
     assert reports.list_reports(completed_only=True) == []
     runs.complete_with_report("run-1", {"run_path": "run-1"})
 
-    assert PipelineRunRepository(postgres_session_factory).get("run-1")[
-        "status"
-    ] == "completed"
+    assert (
+        PipelineRunRepository(postgres_session_factory).get("run-1")["status"]
+        == "completed"
+    )
     assert [
         row.run_id
         for row in ReportRepository(postgres_session_factory).list_reports(
@@ -103,9 +105,7 @@ def test_report_snapshot_removes_postgres_unsupported_null_characters(
         run_id="run-null-character",
         season="2025-26",
         gameweek=1,
-        discovered_videos=[
-            {"title": "14 VALUE Players for Gameweek 1 \x00"}
-        ],
+        discovered_videos=[{"title": "14 VALUE Players for Gameweek 1 \x00"}],
         input_jobs=[{"video_title": "Title \x00"}],
         expert_outputs=[{"video_title": "Title \x00"}],
         failed_jobs=[],
@@ -126,15 +126,61 @@ def test_report_snapshot_removes_postgres_unsupported_null_characters(
     )
 
     stored = reports.get("run-null-character")
-    assert stored.discovered_videos[0]["title"] == (
-        "14 VALUE Players for Gameweek 1 "
-    )
+    assert stored.discovered_videos[0]["title"] == ("14 VALUE Players for Gameweek 1 ")
     assert stored.input_jobs[0]["video_title"] == "Title "
     assert stored.expert_outputs[0]["video_title"] == "Title "
     assert stored.aggregate_report["nested"]["value"] == "Aggregate "
     assert stored.final_report["overview"] == "Final "
     assert stored.manifest["source"] == "Manifest "
     assert stored.rendered_markdown == "# GW1 "
+
+
+def test_public_recommendation_selects_latest_completed_report_in_postgres(
+    postgres_session_factory,
+) -> None:
+    reports = ReportRepository(postgres_session_factory)
+    common = {
+        "season": "2025-26",
+        "gameweek": 32,
+        "discovered_videos": [],
+        "input_jobs": [],
+        "expert_outputs": [{"unused": "x" * 100_000}],
+        "failed_jobs": [],
+        "duplicate_sources": [],
+        "transcript_failures": [],
+        "aggregate_report": {"malformed": "x" * 100_000},
+        "final_report": {
+            "season": "2025-26",
+            "gameweek": 32,
+            "overview": "Selected report",
+            "conclusion": "Conclusion",
+        },
+        "manifest": {"unused": "x" * 100_000},
+        "rendered_markdown": None,
+    }
+    reports.save_snapshot(run_id="run-old", **common)
+    reports.save_snapshot(run_id="run-a", **common)
+    reports.save_snapshot(run_id="run-b", **common)
+    reports.save_snapshot(
+        run_id="run-z-processing", initial_status="processing", **common
+    )
+    oldest = datetime(2026, 8, 6, 10, 0, tzinfo=timezone.utc)
+    tied = datetime(2026, 8, 6, 11, 0, tzinfo=timezone.utc)
+    newest = datetime(2026, 8, 6, 12, 0, tzinfo=timezone.utc)
+    with postgres_session_factory.begin() as session:
+        session.get(CompletedReportRun, "run-old").updated_at = oldest
+        session.get(CompletedReportRun, "run-a").updated_at = tied
+        session.get(CompletedReportRun, "run-b").updated_at = tied
+        session.get(CompletedReportRun, "run-z-processing").updated_at = newest
+
+    record = reports.latest_public_recommendation("2025-26", 32)
+    public_report = ReportService(reports).get_public_recommendation("2025-26", 32)
+
+    assert record is not None
+    assert record.run_id == "run-b"
+    assert public_report.run_id == "run-b"
+    assert public_report.final_report.overview == "Selected report"
+    assert public_report.aggregate_report is None
 
 
 def test_completed_report_snapshot_cannot_be_overwritten(
@@ -221,9 +267,7 @@ def test_replacement_publication_supersedes_previous_report_atomically(
     reports.save_snapshot(
         run_id="replacement",
         manifest={
-            "provenance_validation": [
-                {"selected": True, "video_id": "abcdefghijk"}
-            ]
+            "provenance_validation": [{"selected": True, "video_id": "abcdefghijk"}]
         },
         initial_status="processing",
         **common,
@@ -304,8 +348,7 @@ def test_removed_storage_settings_are_ignored() -> None:
 def test_application_has_no_filesystem_or_sqlite_persistence_paths() -> None:
     root = Path(__file__).resolve().parents[2]
     source = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in (root / "src").rglob("*.py")
+        path.read_text(encoding="utf-8") for path in (root / "src").rglob("*.py")
     )
     forbidden = (
         "sqlite://",

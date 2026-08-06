@@ -71,13 +71,21 @@ class Transcript(Base):
     source_language: Mapped[str | None] = mapped_column(String(32))
     failure_reason: Mapped[str | None] = mapped_column(Text)
     failure_code: Mapped[str | None] = mapped_column(String(128))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(),
-        onupdate=_utc_now, nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        onupdate=_utc_now,
+        nullable=False,
     )
     content_hash: Mapped[str | None] = mapped_column(String(64))
 
@@ -88,9 +96,7 @@ class Transcript(Base):
 
 class TranscriptRevision(Base):
     __tablename__ = "transcript_revisions"
-    __table_args__ = (
-        Index("ix_transcript_revisions_transcript_id", "transcript_id"),
-    )
+    __table_args__ = (Index("ix_transcript_revisions_transcript_id", "transcript_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     transcript_id: Mapped[uuid.UUID] = mapped_column(
@@ -104,7 +110,10 @@ class TranscriptRevision(Base):
     source_language: Mapped[str | None] = mapped_column(String(32))
     revision_key: Mapped[str] = mapped_column(String(64), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        nullable=False,
     )
 
     transcript: Mapped[Transcript] = relationship(back_populates="revisions")
@@ -135,17 +144,25 @@ class PipelineRun(Base):
     result: Mapped[dict | None] = mapped_column(JSONB)
     error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        nullable=False,
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(),
-        onupdate=_utc_now, nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        onupdate=_utc_now,
+        nullable=False,
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     duration_seconds: Mapped[float | None] = mapped_column(Float)
 
-    report: Mapped[CompletedReportRun | None] = relationship(back_populates="pipeline_run")
+    report: Mapped[CompletedReportRun | None] = relationship(
+        back_populates="pipeline_run"
+    )
 
 
 class CompletedReportRun(Base):
@@ -202,6 +219,14 @@ class CompletedReportRun(Base):
             "status",
             "updated_at",
         ),
+        Index(
+            "ix_completed_report_runs_public_recommendation",
+            "season",
+            "gameweek",
+            text("updated_at DESC"),
+            text("run_id DESC"),
+            postgresql_where=text("status = 'completed' AND final_report IS NOT NULL"),
+        ),
     )
 
     run_id: Mapped[str] = mapped_column(String(64), primary_key=True)
@@ -216,17 +241,25 @@ class CompletedReportRun(Base):
     expert_outputs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     failed_jobs: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     duplicate_sources: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
-    transcript_failures: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    transcript_failures: Mapped[list] = mapped_column(
+        JSONB, nullable=False, default=list
+    )
     aggregate_report: Mapped[dict] = mapped_column(JSONB, nullable=False)
     final_report: Mapped[dict] = mapped_column(JSONB, nullable=False)
     manifest: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     rendered_markdown: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(),
-        onupdate=_utc_now, nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        onupdate=_utc_now,
+        nullable=False,
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     superseded_by_run_id: Mapped[str | None] = mapped_column(String(64))
@@ -268,18 +301,15 @@ class HistoricalRegenerationAudit(Base):
     historical_deadline: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
-    selected_video_fingerprint: Mapped[str] = mapped_column(
-        String(64), nullable=False
-    )
-    validation_rule_version: Mapped[str] = mapped_column(
-        String(32), nullable=False
-    )
+    selected_video_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    validation_rule_version: Mapped[str] = mapped_column(String(32), nullable=False)
     batch_identifier: Mapped[str] = mapped_column(String(128), nullable=False)
     command: Mapped[str] = mapped_column(Text, nullable=False)
     audit_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
     generated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utc_now, server_default=func.now(), nullable=False
+        DateTime(timezone=True),
+        default=_utc_now,
+        server_default=func.now(),
+        nullable=False,
     )
-    superseded_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True)
-    )
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

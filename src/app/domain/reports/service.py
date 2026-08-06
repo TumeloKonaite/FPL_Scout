@@ -17,6 +17,7 @@ from src.app.infrastructure.report_repository import (
     ReportRepository,
 )
 from src.schemas.final_report import AggregatedFPLReport, FinalGameweekReport
+from src.app.core.public_recommendation_timing import current_timing, measure
 
 
 @dataclass(frozen=True)
@@ -77,10 +78,26 @@ class ReportService:
     def get_public_recommendation(self, season: str, gameweek: int) -> ReportBundle:
         row = self.repository.latest_public_recommendation(season, gameweek)
         if row is None:
+            timing = current_timing()
+            if timing is not None:
+                timing.mark_failure("db_result_processing", category="report_not_found")
             raise GameweekReportNotFoundError(season, gameweek)
+        timing = current_timing()
+        if timing is not None:
+            # The row has been selected even if its stored payload later fails
+            # validation, so the run identifier remains useful failure context.
+            timing.run_id = row.run_id
         try:
-            final = self._validate_final_report(row)
+            with measure("validation_ms", "final_report_validation"):
+                final = self._validate_final_report(row)
         except InvalidReportFileError as exc:
+            timing = current_timing()
+            if timing is not None:
+                timing.mark_failure(
+                    "final_report_validation",
+                    exc,
+                    category="invalid_stored_report",
+                )
             raise GameweekReportNotFoundError(season, gameweek) from exc
         return ReportBundle(
             run_id=row.run_id,

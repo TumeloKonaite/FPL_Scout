@@ -12,6 +12,9 @@ from src.app.api.routes.health import router as health_router
 from src.app.api.routes.pipeline_runs import router as pipeline_runs_router
 from src.app.api.routes.reports import router as reports_router
 from src.app.api.routes.public import router as public_router
+from src.app.api.middleware.public_recommendations import (
+    PublicRecommendationTimingMiddleware,
+)
 from src.app.core.dependencies import get_app_settings
 
 
@@ -37,6 +40,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(PublicRecommendationTimingMiddleware)
 
     @app.get("/")
     async def root() -> dict[str, str]:

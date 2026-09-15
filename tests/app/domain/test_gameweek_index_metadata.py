@@ -57,7 +57,7 @@ def test_suggested_team_metadata_accepts_valid_and_legacy_snapshots() -> None:
     ).has_suggested_team is True
 
 
-def test_suggested_team_metadata_rejects_incomplete_or_failed_teams() -> None:
+def test_suggested_team_metadata_accepts_partial_bench_but_rejects_failed_teams() -> None:
     incomplete = _valid_team()
     incomplete["bench"] = []
     failed = _valid_team()
@@ -73,7 +73,7 @@ def test_suggested_team_metadata_rejects_incomplete_or_failed_teams() -> None:
 
     assert public_gameweek_index_metadata(
         {**report, "suggested_team": incomplete}
-    ).has_suggested_team is False
+    ).has_suggested_team is True
     assert public_gameweek_index_metadata(
         {**report, "suggested_team": failed}
     ).has_suggested_team is False

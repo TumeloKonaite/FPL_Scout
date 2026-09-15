@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { PageShell } from "@/components/PageShell";
 import { getErrorMessage } from "@/components/apiError";
 import { buildAdminPipelineInput, seasonValidationError } from "@/lib/admin/season";
-import { getPipelineStatus, pollPipelineRun, runPipeline } from "@/src/lib/api";
+import { failPipelineRun, getPipelineStatus, pollPipelineRun, runPipeline } from "@/src/lib/api";
 import type { PipelineRun } from "@/src/types/report";
 
 function formatDate(value?: string) {
@@ -61,6 +61,18 @@ export default function AdminDashboardPage() {
     }
   }
 
+  async function handleFailRun() {
+    if (!run) return;
+    setError(null);
+    try {
+      const failed = await failPipelineRun(run.run_id);
+      setRun(failed);
+      setIsRunning(false);
+    } catch (caught) {
+      setError(getErrorMessage(caught));
+    }
+  }
+
   return (
     <PageShell title="Administration" eyebrow="Pipeline operations" description="Run the report pipeline and inspect internal execution status.">
       <section className="runner-layout" aria-label="Administrator pipeline controls">
@@ -93,6 +105,9 @@ export default function AdminDashboardPage() {
           <label><span>Videos per expert</span><input min="1" onChange={(event) => setPerExpertLimit(event.target.value)} required type="number" value={perExpertLimit} /></label>
           <button className="primary-button" disabled={isRunning} type="submit">{isRunning ? "Execution in progress..." : "Run pipeline"}</button>
           <button disabled={isRunning} onClick={refresh} type="button">Refresh status</button>
+          {run && (run.status === "queued" || run.status === "running") ? (
+            <button onClick={handleFailRun} type="button">Fail stuck run {run.run_id}</button>
+          ) : null}
         </form>
 
         <div className="result-panel">
@@ -106,6 +121,8 @@ export default function AdminDashboardPage() {
               <div><dt>Current stage</dt><dd>{run.current_stage ?? "Not active"}</dd></div>
               <div><dt>Queued</dt><dd>{formatDate(run.created_at)}</dd></div>
               <div><dt>Started</dt><dd>{formatDate(run.started_at)}</dd></div>
+              <div><dt>Last heartbeat</dt><dd>{formatDate(run.heartbeat_at)}</dd></div>
+              <div><dt>Lease expires</dt><dd>{formatDate(run.lease_expires_at)}</dd></div>
               <div><dt>Completed</dt><dd>{formatDate(run.completed_at)}</dd></div>
               <div><dt>Duration</dt><dd>{run.duration_seconds == null ? "Not available" : `${run.duration_seconds.toFixed(1)} seconds`}</dd></div>
               {run.error ? <div><dt>Failure details</dt><dd>{run.error}</dd></div> : null}

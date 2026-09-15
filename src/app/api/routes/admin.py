@@ -24,6 +24,7 @@ from src.app.domain.reports.service import (
 )
 from src.app.infrastructure.pipeline_run_repository import (
     ActivePipelineRunError,
+    InvalidPipelineRunTransition,
     PipelineRunRepository,
 )
 
@@ -67,7 +68,7 @@ def start_pipeline(
     description="Returns the latest durable run, or an idle status when none exists.",
 )
 def pipeline_status() -> PipelineStatusResponse:
-    latest = PipelineRunRepository().get_latest()
+    latest = get_pipeline_status()
     if latest is None:
         return PipelineStatusResponse(status="idle", latest_run=None)
     run = PipelineRunResponse.model_validate(latest)
@@ -84,6 +85,23 @@ def pipeline_run(run_id: str) -> PipelineRunResponse:
     result = get_pipeline_status(run_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Pipeline run not found")
+    return PipelineRunResponse.model_validate(result)
+
+
+@router.post(
+    "/runs/{run_id}/fail",
+    response_model=PipelineRunResponse,
+    summary="Fail a stuck pipeline run",
+)
+def fail_pipeline_run(run_id: str) -> PipelineRunResponse:
+    try:
+        result = PipelineRunRepository().fail_active(
+            run_id, "Pipeline run was stopped by an administrator."
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Pipeline run not found") from exc
+    except InvalidPipelineRunTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     return PipelineRunResponse.model_validate(result)
 
 

@@ -72,7 +72,7 @@ POSITION_SUFFIX = re.compile(r"\s+(GK|DEF|MID|FWD)\s*$", re.IGNORECASE)
 @dataclass(frozen=True, slots=True)
 class ConsensusPolicy:
     minimum_experts: int = 2
-    captaincy_fallback: CaptaincyFallback = "require_evidence"
+    captaincy_fallback: CaptaincyFallback = "starter_support"
     season: str | None = None
     gameweek: int | None = None
 
@@ -185,31 +185,13 @@ def construct_consensus_squad(
         )
     votes = _aggregate_votes(eligible, catalogue)
     available = Counter(item.player.position for item in votes.values())
-    if len(expert_ids) < policy.minimum_experts:
+    valid_xi_pool = any(
+        all(available[position] >= quota for position, quota in quotas.items())
+        for _, quotas in FORMATION_ORDER
+    )
+    if not valid_xi_pool:
         return _failure(
-            FAILURE_TOO_FEW_EXPERTS,
-            eligible_reveal_count=len(resolved_reveals),
-            eligible_expert_count=len(expert_ids),
-            provenance=provenance,
-            excluded_reveals=list(eligibility.exclusions),
-            diagnostics=diagnostics,
-            catalogue=catalogue,
-            captaincy_validation=captaincy_validation,
-            policy=policy,
-            positional_counts=available,
-        )
-
-    if any(available[position] < quota for position, quota in SQUAD_QUOTAS.items()):
-        valid_xi_pool = any(
-            all(available[position] >= quota for position, quota in quotas.items())
-            for _, quotas in FORMATION_ORDER
-        )
-        return _failure(
-            (
-                FAILURE_NO_SQUAD
-                if valid_xi_pool
-                else FAILURE_INSUFFICIENT_PLAYERS
-            ),
+            FAILURE_INSUFFICIENT_PLAYERS,
             eligible_reveal_count=len(resolved_reveals),
             eligible_expert_count=len(expert_ids),
             provenance=provenance,
@@ -229,8 +211,6 @@ def construct_consensus_squad(
         if len(starters) != 11 or len({v.player.official_player_id for v in starters}) != 11:
             continue
         bench = _select_bench(votes.values(), starters, quotas)
-        if len(bench) != 4:
-            continue
         score = (
             sum(item.starter_support for item in starters),
             sum(item.captain_support for item in starters),
@@ -279,6 +259,10 @@ def construct_consensus_squad(
             policy=policy,
             positional_counts=available,
         )
+    if not any(item.captain_support for item in starters):
+        captaincy_validation = sorted(
+            {*captaincy_validation, "captain_selected_by_starter_support_fallback"}
+        )
     vice = min(
         (item for item in starters if item is not captain),
         key=_vice_rank,
@@ -308,7 +292,11 @@ def construct_consensus_squad(
         player.captain = player.playerId == captain_id
         player.viceCaptain = player.playerId == vice_id
 
-    construction_method = "vote_based_consensus"
+    construction_method = (
+        "vote_based_consensus"
+        if len(expert_ids) >= policy.minimum_experts
+        else "single_reveal"
+    )
     strength, strength_basis = _consensus_strength(
         starter_players,
         eligible_expert_count=len(expert_ids),
@@ -437,12 +425,13 @@ def build_explicit_position_catalog(
 def validate_consensus_squad(team: SuggestedTeam) -> bool:
     if team.constructionStatus != "consensus" or team.failureReason is not None:
         return False
-    if len(team.startingXi) != 11 or len(team.bench) != 4:
+    if len(team.startingXi) != 11 or len(team.bench) > 4:
         return False
     players = [*team.startingXi, *team.bench]
-    if len({item.officialPlayerId for item in players}) != 15:
+    if len({item.officialPlayerId for item in players}) != len(players):
         return False
-    if Counter(item.position for item in players) != Counter(SQUAD_QUOTAS):
+    squad_counts = Counter(item.position for item in players)
+    if any(squad_counts[position] > quota for position, quota in SQUAD_QUOTAS.items()):
         return False
     starter_counts = Counter(item.position for item in team.startingXi)
     formation = f"{starter_counts['DEF']}-{starter_counts['MID']}-{starter_counts['FWD']}"
@@ -973,8 +962,15 @@ def _diagnostic_metadata(
     contributing_expert_ids: Iterable[str],
     resolved_player_count: int = 0,
     positional_counts: Mapping[Position, int] | None = None,
+    include_positional_shortage: bool = False,
 ) -> dict[str, Any]:
     expert_ids = sorted(set(contributing_expert_ids))
+    counts = Counter(positional_counts or {})
+    shortages, shortage_message = (
+        _positional_shortages(counts)
+        if include_positional_shortage
+        else ({}, None)
+    )
     return {
         "reportSeason": policy.season,
         "gameweek": policy.gameweek,
@@ -994,7 +990,43 @@ def _diagnostic_metadata(
                 (positional_counts or {}).items(), key=lambda item: str(item[0])
             )
         },
+        "positionalShortages": shortages,
+        "failureMessage": shortage_message,
     }
+
+
+def _positional_shortages(
+    counts: Mapping[Position, int],
+) -> tuple[dict[str, dict[str, int]], str | None]:
+    """Describe the closest legal XI when the resolved pool cannot form one."""
+    if any(
+        all(counts.get(position, 0) >= quota for position, quota in quotas.items())
+        for _, quotas in FORMATION_ORDER
+    ):
+        return {}, None
+    _, quotas = min(
+        FORMATION_ORDER,
+        key=lambda candidate: sum(
+            max(0, required - counts.get(position, 0))
+            for position, required in candidate[1].items()
+        ),
+    )
+    shortages = {
+        position: {"resolved": counts.get(position, 0), "required": required}
+        for position, required in quotas.items()
+        if counts.get(position, 0) < required
+    }
+    labels = {"GK": "goalkeeper", "DEF": "defender", "MID": "midfielder", "FWD": "forward"}
+    details = [
+        f"{values['resolved']} {labels[position]}{'s' if values['resolved'] != 1 else ''} "
+        f"resolved; at least {values['required']} {labels[position]}"
+        f"{'s are' if values['required'] != 1 else ' is'} required"
+        for position, values in shortages.items()
+    ]
+    resolved_total = sum(counts.values())
+    if resolved_total < 11:
+        details.append(f"only {resolved_total} total players resolved; 11 are required")
+    return shortages, "Cannot build a legal XI: " + "; ".join(details) + "."
 
 
 def _failure(
@@ -1073,6 +1105,8 @@ def _failure(
             ),
             resolved_player_count=sum((positional_counts or {}).values()),
             positional_counts=positional_counts,
+            include_positional_shortage=reason
+            in {FAILURE_INSUFFICIENT_PLAYERS, FAILURE_NO_FORMATION},
         ),
         warnings=sorted(
             {

@@ -38,6 +38,8 @@ export type PipelineRun = {
   created_at?: string;
   started_at?: string;
   updated_at?: string;
+  heartbeat_at?: string;
+  lease_expires_at?: string;
   completed_at?: string;
   duration_seconds?: number;
   current_stage?: string | null;

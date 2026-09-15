@@ -19,6 +19,8 @@ def pending_record() -> dict[str, Any]:
         "created_at": "2026-01-01T00:00:00+00:00",
         "started_at": None,
         "updated_at": "2026-01-01T00:00:00+00:00",
+        "heartbeat_at": None,
+        "lease_expires_at": None,
         "completed_at": None,
         "duration_seconds": None,
         "current_stage": None,

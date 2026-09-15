@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime
-from threading import Thread
+from threading import Event, Thread
 from typing import Any
 from uuid import uuid4
 
@@ -39,9 +39,11 @@ def _pipeline_result_to_dict(result: PipelineRunResult) -> dict[str, Any]:
 
 
 def get_pipeline_status(run_id: str | None = None) -> dict[str, Any] | None:
+    store = PipelineRunRepository()
+    store.reconcile_stale()
     if run_id is not None:
-        return PipelineRunRepository().get(run_id)
-    return PipelineRunRepository().get_latest()
+        return store.get(run_id)
+    return store.get_latest()
 
 
 def _validate_api_input(input_data: dict[str, Any] | None) -> dict[str, Any]:
@@ -85,6 +87,27 @@ def execute_pipeline_run(
     run_store = store or PipelineRunRepository()
     payload = _validate_api_input(input_data)
     run_store.update(run_id, "running")
+    heartbeat_stop = Event()
+    heartbeat_method = getattr(run_store, "heartbeat", None)
+    heartbeat_thread: Thread | None = None
+    if callable(heartbeat_method):
+        interval = getattr(run_store, "heartbeat_interval_seconds", 60.0)
+
+        def refresh_lease() -> None:
+            while not heartbeat_stop.wait(interval):
+                try:
+                    heartbeat_method(run_id)
+                except Exception:
+                    # A transient database error is retried; a reconciled/cancelled
+                    # run remains terminal and cannot later publish.
+                    continue
+
+        heartbeat_thread = Thread(
+            target=refresh_lease,
+            daemon=True,
+            name=f"pipeline-heartbeat-{run_id}",
+        )
+        heartbeat_thread.start()
 
     try:
         gameweek = int(payload["gameweek"])
@@ -103,11 +126,15 @@ def execute_pipeline_run(
             report_service=ReportWriteService(pipeline_run_id=run_id),
             player_catalogue_provider=get_player_catalogue_provider(),
         )
+        heartbeat_stop.set()
+        if heartbeat_thread is not None:
+            heartbeat_thread.join(timeout=1)
         record = run_store.complete_with_report(
             run_id,
             _pipeline_result_to_dict(result),
         )
     except Exception as exc:
+        heartbeat_stop.set()
         record = run_store.fail_with_report(run_id, str(exc))
     return record
 

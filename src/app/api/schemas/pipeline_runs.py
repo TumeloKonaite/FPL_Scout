@@ -17,6 +17,8 @@ class PipelineRunResponse(BaseModel):
     created_at: str | None = None
     started_at: str | None = None
     updated_at: str | None = None
+    heartbeat_at: str | None = None
+    lease_expires_at: str | None = None
     completed_at: str | None = None
     duration_seconds: float | None = None
     current_stage: str | None = None

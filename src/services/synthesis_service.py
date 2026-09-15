@@ -291,6 +291,7 @@ def _attach_suggested_team(
                 aggregate_report.expert_team_reveals,
                 player_catalogue,
                 ConsensusPolicy(
+                    captaincy_fallback="starter_support",
                     season=aggregate_report.season,
                     gameweek=aggregate_report.gameweek,
                 ),

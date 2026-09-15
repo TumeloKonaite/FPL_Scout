@@ -97,5 +97,5 @@ async def test_historical_pipeline_loads_matching_persisted_catalogue(
     assert provider.requests == ["2025-26"]
     assert result.final_report.suggested_team is not None
     assert result.final_report.suggested_team.failureReason == (
-        "insufficient_contributing_experts"
+        "insufficient_resolved_players"
     )

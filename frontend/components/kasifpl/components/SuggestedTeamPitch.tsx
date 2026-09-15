@@ -15,6 +15,26 @@ export type SuggestedTeamPitchProps = {
   onSelectPlayer?: (player: SuggestedPlayer | null) => void;
 };
 
+const FRIENDLY_FAILURES: Record<string, string> = {
+  authoritative_player_catalogue_unavailable: "Player data is temporarily unavailable, so a verified XI cannot be built.",
+  player_catalogue_season_mismatch: "Player data for this season is not available yet.",
+  no_eligible_reveals: "No usable expert team information was found for this gameweek.",
+  insufficient_contributing_experts: "Not enough verified expert team information was found to build an XI.",
+  insufficient_resolved_players: "There are not enough verified players in the required positions to build a legal XI.",
+  no_valid_starting_formation: "The verified players do not fit a legal starting formation.",
+  no_valid_full_squad: "A complete verified squad could not be built.",
+  insufficient_captaincy_evidence: "There is not enough verified captaincy information to publish this XI.",
+};
+
+function unavailableMessage(team: SuggestedTeam | null | undefined): string {
+  const diagnostic = team?.synthesisDiagnostics?.failureMessage;
+  if (typeof diagnostic === "string" && diagnostic.trim()) return diagnostic;
+  if (team?.failureReason && FRIENDLY_FAILURES[team.failureReason]) {
+    return FRIENDLY_FAILURES[team.failureReason];
+  }
+  return "There isn't enough expert information to construct a suggested starting XI for this gameweek.";
+}
+
 export function SuggestedTeamPitch({
   team,
   interactive = true,
@@ -29,11 +49,8 @@ export function SuggestedTeamPitch({
   if (!layout) {
     return (
       <SectionUnavailableState
-        title="No consensus XI available"
-        message={
-          team?.failureReason ??
-          "There isn't enough expert agreement to construct a suggested starting XI for this gameweek."
-        }
+        title="Suggested XI unavailable"
+        message={unavailableMessage(team)}
       />
     );
   }

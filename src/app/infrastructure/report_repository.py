@@ -109,6 +109,10 @@ class ReportRepository:
             )
             if pipeline_run_id is not None and pipeline is None:
                 raise KeyError(f"Pipeline run not found: {pipeline_run_id}")
+            if pipeline is not None and pipeline.status not in {"queued", "running"}:
+                raise ValueError(
+                    f"Pipeline run {pipeline_run_id} is already {pipeline.status}"
+                )
             record = session.get(CompletedReportRun, run_id)
             if record is not None and record.status in {
                 "completed",

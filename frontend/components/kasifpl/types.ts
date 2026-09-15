@@ -165,6 +165,7 @@ export type SuggestedTeam = {
   players?: SuggestedPlayer[];
   captainPlayerId?: number | null;
   viceCaptainPlayerId?: number | null;
+  synthesisDiagnostics?: Record<string, unknown>;
   warnings?: string[];
 };
 

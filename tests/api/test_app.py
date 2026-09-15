@@ -46,6 +46,7 @@ def test_openapi_documents_the_canonical_route_surface() -> None:
         "/api/admin/pipeline/run",
         "/api/admin/pipeline/status",
         "/api/admin/runs/{run_id}",
+        "/api/admin/runs/{run_id}/fail",
         "/api/admin/reports",
         "/api/admin/reports/{run_id}",
     }

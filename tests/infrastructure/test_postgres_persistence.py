@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 from src.app.core.config import Settings
 from src.app.domain.reports.service import ReportService
-from src.app.infrastructure.models import Base, CompletedReportRun
+from src.app.infrastructure.models import Base, CompletedReportRun, PipelineRun
 from src.app.infrastructure.pipeline_run_repository import (
     ActivePipelineRunError,
     PipelineRunRepository,
@@ -57,6 +57,64 @@ def test_pipeline_exclusivity_survives_repository_recreation(
         second.create_if_idle("run-2", {"season": "2025-26", "gameweek": 2})
 
     assert second.get("run-1")["status"] == "queued"
+
+
+@pytest.mark.parametrize("status", ["queued", "running"])
+def test_expired_active_run_is_failed_before_replacement_is_created(
+    postgres_session_factory,
+    status: str,
+) -> None:
+    runs = PipelineRunRepository(postgres_session_factory)
+    runs.create_if_idle("stale", {"season": "2025-26", "gameweek": 1})
+    if status == "running":
+        runs.update("stale", "running")
+    expired = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    with postgres_session_factory.begin() as session:
+        session.get(PipelineRun, "stale").lease_expires_at = expired
+
+    replacement = runs.create_if_idle(
+        "replacement", {"season": "2025-26", "gameweek": 1}
+    )
+
+    assert replacement["status"] == "queued"
+    assert runs.get("stale")["status"] == "failed"
+    assert "lease expired" in runs.get("stale")["error"]
+
+
+def test_completed_same_gameweek_run_can_be_repeated_and_superseded(
+    postgres_session_factory,
+) -> None:
+    runs = PipelineRunRepository(postgres_session_factory)
+    reports = ReportRepository(postgres_session_factory)
+
+    def complete(run_id: str) -> None:
+        runs.create_if_idle(run_id, {"season": "2025-26", "gameweek": 7})
+        runs.update(run_id, "running")
+        reports.save_snapshot(
+            run_id=run_id,
+            pipeline_run_id=run_id,
+            season="2025-26",
+            gameweek=7,
+            discovered_videos=[],
+            input_jobs=[],
+            expert_outputs=[],
+            failed_jobs=[],
+            duplicate_sources=[],
+            transcript_failures=[],
+            aggregate_report={"season": "2025-26", "gameweek": 7},
+            final_report={"season": "2025-26", "gameweek": 7},
+            manifest={},
+            rendered_markdown=None,
+            initial_status="processing",
+        )
+        runs.complete_with_report(run_id, {"run_path": run_id})
+
+    complete("first")
+    complete("replacement")
+
+    assert reports.get("first").publication_status == "superseded"
+    assert reports.get("first").superseded_by_run_id == "replacement"
+    assert reports.get("replacement").publication_status == "published"
 
 
 def test_report_publish_and_terminal_run_update_are_atomic(

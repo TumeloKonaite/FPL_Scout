@@ -113,6 +113,12 @@ export function getPipelineStatus(): Promise<PipelineStatus> {
   return apiRequest<PipelineStatus>("/api/admin/pipeline/status");
 }
 
+export function failPipelineRun(runId: string): Promise<PipelineRun> {
+  return apiRequest<PipelineRun>(`/api/admin/runs/${encodeURIComponent(runId)}/fail`, {
+    method: "POST"
+  });
+}
+
 type PollPipelineOptions = {
   intervalMs?: number;
   maxConsecutiveErrors?: number;
@@ -163,6 +169,7 @@ export const api = {
   runPipeline,
   getPipelineRun,
   getPipelineStatus,
+  failPipelineRun,
   pollPipelineRun,
   request: apiRequest
 };

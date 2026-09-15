@@ -127,6 +127,7 @@ class PipelineRun(Base):
             name="ck_pipeline_runs_status",
         ),
         Index("ix_pipeline_runs_status_updated_at", "status", "updated_at"),
+        Index("ix_pipeline_runs_active_lease", "status", "lease_expires_at"),
         Index("ix_pipeline_runs_created_at", "created_at"),
         # PostgreSQL enforces pipeline exclusivity across every API/worker process.
         Index(
@@ -157,6 +158,8 @@ class PipelineRun(Base):
         onupdate=_utc_now,
         nullable=False,
     )
+    heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     duration_seconds: Mapped[float | None] = mapped_column(Float)
 

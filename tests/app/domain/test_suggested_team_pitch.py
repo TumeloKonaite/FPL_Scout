@@ -134,7 +134,7 @@ def test_repeated_and_multi_reveal_votes_are_deduplicated_by_expert() -> None:
     ]
 
 
-def test_requires_authoritative_catalogue_and_classifies_one_expert_safely() -> None:
+def test_requires_authoritative_catalogue_and_labels_one_expert_fallback() -> None:
     missing = construct_consensus_squad([_reveal("alpha", (3, 4, 3))], None)
     one_expert = construct_consensus_squad(
         [_reveal("alpha", (3, 4, 3))],
@@ -143,8 +143,8 @@ def test_requires_authoritative_catalogue_and_classifies_one_expert_safely() -> 
     )
 
     assert missing.failureReason == "authoritative_player_catalogue_unavailable"
-    assert one_expert.failureReason == "insufficient_contributing_experts"
-    assert one_expert.constructionMethod == "insufficient_evidence"
+    assert one_expert.failureReason is None
+    assert one_expert.constructionMethod == "single_reveal"
     assert one_expert.consensusStrength == "insufficient"
     assert one_expert.eligibleExpertCount == 1
     assert one_expert.synthesisDiagnostics["requiredExpertCount"] == 2
@@ -194,6 +194,44 @@ def test_partial_reveals_merge_and_dedupe_votes_per_expert_player() -> None:
     ]
 
 
+def test_legal_xi_does_not_require_a_complete_bench() -> None:
+    reveals = [_reveal("alpha", (3, 4, 3)), _reveal("bravo", (3, 4, 3))]
+    for reveal in reveals:
+        reveal.current_team = list(reveal.starting_xi)
+        reveal.bench = []
+
+    team = construct_consensus_squad(reveals, _catalogue())
+
+    assert team.constructionStatus == "consensus"
+    assert team.constructionMethod == "vote_based_consensus"
+    assert len(team.startingXi) == 11
+    assert team.bench == []
+    assert len({player.officialPlayerId for player in team.startingXi}) == 11
+
+
+def test_positional_shortage_has_a_friendly_diagnostic() -> None:
+    reveal = _reveal("alpha", (3, 4, 3)).model_copy(
+        update={
+            "current_team": ["Player 1", "Player 3", "Player 4"],
+            "starting_xi": ["Player 1", "Player 3", "Player 4"],
+            "bench": [],
+            "captain": None,
+            "vice_captain": None,
+        }
+    )
+
+    team = construct_consensus_squad([reveal], _catalogue())
+
+    assert team.failureReason == "insufficient_resolved_players"
+    assert team.synthesisDiagnostics["positionalShortages"]["DEF"] == {
+        "resolved": 2,
+        "required": 3,
+    }
+    assert team.synthesisDiagnostics["failureMessage"].startswith(
+        "Cannot build a legal XI:"
+    )
+
+
 def test_one_player_partial_reveal_is_eligible() -> None:
     partial = _reveal("alpha", (3, 4, 3)).model_copy(
         update={
@@ -211,7 +249,7 @@ def test_one_player_partial_reveal_is_eligible() -> None:
         ConsensusPolicy(season="2025-26", gameweek=31),
     )
 
-    assert team.failureReason == "insufficient_contributing_experts"
+    assert team.failureReason == "insufficient_resolved_players"
     assert team.eligibleRevealCount == 1
     assert team.eligibleExpertCount == 1
     assert any(
@@ -226,7 +264,11 @@ def test_missing_captaincy_uses_only_the_configured_fallback() -> None:
         reveal.captain = None
         reveal.vice_captain = None
 
-    required = construct_consensus_squad(reveals, _catalogue())
+    required = construct_consensus_squad(
+        reveals,
+        _catalogue(),
+        ConsensusPolicy(captaincy_fallback="require_evidence"),
+    )
     fallback = construct_consensus_squad(
         reveals,
         _catalogue(),
@@ -238,6 +280,9 @@ def test_missing_captaincy_uses_only_the_configured_fallback() -> None:
     assert fallback.captainPlayerId in {
         player.playerId for player in fallback.startingXi
     }
+    assert "captain_selected_by_starter_support_fallback" in (
+        fallback.captaincyValidation
+    )
 
 
 def test_input_order_and_expert_display_names_do_not_change_selection() -> None:

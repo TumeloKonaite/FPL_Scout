@@ -72,6 +72,13 @@ export function SuggestedTeamConsensusPanel({ team, historical = false }: Sugges
         </div>
       ) : null}
 
+      {team.constructionMethod === "single_reveal" ? (
+        <div className="kasifpl-consensus__split" role="status">
+          <strong>Single-reveal fallback</strong>
+          <p>This legal XI comes from one verified team reveal. Treat it as lower confidence than multi-expert consensus.</p>
+        </div>
+      ) : null}
+
       <dl className="kasifpl-consensus__metrics">
         <SummaryMetric label="Construction method" value={readable(team.constructionMethod ?? provenance?.constructionMethod)} />
         <SummaryMetric label="Consensus strength" value={readable(team.consensusStrength ?? provenance?.consensusStrength)} />

@@ -92,6 +92,10 @@ def pipeline_run(run_id: str) -> PipelineRunResponse:
     "/runs/{run_id}/fail",
     response_model=PipelineRunResponse,
     summary="Fail a stuck pipeline run",
+    description=(
+        "Marks a queued or running pipeline execution as failed so that a new "
+        "run can be started."
+    ),
 )
 def fail_pipeline_run(run_id: str) -> PipelineRunResponse:
     try:

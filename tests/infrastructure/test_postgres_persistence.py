@@ -109,12 +109,14 @@ def test_completed_same_gameweek_run_can_be_repeated_and_superseded(
         )
         runs.complete_with_report(run_id, {"run_path": run_id})
 
-    complete("first")
-    complete("replacement")
+    # SQLAlchemy orders batched updates by primary key. Keep the replacement
+    # lexically first to reproduce the unique-index failure seen with UUIDs.
+    complete("z-existing")
+    complete("a-replacement")
 
-    assert reports.get("first").publication_status == "superseded"
-    assert reports.get("first").superseded_by_run_id == "replacement"
-    assert reports.get("replacement").publication_status == "published"
+    assert reports.get("z-existing").publication_status == "superseded"
+    assert reports.get("z-existing").superseded_by_run_id == "a-replacement"
+    assert reports.get("a-replacement").publication_status == "published"
 
 
 def test_report_publish_and_terminal_run_update_are_atomic(

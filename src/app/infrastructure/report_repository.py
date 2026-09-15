@@ -249,6 +249,12 @@ class ReportRepository:
                 "updated_at": now.isoformat(),
             }
 
+        # Release the partial unique index entry before promoting the target.
+        # Both flushes remain inside this transaction, so readers never observe
+        # an intermediate publication state.
+        if previous_rows:
+            session.flush()
+
         target.publication_status = "published"
         target.superseded_by_run_id = None
         target.superseded_at = None

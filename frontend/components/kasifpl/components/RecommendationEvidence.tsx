@@ -6,6 +6,8 @@ import { consensusLabel, formatShortDate } from "./_shared";
 export type RecommendationEvidenceProps = {
   recommendation: FinalRecommendation;
   showSources?: boolean;
+  showAlternatives?: boolean;
+  collapsibleAlternatives?: boolean;
 };
 
 function pct(c?: RecommendationConsensus | null): number | null {
@@ -17,7 +19,12 @@ function pct(c?: RecommendationConsensus | null): number | null {
   return null;
 }
 
-export function RecommendationEvidence({ recommendation, showSources = true }: RecommendationEvidenceProps) {
+export function RecommendationEvidence({
+  recommendation,
+  showSources = true,
+  showAlternatives = true,
+  collapsibleAlternatives = false,
+}: RecommendationEvidenceProps) {
   const c = recommendation.consensus ?? null;
   const support = c?.supportCount ?? recommendation.consensusCount ?? null;
   const total = c?.relevantExpertCount ?? recommendation.expertCount ?? null;
@@ -76,18 +83,35 @@ export function RecommendationEvidence({ recommendation, showSources = true }: R
         </div>
       ) : null}
 
-      {alternatives.length ? (
-        <div>
-          <div className="kasifpl-evidence__label" style={{ marginBottom: 6 }}>Alternatives</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {alternatives.map((a, i) => (
-              <div key={i} className="kasifpl-transfer__swap">
-                <span style={{ fontWeight: 600 }}>{a.recommendation}</span>
-                <span className="kasifpl-chip">{a.support_count} support</span>
-              </div>
-            ))}
+      {showAlternatives && alternatives.length ? (
+        collapsibleAlternatives ? (
+          <details className="kasifpl-evidence__alternatives-details">
+            <summary className="kasifpl-evidence__alternatives-summary">
+              <span>Other mentioned candidates</span>
+              <span className="kasifpl-chip kasifpl-chip--muted">{alternatives.length}</span>
+            </summary>
+            <div className="kasifpl-evidence__alternatives-grid">
+              {alternatives.map((a, i) => (
+                <div key={i} className="kasifpl-evidence__alt-pill">
+                  <span className="kasifpl-evidence__alt-name">{a.recommendation}</span>
+                  <span className="kasifpl-evidence__alt-support">{a.support_count} support</span>
+                </div>
+              ))}
+            </div>
+          </details>
+        ) : (
+          <div>
+            <div className="kasifpl-evidence__label" style={{ marginBottom: 6 }}>Alternatives</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {alternatives.map((a, i) => (
+                <div key={i} className="kasifpl-transfer__swap">
+                  <span style={{ fontWeight: 600 }}>{a.recommendation}</span>
+                  <span className="kasifpl-chip">{a.support_count} support</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )
       ) : null}
 
       {showSources && sources.length ? (

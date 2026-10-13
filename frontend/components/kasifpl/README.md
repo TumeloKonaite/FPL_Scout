@@ -96,7 +96,7 @@ Full types live in `types.ts` and per-component `*Props` exports. High-level sha
 - `CaptaincyPanel({ captaincy?, title?, subtitle?, limit? })`
 - `ExpertConsensusPanel({ reveals?, title?, subtitle? })`
 - `ConsensusMatrix({ reveals?, title? })`
-- `RecommendationEvidence({ recommendation, showSources? })`
+- `RecommendationEvidence({ recommendation, showSources?, showAlternatives?, collapsibleAlternatives? })`
 - `SourceCard({ source })` — renders a plain card (no link) unless `source.url` is a valid `http(s)://` URL.
 - `ArchiveGrid({ entries?, title?, subtitle?, renderLink? })`
 - `ReportLoadingState({ label? })`

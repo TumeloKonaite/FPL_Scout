@@ -51,15 +51,17 @@ browser requests same-origin and works when the UI is opened through a WSL or LA
 To point the server-side proxy at another FastAPI URL, create `frontend/.env.local`:
 
 ```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 API_PROXY_TARGET=http://127.0.0.1:8000
 ```
 
 For a Vercel deployment backed by Modal, set `API_PROXY_TARGET` to the public Modal
-API URL. Administrators enter the backend's `ADMIN_API_TOKEN` on `/admin/login`; it is
-stored in an HttpOnly, same-site session cookie and forwarded only to `/api/admin/*`.
+API URL. Clerk owns the browser session. For `/api/admin/*` requests, the server-side
+proxy retrieves the Clerk session token and forwards it to FastAPI as a bearer token.
 
-Browser requests always use the same-origin `/backend/*` proxy; no backend URL or
-pipeline credential is included in the client bundle.
+Browser requests always use the same-origin `/backend/*` proxy; no backend URL,
+Clerk secret key, or pipeline credential is included in the client bundle.
 
 Public pages call only `/api/recommendations`,
 `/api/recommendations/gameweeks`, and `/api/gameweek/current`. The protected

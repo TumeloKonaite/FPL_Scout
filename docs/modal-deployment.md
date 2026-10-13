@@ -10,7 +10,8 @@ The `fpl-scout-secrets` Modal secret must contain:
 - `DATABASE_URL`: Supabase transaction pooler, normally port 6543;
 - `DIRECT_DATABASE_URL`: direct endpoint or session pooler, port 5432;
 - application/provider credentials such as `OPENAI_API_KEY` and
-  `ADMIN_API_TOKEN`.
+  `CLERK_ISSUER`, `CLERK_AUTHORIZED_PARTIES`, `CLERK_ADMIN_USER_IDS`, and the
+  machine-only `PIPELINE_API_TOKEN`.
 
 Never expose either URL through `NEXT_PUBLIC_*`. Production enables TLS,
 disables prepared statements for transaction pooling, and uses bounded

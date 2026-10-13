@@ -31,7 +31,13 @@ ADMIN_HEADERS = {"Authorization": "Bearer secret-token"}
 
 
 def admin_settings() -> SimpleNamespace:
-    return SimpleNamespace(ADMIN_API_TOKEN="secret-token", PIPELINE_API_TOKEN="", ENVIRONMENT="production")
+    return SimpleNamespace(
+        PIPELINE_API_TOKEN="secret-token",
+        CLERK_ISSUER="",
+        CLERK_AUTHORIZED_PARTIES=[],
+        CLERK_ADMIN_USER_IDS=[],
+        ENVIRONMENT="production",
+    )
 
 
 def test_create_pipeline_run_returns_202_pending_immediately(monkeypatch) -> None:
@@ -124,7 +130,13 @@ def test_production_fails_closed_when_pipeline_token_is_missing(monkeypatch) -> 
     monkeypatch.setattr(
         auth,
         "get_settings",
-        lambda: SimpleNamespace(ADMIN_API_TOKEN="", PIPELINE_API_TOKEN="", ENVIRONMENT="production"),
+        lambda: SimpleNamespace(
+            PIPELINE_API_TOKEN="",
+            CLERK_ISSUER="",
+            CLERK_AUTHORIZED_PARTIES=[],
+            CLERK_ADMIN_USER_IDS=[],
+            ENVIRONMENT="production",
+        ),
     )
     response = TestClient(create_app()).post(
         "/api/admin/pipeline/run",

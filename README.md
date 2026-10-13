@@ -146,15 +146,17 @@ for the workflow being run.
 | `VIDEO_SELECTION_WINDOW_DAYS_BEFORE`, `VIDEO_SELECTION_WINDOW_DAYS_AFTER` | Allowed publication window around the supplied gameweek deadline |
 | `CORS_ORIGINS` | JSON list of browser origins accepted by FastAPI |
 | `ENVIRONMENT` | Runtime environment; production mode enables stricter database validation |
-| `ADMIN_API_TOKEN` | Credential for `/admin` and `/api/admin/*` operations |
-| `PIPELINE_API_TOKEN` | Backwards-compatible admin-token fallback when `ADMIN_API_TOKEN` is empty |
+| `CLERK_ISSUER` | Clerk application issuer used to locate its JWKS and validate session tokens |
+| `CLERK_AUTHORIZED_PARTIES` | Comma-separated frontend origins accepted in Clerk's `azp` claim |
+| `CLERK_ADMIN_USER_IDS` | Comma-separated Clerk user IDs authorized as administrators |
+| `PIPELINE_API_TOKEN` | Machine-only bearer token for trusted scripts, cron jobs, and CI/CD |
 | `ENABLE_WEBSHARE_PROXY` | Enables the optional Webshare route for transcript requests |
 | `WEBSHARE_PROXY_USERNAME`, `WEBSHARE_PROXY_PASSWORD` | Webshare credentials when its proxy is enabled |
 
-Keep database URLs and admin/provider credentials server-side. In particular,
-never expose them through a `NEXT_PUBLIC_*` variable. Administrators enter the
-admin token at `/admin/login`; Next.js stores it in an HttpOnly, same-site
-cookie and forwards it only to the protected backend API.
+Keep database URLs, `CLERK_SECRET_KEY`, and provider credentials server-side.
+Only Clerk's publishable key may use a `NEXT_PUBLIC_*` variable. Clerk owns the
+browser session; the Next.js proxy forwards a short-lived Clerk token only to
+the protected backend API. The machine pipeline token is never sent to the browser.
 
 ## Commands
 
@@ -212,9 +214,8 @@ Recommendation pages support bookmarkable
 | `/admin/login` | Administrator sign-in |
 | `/admin` | Protected pipeline execution and status dashboard |
 
-`/pipeline-runner` is a compatibility redirect to `/admin`. `/admin/session`
-and `/backend/[...path]` are Next.js route handlers for the admin session and
-backend proxy, not user-facing pages.
+`/pipeline-runner` is a compatibility redirect to `/admin`.
+`/backend/[...path]` is the server-side backend proxy, not a user-facing page.
 
 ## FastAPI routes
 
@@ -231,8 +232,8 @@ Public application routes and their in-repository consumers:
 The API also exposes `GET /` for a basic service message, `GET /openapi.json`
 for its schema, and FastAPI's generated UIs at `GET /docs` and `GET /redoc`.
 
-Protected administrative routes require a bearer token accepted by
-`ADMIN_API_TOKEN` (or its credential fallback):
+Protected administrative routes require either an authorized Clerk session JWT
+for a human administrator or the machine-only `PIPELINE_API_TOKEN`:
 
 | Route | Consumer |
 | --- | --- |

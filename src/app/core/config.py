@@ -1,9 +1,9 @@
 from functools import lru_cache
-from typing import List, Literal
+from typing import Annotated, List, Literal
 
 from pydantic import Field
-from pydantic import model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator, model_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
 
@@ -27,7 +27,11 @@ class Settings(BaseSettings):
     VIDEO_SELECTION_WINDOW_DAYS_AFTER: int = Field(default=2, ge=0)
 
     PIPELINE_API_TOKEN: str = Field(default="")
-    ADMIN_API_TOKEN: str = Field(default="")
+    CLERK_ISSUER: str = Field(default="")
+    CLERK_AUTHORIZED_PARTIES: Annotated[List[str], NoDecode] = Field(
+        default_factory=list
+    )
+    CLERK_ADMIN_USER_IDS: Annotated[List[str], NoDecode] = Field(default_factory=list)
 
     CORS_ORIGINS: List[str] = Field(
         default=[
@@ -43,6 +47,13 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @field_validator("CLERK_AUTHORIZED_PARTIES", "CLERK_ADMIN_USER_IDS", mode="before")
+    @classmethod
+    def parse_comma_separated_list(cls, value: object) -> object:
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
 
     @model_validator(mode="after")
     def validate_production_database(self) -> "Settings":

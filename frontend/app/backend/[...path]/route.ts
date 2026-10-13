@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +16,13 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   }
 
   const isAdminApi = path[0] === "api" && path[1] === "admin";
-  const adminToken = request.cookies.get("fpl_admin_session")?.value;
-  if (isAdminApi && adminToken) {
-    headers.set("authorization", `Bearer ${adminToken}`);
+  if (isAdminApi) {
+    const { getToken } = await auth();
+    const token = await getToken();
+    if (!token) {
+      return NextResponse.json({ detail: "Authentication required" }, { status: 401 });
+    }
+    headers.set("authorization", `Bearer ${token}`);
   }
 
   try {

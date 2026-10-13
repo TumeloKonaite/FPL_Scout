@@ -68,13 +68,14 @@ test("API errors prefer backend detail messages", () => {
   assert.match(apiError, /return `\$\{error\.status\} \$\{error\.statusText\}`/);
 });
 
-test("backend proxy forwards an HttpOnly admin session only to admin APIs", () => {
+test("backend proxy forwards a Clerk session token only to admin APIs", () => {
   const nextConfig = source("next.config.ts");
   const route = source("app/backend/[...path]/route.ts");
 
   assert.match(nextConfig, /output:\s*"standalone"/);
   assert.match(route, /process\.env\.API_PROXY_TARGET/);
-  assert.match(route, /fpl_admin_session/);
+  assert.match(route, /await auth\(\)/);
+  assert.match(route, /await getToken\(\)/);
   assert.match(route, /isAdminApi/);
   assert.match(route, /headers\.set\("authorization", `Bearer/);
   assert.doesNotMatch(source("src/lib/api.ts"), /PIPELINE_API_TOKEN/);
@@ -107,5 +108,5 @@ test("admin dashboard exposes controls and internal failure details", () => {
   assert.match(admin, />Failure details</);
   assert.match(admin, /disabled=\{isRunning\}/);
   assert.match(guard, /redirect\("\/admin\/login"\)/);
-  assert.match(guard, /authorization: `Bearer/);
+  assert.match(guard, /await auth\(\)/);
 });

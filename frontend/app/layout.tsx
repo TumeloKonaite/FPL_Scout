@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import "@/components/kasifpl/styles/kasifpl.css";
 import { Header } from "@/components/Header";
@@ -19,15 +20,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Suspense fallback={<div className="kasifpl-shell"><main className="kasifpl-shell__main">Loading reports…</main></div>}>
-          <ReportSelectionProvider>
-            <div className="kasifpl-shell">
-              <Header />
-              <main className="kasifpl-shell__main">{children}</main>
-              <KasiFplFooter>Public, read-only FPL decision support · Recommendations remain tied to their published gameweek.</KasiFplFooter>
-            </div>
-          </ReportSelectionProvider>
-        </Suspense>
+        <ClerkProvider>
+          <Suspense fallback={<div className="kasifpl-shell"><main className="kasifpl-shell__main">Loading reports…</main></div>}>
+            <ReportSelectionProvider>
+              <div className="kasifpl-shell">
+                <Header />
+                <main className="kasifpl-shell__main">{children}</main>
+                <KasiFplFooter>Public, read-only FPL decision support · Recommendations remain tied to their published gameweek.</KasiFplFooter>
+              </div>
+            </ReportSelectionProvider>
+          </Suspense>
+        </ClerkProvider>
       </body>
     </html>
   );

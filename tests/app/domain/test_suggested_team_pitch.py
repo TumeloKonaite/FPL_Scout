@@ -207,6 +207,10 @@ def test_legal_xi_does_not_require_a_complete_bench() -> None:
     assert len(team.startingXi) == 11
     assert team.bench == []
     assert len({player.officialPlayerId for player in team.startingXi}) == 11
+    assert team.synthesisDiagnostics["benchPlayerCount"] == 0
+    assert team.synthesisDiagnostics["requiredBenchPlayerCount"] == 4
+    assert team.synthesisDiagnostics["benchComplete"] is False
+    assert "incomplete_bench" in team.warnings
 
 
 def test_positional_shortage_has_a_friendly_diagnostic() -> None:

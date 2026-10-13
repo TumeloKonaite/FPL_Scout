@@ -15,6 +15,8 @@ from src.app.domain.reports.player_catalogue import (
     PersistedPlayerCatalogueProvider,
     PlayerCatalogueProvider,
     SeasonAwarePlayerCatalogueProvider,
+    load_alias_configuration,
+    season_for_date,
 )
 
 FPL_BOOTSTRAP_URL = "https://fantasy.premierleague.com/api/bootstrap-static/"
@@ -120,12 +122,22 @@ def get_fpl_api_client() -> FplApiClient:
 
 @lru_cache(maxsize=1)
 def get_player_catalogue_provider() -> PlayerCatalogueProvider:
-    snapshots = Path(__file__).resolve().parents[1] / "config" / "player_catalogues"
+    config = Path(__file__).resolve().parents[1] / "config"
+    snapshots = config / "player_catalogues"
+    current_season = season_for_date()
+    aliases_path = config / "player_aliases" / f"{current_season}.json"
+    aliases = (
+        load_alias_configuration(aliases_path)
+        if aliases_path.exists()
+        else None
+    )
     return SeasonAwarePlayerCatalogueProvider(
         LiveFplPlayerCatalogueProvider(
-            get_fpl_api_client().get_bootstrap_static
+            get_fpl_api_client().get_bootstrap_static,
+            aliases=aliases,
         ),
         PersistedPlayerCatalogueProvider(snapshots),
+        current_season=current_season,
     )
 
 

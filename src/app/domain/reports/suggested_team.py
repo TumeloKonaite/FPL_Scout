@@ -357,6 +357,7 @@ def construct_consensus_squad(
             contributing_expert_ids=expert_ids,
             resolved_player_count=len(votes),
             positional_counts=available,
+            bench_player_count=len(bench_players),
         ),
         warnings=sorted(
             {
@@ -364,6 +365,7 @@ def construct_consensus_squad(
                 for event in diagnostics
                 for warning in event.warnings
             }
+            | ({"incomplete_bench"} if len(bench_players) < 4 else set())
         ),
         captaincyValidation=captaincy_validation,
         resolutionDiagnostics=diagnostics,
@@ -963,6 +965,7 @@ def _diagnostic_metadata(
     resolved_player_count: int = 0,
     positional_counts: Mapping[Position, int] | None = None,
     include_positional_shortage: bool = False,
+    bench_player_count: int | None = None,
 ) -> dict[str, Any]:
     expert_ids = sorted(set(contributing_expert_ids))
     counts = Counter(positional_counts or {})
@@ -992,6 +995,11 @@ def _diagnostic_metadata(
         },
         "positionalShortages": shortages,
         "failureMessage": shortage_message,
+        "benchPlayerCount": bench_player_count,
+        "requiredBenchPlayerCount": 4,
+        "benchComplete": (
+            bench_player_count == 4 if bench_player_count is not None else None
+        ),
     }
 
 

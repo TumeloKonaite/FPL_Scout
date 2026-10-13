@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -15,6 +16,7 @@ from src.app.domain.reports.player_catalogue import (
     SeasonAwarePlayerCatalogueProvider,
     UnknownFplPositionType,
     catalogue_from_bootstrap,
+    load_alias_configuration,
     load_catalogue_snapshot,
 )
 from src.app.domain.reports.player_media import player_image_url, team_badge_url
@@ -109,6 +111,42 @@ def test_alias_configuration_is_atomic_and_changes_fingerprint() -> None:
             season="2025-26",
             aliases=AliasConfiguration("2024-25", {1: ["Starboy"]}),
         )
+
+
+def test_current_season_transcript_aliases_resolve_exactly() -> None:
+    aliases_path = (
+        Path(__file__).resolve().parents[3]
+        / "src"
+        / "config"
+        / "player_aliases"
+        / "2026-27.json"
+    )
+    aliases = load_alias_configuration(aliases_path)
+    expected = {
+        "Cal Fury": (8, "Riccardo Calafiori", "DEF"),
+        "Verruggan": (109, "Bart Verbruggen", "GK"),
+        "Hinchwood": (123, "Jack Hinshelwood", "MID"),
+        "Rhodon": (329, "Joe Rodon", "DEF"),
+        "Bruno Fernandez": (426, "Bruno Borges Fernandes", "MID"),
+        "Brian Burmo": (427, "Bryan Mbeumo", "MID"),
+        "Kinski": (496, "Antonin Kinsky", "GK"),
+        "Dominic Solanke": (526, "Dominic Solanke-Mitchell", "FWD"),
+    }
+    catalogue = PlayerCatalogue(
+        [
+            CataloguePlayer(player_id, name, position)
+            for player_id, name, position in expected.values()
+        ],
+        season="2026-27",
+        aliases=aliases,
+    )
+    resolver = PlayerResolver(catalogue)
+
+    for raw_name, (player_id, _, _) in expected.items():
+        result = resolver.resolve(raw_name, source=_source())
+        assert result.player is not None
+        assert result.player.official_player_id == player_id
+        assert result.event.method == "alias"
 
 
 def test_live_provider_serves_only_bootstrap_season_and_maps_positions() -> None:

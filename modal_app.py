@@ -60,6 +60,7 @@ def pipeline_worker(run_id: str, input_data: dict) -> dict:
     image=backend_image,
     secrets=[runtime_secret],
     timeout=300,
+    min_containers=1,
 )
 @modal.concurrent(max_inputs=100)
 @modal.asgi_app()

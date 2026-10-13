@@ -20,8 +20,8 @@ test("dashboard presents the component-pack briefing with resilient states", () 
   assert.match(dashboard, /<MissingReportState \/>/);
   assert.match(dashboard, /<ReportErrorState \/>/);
   assert.match(dashboard, /<OverviewBriefingFromReport/);
-  assert.match(dashboard, /<TransfersPanel/);
-  assert.match(dashboard, /<CaptaincyPanel/);
+  assert.doesNotMatch(dashboard, /<TransfersPanel/);
+  assert.doesNotMatch(dashboard, /<CaptaincyPanel/);
   assert.match(dashboard, /<SuggestedTeamPitch/);
   assert.match(dashboard, /reportHref\("\/suggested-team", selection\)/);
   assert.doesNotMatch(dashboard, /Generate report/);

@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import {
-  CaptaincyPanel,
   OverviewBriefingFromReport,
   ReportLoadingState,
-  SuggestedTeamPitch,
-  TransfersPanel
+  SuggestedTeamPitch
 } from "@/components/kasifpl";
 import { PageShell } from "@/components/PageShell";
 import { HistoricalReportBadge, MissingReportState, ReportErrorState } from "@/components/report-selection/ReportStates";
@@ -46,20 +44,7 @@ export default function DashboardPage() {
       {!loading && !error && report ? (
         <>
           <OverviewBriefingFromReport report={report} />
-          <div className="kasifpl-dashboard-split">
-            <TransfersPanel
-              compact
-              transfers={report.transfers?.slice(0, 2)}
-              title="Priority transfers"
-              subtitle="The leading moves in the selected report."
-            />
-            <CaptaincyPanel
-              captaincy={report.captaincy}
-              limit={2}
-              title="Captaincy comparison"
-              subtitle="The top two recorded options, ranked by the report."
-            />
-          </div>
+
           <section className="kasifpl-section" aria-labelledby="overview-team-title">
             <div className="kasifpl-overview-section-heading">
               <div>

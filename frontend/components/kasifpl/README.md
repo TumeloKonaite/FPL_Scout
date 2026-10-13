@@ -132,7 +132,7 @@ None at runtime beyond `react` / `react-dom` (peer). Dev-only types: `@types/rea
 
 | Existing Lovable route | Exported components |
 |---|---|
-| `/` (Briefing / Overview) | `OverviewBriefingFromReport`, `SuggestedTeamPitch`, `CaptaincyPanel` (limit 2), `TransfersPanel` (compact) |
+| `/` (Briefing / Overview) | `OverviewBriefingFromReport`, `SuggestedTeamPitch` |
 | `/suggested-team` | `SuggestedTeamPitch`, `SuggestedTeamBench`, `PlayerDetailsPopover` |
 | `/transfers` | `TransfersPanel` (full cards via `DecisionCard`) |
 | `/captaincy` | `CaptaincyPanel` |
